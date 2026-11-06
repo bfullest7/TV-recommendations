@@ -10,6 +10,7 @@
   const IMG = "https://image.tmdb.org/t/p/";
   const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", filter: "wtw.filter", lastBackup: "wtw.lastBackup" };
   const BACKUP_APP = "what-to-watch";
+  const RESET_AFTER_MS = 60 * 1000; // away this long -> reopen at the main screen
 
   let feed = null;
   let myServices = [];
@@ -347,6 +348,13 @@
     }
   }
 
+  function goHome() {
+    if (!feed || !myServices.length) return; // first-time setup stays open
+    for (const d of document.querySelectorAll("dialog")) if (d.open) closeSheet(d);
+    window.scrollTo({ top: 0 });
+    for (const s of document.querySelectorAll(".scroller")) s.scrollLeft = 0;
+  }
+
   function showSheet(d) {
     if (typeof d.showModal === "function") d.showModal();
     else d.setAttribute("open", "");
@@ -400,8 +408,20 @@
         if (e.target === d || e.target.closest("[data-close]")) closeSheet(d);
       });
     }
+    // Coming back after a while (or reopening from a link or the home screen)
+    // starts at the main screen instead of wherever the app was left.
+    let hiddenAt = null;
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") refresh();
+      if (document.visibilityState === "hidden") {
+        hiddenAt = Date.now();
+        return;
+      }
+      if (hiddenAt && Date.now() - hiddenAt >= RESET_AFTER_MS) goHome();
+      hiddenAt = null;
+      refresh();
+    });
+    window.addEventListener("pageshow", (e) => {
+      if (e.persisted) goHome(); // restored from the browser's back/forward cache
     });
     setInterval(renderUpdated, 60000);
   }
