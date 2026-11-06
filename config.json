@@ -1,0 +1,38 @@
+{
+  "region": "US",
+
+  "services": [
+    { "key": "netflix",   "name": "Netflix",     "color": "#E50914", "provider_ids": [8, 1796],   "match": ["Netflix"] },
+    { "key": "prime",     "name": "Prime Video", "color": "#1A98FF", "provider_ids": [9, 119],    "match": ["Amazon Prime Video"] },
+    { "key": "disney",    "name": "Disney+",     "color": "#113CCF", "provider_ids": [337],       "match": ["Disney Plus", "Disney+"] },
+    { "key": "hulu",      "name": "Hulu",        "color": "#1CE783", "provider_ids": [15],        "match": ["Hulu"] },
+    { "key": "hbomax",    "name": "HBO Max",     "color": "#5822B4", "provider_ids": [1899, 384], "match": ["HBO Max", "Max"] },
+    { "key": "appletv",   "name": "Apple TV",    "color": "#A2AAAD", "provider_ids": [350],       "match": ["Apple TV Plus", "Apple TV+"] },
+    { "key": "peacock",   "name": "Peacock",     "color": "#F5B800", "provider_ids": [386, 387],  "match": ["Peacock"] },
+    { "key": "paramount", "name": "Paramount+",  "color": "#0064FF", "provider_ids": [531, 2303], "match": ["Paramount Plus", "Paramount+"] }
+  ],
+
+  "weights": {
+    "audience": 0.30,
+    "taste":    0.25,
+    "buzz":     0.20,
+    "critic":   0.15,
+    "fresh":    0.10
+  },
+
+  "ranking": {
+    "imdb_min_votes_movie": 5000,
+    "imdb_min_votes_tv": 2000,
+    "trending_min_watchers": 10,
+    "new_window_days": 30,
+    "row_length": 30
+  },
+
+  "refresh": {
+    "full_refresh_every_hours": 20,
+    "discover_pages_per_list": 2,
+    "trakt_trending_limit": 100,
+    "omdb_daily_limit": 900,
+    "omdb_recheck_days": 30
+  }
+}

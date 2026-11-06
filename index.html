@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>What to Watch</title>
+  <meta name="description" content="Top things to stream right now on your services.">
+  <meta name="theme-color" content="#0f1115">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="What to Watch">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="top-row">
+      <div>
+        <h1>What to Watch</h1>
+        <p id="updated" class="updated"></p>
+      </div>
+      <button id="open-settings" class="icon-btn" aria-label="Settings">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+      </button>
+    </div>
+    <nav id="filters" class="filters" aria-label="Filter by service"></nav>
+  </header>
+
+  <main id="rows" class="rows"></main>
+
+  <!-- Title details -->
+  <dialog id="details" class="sheet" aria-labelledby="d-title">
+    <div class="sheet-body" id="details-body"></div>
+  </dialog>
+
+  <!-- Settings -->
+  <dialog id="settings" class="sheet" aria-labelledby="s-title">
+    <div class="sheet-body">
+      <div class="sheet-head">
+        <h2 id="s-title">Settings</h2>
+        <button class="icon-btn close" data-close aria-label="Close">✕</button>
+      </div>
+
+      <section>
+        <h3>Your streaming services</h3>
+        <p class="hint">Pick the ones you subscribe to. Everything in the app is limited to these.</p>
+        <div id="service-picker" class="service-picker"></div>
+      </section>
+
+      <section>
+        <h3>Your ratings</h3>
+        <p class="hint">Thumbs up and down shape your Top picks. Rated titles are left out of Top picks. Tap ✕ to remove a rating.</p>
+        <ul id="ratings" class="ratings"></ul>
+      </section>
+
+      <section>
+        <h3>Where the data comes from</h3>
+        <ul class="sources">
+          <li><b>Trending now</b>: Trakt, people watching right now</li>
+          <li><b>Top rated by audiences</b>: IMDb ratings, adjusted for vote count</li>
+          <li><b>Critics' favorites</b>: Rotten Tomatoes and Metacritic, via OMDb</li>
+          <li><b>New on your services</b>: TMDB, with streaming availability from JustWatch</li>
+          <li><b>Netflix Top 10</b>: Netflix's official weekly list</li>
+          <li><b>Top picks for you</b>: all of the above plus your thumbs</li>
+        </ul>
+        <p class="attribution">This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability data provided by JustWatch.</p>
+      </section>
+
+      <button class="done-btn" data-close>Done</button>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

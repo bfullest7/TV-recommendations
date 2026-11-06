@@ -1,0 +1,68 @@
+name: Refresh data and publish app
+
+on:
+  schedule:
+    - cron: "17 */2 * * *"   # every 2 hours; full refresh about once a day
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "auto (default), full, or trending"
+        default: auto
+        required: false
+  push:
+    branches: [main]
+    paths-ignore: ["data/**"]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build feed
+        if: github.event_name != 'push'
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
+          OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+        run: python pipeline/build_feed.py --mode "${{ github.event.inputs.mode || 'auto' }}"
+
+      - name: Save data
+        if: github.event_name != 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git commit -q -m "Refresh data"
+          git pull -q --rebase origin main
+          git push -q origin HEAD:main
+
+      - name: Collect site files
+        run: |
+          mkdir -p _site
+          cp -r index.html app.js styles.css manifest.webmanifest icons config.json _site/
+          mkdir -p _site/data && cp data/feed.json _site/data/ 2>/dev/null || true
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
