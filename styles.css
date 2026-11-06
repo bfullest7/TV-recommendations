@@ -177,6 +177,19 @@ body:has(dialog[open]) { overflow: hidden; }
 .why-table tfoot td { font-weight: 700; font-size: 15px; border-top: 2px solid var(--line); }
 .why + .hint, .why .hint { margin-top: 8px; font-size: 12px; }
 
+.genre-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.genre {
+  display: flex; align-items: center; gap: 4px; padding: 4px 4px 4px 10px; border-radius: 8px;
+  background: var(--surface-2); border: 1px solid var(--line); min-width: 0;
+}
+.genre .g-name { flex: 1; min-width: 0; font-size: 13.5px; line-height: 1.2; overflow-wrap: anywhere; hyphens: auto; }
+.g-btn { flex: none; width: 32px; height: 34px; border-radius: 6px; border: 0; background: none; font-size: 16px; opacity: .35; filter: grayscale(1); }
+.g-btn[aria-pressed="true"] { opacity: 1; filter: none; }
+.g-btn.up[aria-pressed="true"] { background: color-mix(in srgb, var(--up) 25%, transparent); }
+.g-btn.down[aria-pressed="true"] { background: color-mix(in srgb, var(--down) 25%, transparent); }
+.genre.liked { border-color: var(--up); }
+.genre.disliked { border-color: var(--down); }
+
 .weights { list-style: none; margin: 0; padding: 0; }
 .weights li { padding: 7px 0; }
 .weights .w-top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }

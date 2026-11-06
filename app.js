@@ -8,13 +8,14 @@
   "use strict";
 
   const IMG = "https://image.tmdb.org/t/p/";
-  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", filter: "wtw.filter", lastBackup: "wtw.lastBackup" };
+  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", lastBackup: "wtw.lastBackup" };
   const BACKUP_APP = "what-to-watch";
   const RESET_AFTER_MS = 60 * 1000; // away this long -> reopen at the main screen
 
   let feed = null;
   let myServices = [];
   let thumbs = {};
+  let genrePrefs = {}; // genre -> 1 (like) or -1 (dislike), set in Settings
   let filter = "all";
 
   const $ = (sel) => document.querySelector(sel);
@@ -47,18 +48,26 @@
   }
 
   // ---------------------------------------------------------------- ranking
-  /* Taste score from thumbs, 0-100 (50 = neutral), or null with no thumbs.
-   * - Genres: each thumb up/down moves its genres up/down (smoothed).
+  const hasTaste = () => Object.keys(thumbs).length > 0 || Object.keys(genrePrefs).length > 0;
+  const GENRE_PREF_VOTES = 2; // a genre set in Settings counts like two title thumbs
+
+  /* "Your taste" score, 0-100 (50 = neutral), or null with no thumbs and no
+   * genre likes.
+   * - Genres: each title thumb moves its genres up/down; a genre liked or
+   *   disliked in Settings counts as a stronger vote (smoothed either way).
    * - "More like this": titles TMDB recommends from a liked title get a boost,
    *   and from a disliked title get a drop. */
   function tasteModel() {
-    const rated = Object.values(thumbs);
-    if (!rated.length) return null;
+    if (!hasTaste()) return null;
     const aff = {}, n = {};
     const recs = {};
-    for (const r of rated) {
+    for (const r of Object.values(thumbs)) {
       for (const g of r.genres || []) { aff[g] = (aff[g] || 0) + r.v; n[g] = (n[g] || 0) + 1; }
       for (const id of r.recs || []) recs[id] = (recs[id] || 0) + r.v;
+    }
+    for (const [g, v] of Object.entries(genrePrefs)) {
+      aff[g] = (aff[g] || 0) + v * GENRE_PREF_VOTES;
+      n[g] = (n[g] || 0) + GENRE_PREF_VOTES;
     }
     const score = (t) => {
       const gs = t.genres || [];
@@ -127,8 +136,8 @@
     const defs = [
       {
         key: "picks", title: "Top picks for you",
-        source: Object.keys(thumbs).length
-          ? "Combines IMDb, Rotten Tomatoes and Metacritic, Trakt trending, what's new, and your thumbs"
+        source: hasTaste()
+          ? "Combines IMDb, Rotten Tomatoes and Metacritic, Trakt trending, what's new, and your taste (thumbs and genre likes)"
           : "Combines IMDb, Rotten Tomatoes and Metacritic, Trakt trending, and what's new. Rate titles to make it yours.",
         items: topPicks(),
         meta: (t) => metaBest(t),
@@ -289,11 +298,11 @@
       const e = taste.explain(t);
       if (good) {
         if (e.likedSimilar.length) return `being similar to ${list(e.likedSimilar.slice(0, 2))}, which you liked`;
-        if (e.likedGenres.length) { const g = e.likedGenres.slice(0, 2); return `being ${list(g)}, ${g.length > 1 ? "genres" : "a genre"} you've liked`; }
+        if (e.likedGenres.length) { const g = e.likedGenres.slice(0, 2); return `being ${list(g)}, ${g.length > 1 ? "genres" : "a genre"} you like`; }
         return "matching your ratings";
       }
       if (e.dislikedSimilar.length) return `being similar to ${list(e.dislikedSimilar.slice(0, 2))}, which you didn't like`;
-      if (e.dislikedGenres.length) { const g = e.dislikedGenres.slice(0, 2); return `being ${list(g)}, ${g.length > 1 ? "genres" : "a genre"} you've rated down`; }
+      if (e.dislikedGenres.length) { const g = e.dislikedGenres.slice(0, 2); return `being ${list(g)}, ${g.length > 1 ? "genres" : "a genre"} you don't like`; }
       return "not matching your ratings";
     }
     return k;
@@ -336,9 +345,9 @@
     const missing = parts.filter((p) => p.score === null && p.k !== "taste").map((p) => (p.k === "critic" ? "critic score" : "IMDb rating"));
     if (missing.length) sentence += ` It has no ${list(missing)}, so ${missing.length > 1 ? "those were" : "that was"} skipped.`;
 
-    const label = { audience: "Audience (IMDb)", taste: "Your thumbs", buzz: "Trending (Trakt)", critic: "Critics", fresh: "New on streaming" };
+    const label = { audience: "Audience (IMDb)", taste: "Your taste", buzz: "Trending (Trakt)", critic: "Critics", fresh: "New on streaming" };
     const rows = parts.map((p) => p.score === null
-      ? `<tr class="skip"><td>${label[p.k]}</td><td colspan="3">${p.k === "taste" ? "No ratings yet" : "No score, skipped"}</td></tr>`
+      ? `<tr class="skip"><td>${label[p.k]}</td><td colspan="3">${p.k === "taste" ? "No thumbs or genre likes yet" : "No score, skipped"}</td></tr>`
       : `<tr><td>${label[p.k]}</td><td>${Math.round(p.score)}</td><td>${Math.round(p.weight * 100)}%</td><td>${p.pts.toFixed(1)}</td></tr>`).join("");
     return `
       <section class="why">
@@ -369,6 +378,7 @@
     $("#service-picker").innerHTML = feed.services.map((s) => `
       <label><input type="checkbox" value="${esc(s.key)}" ${myServices.includes(s.key) ? "checked" : ""}>
         <span class="dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${esc(s.color)}"></span>${esc(s.name)}</label>`).join("");
+    renderGenres();
     renderRatings();
     showLastBackup();
     if (!$("#settings").open) showSheet($("#settings"));
@@ -382,10 +392,39 @@
       : `<li class="none">No ratings yet. Open any title and tap 👍 or 👎.</li>`;
   }
 
+  // ---------------------------------------------------------------- genres
+  /* Genres in the current data, most common first. */
+  function allGenres() {
+    const count = {};
+    for (const t of Object.values(feed.titles)) for (const g of t.genres || []) count[g] = (count[g] || 0) + 1;
+    for (const g of Object.keys(genrePrefs)) count[g] = count[g] || 0; // keep saved ones visible
+    return Object.keys(count).sort((a, b) => count[b] - count[a] || a.localeCompare(b));
+  }
+
+  function renderGenres() {
+    $("#genre-picker").innerHTML = allGenres().map((g) => {
+      const v = genrePrefs[g] || 0;
+      return `<div class="genre ${v > 0 ? "liked" : v < 0 ? "disliked" : ""}">
+        <span class="g-name">${esc(g)}</span>
+        <button class="g-btn up" data-genre="${esc(g)}" data-v="1" aria-pressed="${v > 0}" aria-label="Like ${esc(g)}">👍</button>
+        <button class="g-btn down" data-genre="${esc(g)}" data-v="-1" aria-pressed="${v < 0}" aria-label="Dislike ${esc(g)}">👎</button>
+      </div>`;
+    }).join("");
+  }
+
+  function setGenre(g, v) {
+    if (genrePrefs[g] === v) delete genrePrefs[g];
+    else genrePrefs[g] = v;
+    save(STORE.genres, genrePrefs);
+    renderGenres();
+    renderWeights();
+    renderRows();
+  }
+
   // ---------------------------------------------------------------- weights
   const SIGNALS = {
     audience: { name: "Audience rating", src: "IMDb, adjusted for vote count" },
-    taste: { name: "Your thumbs", src: "Your 👍 and 👎" },
+    taste: { name: "Your taste", src: "Your 👍 and 👎 on titles, plus genres you like" },
     buzz: { name: "Trending", src: "Trakt, people watching right now" },
     critic: { name: "Critics", src: "Rotten Tomatoes and Metacritic" },
     fresh: { name: "New on streaming", src: "New releases, new seasons, newly added" },
@@ -393,10 +432,10 @@
   const pct = (x) => `${Math.round(x * 100)}%`;
 
   /* Shows the weights that apply to this viewer right now: until they rate
-   * something, "Your thumbs" is skipped and the others are scaled up. */
+   * something or pick a genre, "Your taste" is skipped and the others are scaled up. */
   function renderWeights() {
     const w = feed.weights;
-    const rated = Object.keys(thumbs).length > 0;
+    const rated = hasTaste();
     const active = Object.keys(w).filter((k) => rated || k !== "taste");
     const total = active.reduce((s, k) => s + w[k], 0) || 1;
     $("#weights").innerHTML = Object.keys(w).map((k) => {
@@ -411,7 +450,7 @@
     }).join("");
     $("#weights-note").textContent = rated
       ? "If a title is missing a score (for example, no critic reviews), that signal is skipped for that title and the others are scaled up to fill the gap."
-      : `Your thumbs will count for ${pct(w.taste / Object.values(w).reduce((a, b) => a + b, 0))} once you rate a title. Until then the other signals are scaled up to fill the gap, and the same happens for any title missing a score.`;
+      : `Your taste will count for ${pct(w.taste / Object.values(w).reduce((a, b) => a + b, 0))} once you rate a title or like a genre. Until then the other signals are scaled up to fill the gap, and the same happens for any title missing a score.`;
   }
 
   // ---------------------------------------------------------------- backup
@@ -430,7 +469,7 @@
   }
 
   async function saveBackup() {
-    const data = { app: BACKUP_APP, version: 1, saved_at: new Date().toISOString(), services: myServices, thumbs };
+    const data = { app: BACKUP_APP, version: 2, saved_at: new Date().toISOString(), services: myServices, thumbs, genres: genrePrefs };
     const name = `what-to-watch-backup-${new Date().toISOString().slice(0, 10)}.json`;
     const file = new File([JSON.stringify(data, null, 1)], name, { type: "application/json" });
     try {
@@ -461,11 +500,15 @@
       for (const [id, r] of valid) thumbs[id] = r;
       const known = (data.services || []).filter((k) => svcInfo(k));
       myServices = [...new Set([...myServices, ...known])];
+      const genres = Object.entries(data.genres || {}).filter(([, v]) => v === 1 || v === -1);
+      for (const [g, v] of genres) genrePrefs[g] = v;
       save(STORE.thumbs, thumbs);
+      save(STORE.genres, genrePrefs);
       save(STORE.services, myServices);
       openSettings();
       render();
-      backupStatus(`Restored ${valid.length} rating${valid.length === 1 ? "" : "s"} and ${known.length} service${known.length === 1 ? "" : "s"}.`, "ok");
+      const nG = genres.length;
+      backupStatus(`Restored ${valid.length} rating${valid.length === 1 ? "" : "s"}, ${nG} genre${nG === 1 ? "" : "s"} and ${known.length} service${known.length === 1 ? "" : "s"}.`, "ok");
     } catch {
       backupStatus("That file isn't a What to Watch backup.", "err");
     }
@@ -520,6 +563,10 @@
       renderRatings();
       renderRows();
     });
+    $("#genre-picker").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-genre]");
+      if (b) setGenre(b.dataset.genre, Number(b.dataset.v));
+    });
     $("#backup-save").addEventListener("click", saveBackup);
     $("#backup-restore").addEventListener("click", () => $("#backup-file").click());
     $("#backup-file").addEventListener("change", (e) => {
@@ -570,6 +617,7 @@
   async function start() {
     myServices = load(STORE.services, []);
     thumbs = load(STORE.thumbs, {});
+    genrePrefs = load(STORE.genres, {});
     filter = load(STORE.filter, "all");
     wire();
     try {
