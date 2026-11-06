@@ -251,10 +251,43 @@
   }
 
   function renderRatings() {
+    renderWeights();
     const items = Object.entries(thumbs);
     $("#ratings").innerHTML = items.length
       ? items.map(([id, r]) => `<li><span>${r.v > 0 ? "👍" : "👎"}</span><span class="t">${esc(r.title)}</span><button data-unrate="${esc(id)}" aria-label="Remove rating for ${esc(r.title)}">✕</button></li>`).join("")
       : `<li class="none">No ratings yet. Open any title and tap 👍 or 👎.</li>`;
+  }
+
+  // ---------------------------------------------------------------- weights
+  const SIGNALS = {
+    audience: { name: "Audience rating", src: "IMDb, adjusted for vote count" },
+    taste: { name: "Your thumbs", src: "Your 👍 and 👎" },
+    buzz: { name: "Trending", src: "Trakt, people watching right now" },
+    critic: { name: "Critics", src: "Rotten Tomatoes and Metacritic" },
+    fresh: { name: "New on streaming", src: "New releases, new seasons, newly added" },
+  };
+  const pct = (x) => `${Math.round(x * 100)}%`;
+
+  /* Shows the weights that apply to this viewer right now: until they rate
+   * something, "Your thumbs" is skipped and the others are scaled up. */
+  function renderWeights() {
+    const w = feed.weights;
+    const rated = Object.keys(thumbs).length > 0;
+    const active = Object.keys(w).filter((k) => rated || k !== "taste");
+    const total = active.reduce((s, k) => s + w[k], 0) || 1;
+    $("#weights").innerHTML = Object.keys(w).map((k) => {
+      const on = active.includes(k);
+      const share = on ? w[k] / total : 0;
+      const s = SIGNALS[k] || { name: k, src: "" };
+      return `<li class="${on ? "" : "off"}">
+        <div class="w-top"><span><span class="w-name">${esc(s.name)}</span><br><span class="w-src">${esc(s.src)}</span></span>
+          <span class="w-pct">${on ? pct(share) : "0%"}</span></div>
+        <div class="w-bar"><span style="width:${(share * 100).toFixed(1)}%"></span></div>
+      </li>`;
+    }).join("");
+    $("#weights-note").textContent = rated
+      ? "If a title is missing a score (for example, no critic reviews), that signal is skipped for that title and the others are scaled up to fill the gap."
+      : `Your thumbs will count for ${pct(w.taste / Object.values(w).reduce((a, b) => a + b, 0))} once you rate a title. Until then the other signals are scaled up to fill the gap, and the same happens for any title missing a score.`;
   }
 
   // ---------------------------------------------------------------- backup

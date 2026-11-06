@@ -150,6 +150,16 @@ h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
 .ratings button { background: none; border: 0; color: var(--muted); padding: 4px 8px; }
 .ratings .none { color: var(--muted); }
 
+.weights { list-style: none; margin: 0; padding: 0; }
+.weights li { padding: 7px 0; }
+.weights .w-top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.weights .w-src { color: var(--muted); font-size: 12px; }
+.weights .w-pct { font-weight: 700; font-variant-numeric: tabular-nums; }
+.weights .w-bar { height: 6px; margin-top: 5px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.weights .w-bar span { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.weights li.off .w-pct, .weights li.off .w-name { color: var(--muted); }
+.weights-note { margin-top: 6px; }
+
 .backup-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .secondary-btn {
   padding: 11px 10px; border-radius: 10px; border: 1px solid var(--line);
