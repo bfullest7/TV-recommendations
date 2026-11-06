@@ -8,7 +8,7 @@
   "use strict";
 
   const IMG = "https://image.tmdb.org/t/p/";
-  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", lastBackup: "wtw.lastBackup" };
+  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", kind: "wtw.kind", lastBackup: "wtw.lastBackup" };
   const BACKUP_APP = "what-to-watch";
   const RESET_AFTER_MS = 60 * 1000; // away this long -> reopen at the main screen
 
@@ -17,6 +17,7 @@
   let thumbs = {};
   let genrePrefs = {}; // genre -> 1 (like) or -1 (dislike), set in Settings
   let filter = "all";
+  let kind = "all"; // "all", "tv" or "movie"
 
   const $ = (sel) => document.querySelector(sel);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -32,7 +33,11 @@
   // ---------------------------------------------------------------- helpers
   const svcInfo = (k) => feed.services.find((s) => s.key === k);
   const activeServices = () => (filter === "all" ? myServices : [filter]);
-  const visible = (t) => t && t.services.some((s) => activeServices().includes(s));
+  const onMyServices = (t) => t && t.services.some((s) => activeServices().includes(s));
+  const rightKind = (t) => kind === "all" || t.type === kind;
+  const visible = (t) => onMyServices(t) && rightKind(t);
+  const KINDS = [{ key: "all", name: "All" }, { key: "tv", name: "TV shows" }, { key: "movie", name: "Movies" }];
+  const kindWord = () => (kind === "tv" ? "TV shows" : kind === "movie" ? "movies" : "titles");
   const fmtCount = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K" : String(n));
   const fmtDate = (iso) => new Date(iso + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
@@ -168,7 +173,7 @@
       defs.push({
         key: "netflix", title: "Netflix Top 10",
         source: "Netflix official Top 10" + (feed.netflix_week ? `, week ending ${fmtDate(feed.netflix_week)}` : ", updated weekly"),
-        items: feed.rows.netflix.map((r) => T[r.id] && { ...T[r.id], _rank: r.rank, _kind: r.kind }).filter(Boolean),
+        items: feed.rows.netflix.map((r) => T[r.id] && { ...T[r.id], _rank: r.rank, _kind: r.kind }).filter((t) => t && rightKind(t)),
         meta: (t) => (t._kind === "tv" ? "TV" : "Film"),
         rank: true,
         forceService: "netflix",
@@ -220,11 +225,13 @@
         </div>
         ${def.items.length
           ? `<div class="scroller">${def.items.slice(0, n).map((t) => cardHtml(t, def)).join("")}</div>`
-          : `<p class="empty">Nothing here for ${filter === "all" ? "your services" : esc(svcInfo(filter).name)} right now.</p>`}
+          : `<p class="empty">No ${kindWord() === "titles" ? "titles" : kindWord()} here for ${filter === "all" ? "your services" : esc(svcInfo(filter).name)} right now.</p>`}
       </section>`).join("");
   }
 
   function renderFilters() {
+    $("#kinds").innerHTML = myServices.length ? KINDS.map((k) => `
+      <button class="seg" data-kind="${k.key}" aria-pressed="${kind === k.key}">${k.name}</button>`).join("") : "";
     if (!myServices.length) { $("#filters").innerHTML = ""; return; }
     const chips = [{ key: "all", name: "All" }, ...myServices.map(svcInfo).filter(Boolean)];
     $("#filters").innerHTML = chips.map((s) => `
@@ -327,7 +334,8 @@
 
     let lead;
     if (thumbs[t.id]) lead = `You've rated this, so it's left out of your Top picks. Its match score of ${match} comes`;
-    else if (!visible(t)) lead = `This isn't on ${filter === "all" ? "your services" : "the service you're viewing"}, so it's not in your Top picks. Its match score of ${match} comes`;
+    else if (!onMyServices(t)) lead = `This isn't on ${filter === "all" ? "your services" : "the service you're viewing"}, so it's not in your Top picks. Its match score of ${match} comes`;
+    else if (!rightKind(t)) lead = `This is a ${t.type === "tv" ? "TV show" : "movie"}, and you're viewing ${kindWord()} only, so it's not in your Top picks right now. Its match score of ${match} comes`;
     else {
       const picks = topPicks();
       const rank = picks.findIndex((x) => x.id === t.id) + 1;
@@ -552,6 +560,14 @@
       render();
       window.scrollTo({ top: 0 });
     });
+    $("#kinds").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-kind]");
+      if (!b) return;
+      kind = b.dataset.kind;
+      save(STORE.kind, kind);
+      render();
+      window.scrollTo({ top: 0 });
+    });
     $("#rows").addEventListener("click", (e) => {
       if (e.target.closest("[data-open-settings]")) return openSettings();
       const c = e.target.closest(".card");
@@ -638,6 +654,7 @@
     thumbs = load(STORE.thumbs, {});
     genrePrefs = load(STORE.genres, {});
     filter = load(STORE.filter, "all");
+    kind = ["all", "tv", "movie"].includes(load(STORE.kind, "all")) ? load(STORE.kind, "all") : "all";
     wire();
     try {
       feed = await fetchFeed();

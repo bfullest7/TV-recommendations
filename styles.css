@@ -54,6 +54,10 @@ h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
   background: var(--surface); border: 1px solid var(--line); font-size: 14px; white-space: nowrap;
 }
 .chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 600; }
+.kinds { display: flex; margin-top: 8px; padding: 3px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+.kinds:empty { display: none; }
+.seg { flex: 1; padding: 6px 8px; border: 0; border-radius: 7px; background: none; font-size: 13.5px; color: var(--muted); }
+.seg[aria-pressed="true"] { background: var(--surface-2); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
 .chip .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
 
 /* Rows */
