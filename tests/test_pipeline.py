@@ -35,6 +35,7 @@ U = {
                seasons=["2022-11-23"], genres=["Comedy"]),
 }
 WATCHERS = {"t1": 1500, "m1": 40, "m5": 300, "t2": 5}
+TMDB_TRENDING = {"movie": [3, 1], "tv": [2, 1]}  # TMDB daily trending, in order
 
 
 class FakeHttp:
@@ -86,6 +87,9 @@ class FakeHttp:
                 {"provider_id": 1899, "provider_name": "HBO Max"},
                 {"provider_id": 582, "provider_name": "Paramount+ Amazon Channel"},
             ]}
+        if p.startswith("/trending/"):
+            kind = p.split("/")[2]
+            return {"results": [{"id": i} for i in TMDB_TRENDING[kind]], "total_pages": 1}
         if p.startswith("/discover/"):
             kind = p.split("/")[2]
             pre = "m" if kind == "movie" else "t"
@@ -145,10 +149,17 @@ class PipelineTest(unittest.TestCase):
         # audience: the 120-vote 9.6 indie must not beat the 900k-vote 8.6 movie
         self.assertLess(rows["audience"].index("m1"), rows["audience"].index("m2"))
         self.assertGreater(T["m1"]["scores"]["audience"], 80)
-        # trending: needs the minimum number of watchers, sorted by watchers
-        self.assertEqual(rows["trending"], ["t1", "m1"])
-        self.assertEqual(T["t1"]["scores"]["buzz"], 100.0)
-        self.assertEqual(T["t2"]["scores"]["buzz"] > 0, True)
+        # trending blends Trakt watchers with TMDB trending (each scaled per type):
+        # t1: Trakt 100 (most TV watchers), TMDB #2 of 2 -> 50  => 75
+        # t2: Trakt 24.5 (5 watchers),      TMDB #1 of 2 -> 100 => 62.3
+        # m1: Trakt 65.1 (40 of max 300),   TMDB #2 of 2 -> 50  => 57.5
+        # m3: no Trakt watchers,            TMDB #1 of 2 -> 100 => 50
+        self.assertEqual(rows["trending"], ["t1", "t2", "m1", "m3"])
+        self.assertEqual(T["t1"]["scores"]["buzz"], 75.0)
+        self.assertAlmostEqual(T["t2"]["scores"]["buzz"], 62.3, delta=0.1)
+        self.assertAlmostEqual(T["m1"]["scores"]["buzz"], 57.5, delta=0.1)
+        self.assertEqual(T["m3"]["scores"]["buzz"], 50.0)
+        self.assertEqual(T["t2"]["tmdb_trend_rank"], 1)
         # critics: averages RT and Metacritic; titles with neither are absent
         self.assertEqual(T["m1"]["scores"]["critic"], 91.5)
         self.assertNotIn("t1", rows["critics"])
@@ -176,9 +187,10 @@ class PipelineTest(unittest.TestCase):
         finally:
             WATCHERS["t2"] = 5
         new_calls = self.fake.calls[calls_before:]
-        self.assertTrue(all("trakt" in u for u in new_calls), new_calls)
+        self.assertTrue(all("trakt" in u or "/trending/" in u for u in new_calls), new_calls)
         self.assertEqual(self.fake.omdb_calls, omdb_before)  # critic scores are cached
-        self.assertEqual(feed["rows"]["trending"][:2], ["t1", "t2"])
+        # t2 now has 900 watchers (Trakt ~93) and is #1 on TMDB -> overtakes t1
+        self.assertEqual(feed["rows"]["trending"][:2], ["t2", "t1"])
         self.assertEqual(feed["full_refreshed_at"], f"{TODAY}T12:00:00Z")
         self.assertEqual(feed["trending_updated_at"], f"{TODAY}T14:00:00Z")
 
@@ -197,8 +209,11 @@ class PipelineTest(unittest.TestCase):
         cfg = json.loads((REPO / "config.json").read_text())["ranking"]
         self.assertIsNone(bf.audience_score(None, None, "movie", 6.8, cfg))
         self.assertEqual(bf.critic_score(None, None), None)
-        self.assertEqual(bf.buzz_score(0, 1000), 0.0)
-        self.assertEqual(bf.buzz_score(1000, 1000), 100.0)
+        self.assertEqual(bf.trakt_score(0, 1000), 0.0)
+        self.assertEqual(bf.trakt_score(1000, 1000), 100.0)
+        self.assertEqual(bf.tmdb_trend_score(1, 100), 100.0)
+        self.assertEqual(bf.tmdb_trend_score(None, 100), 0.0)
+        self.assertEqual(bf.buzz_score(100, 0), 50.0)
         import datetime as dt
         self.assertEqual(bf.fresh_score("2026-11-06", 30, dt.date(2026, 11, 6)), 100.0)
         self.assertEqual(bf.fresh_score("2026-09-01", 30, dt.date(2026, 11, 6)), 0.0)

@@ -32,6 +32,7 @@
     "full_refresh_every_hours": 20,
     "discover_pages_per_list": 2,
     "trakt_trending_limit": 100,
+    "tmdb_trending_pages": 5,
     "omdb_daily_limit": 900,
     "omdb_recheck_days": 30
   }

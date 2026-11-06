@@ -7,7 +7,7 @@ A phone web app that shows the best things to stream right now on the services y
 | Row | Source |
 |---|---|
 | Top picks for you | All the signals below, plus your 👍 / 👎 |
-| Trending now | Trakt: people watching right now |
+| Trending now | Trakt watchers averaged with TMDB daily trending: titles hot on both rank highest |
 | Top rated by audiences | IMDb ratings, adjusted for vote count |
 | Critics' favorites | Rotten Tomatoes and Metacritic (via OMDb) |
 | New on your services | TMDB, with streaming availability from JustWatch |
@@ -17,7 +17,7 @@ A filter at the top limits every row to one service. Your services and thumbs ar
 
 ## How it works
 
-- `pipeline/build_feed.py` runs on GitHub Actions every 2 hours. It refreshes Trakt's trending numbers each time and everything else (what's on each service, IMDb ratings, critic scores, Netflix Top 10) about once a day. It writes `data/feed.json`.
+- `pipeline/build_feed.py` runs on GitHub Actions every 2 hours. It refreshes the trending numbers (Trakt and TMDB) each time and everything else (what's on each service, IMDb ratings, critic scores, Netflix Top 10) about once a day. It writes `data/feed.json`.
 - The app (`index.html`, `app.js`, `styles.css`) is published with GitHub Pages and reads that file. API keys never reach the app; they stay in GitHub Secrets.
 - The Top picks ranking happens on the phone, so each person's thumbs only affect their own picks.
 
@@ -31,7 +31,7 @@ Each signal is scored 0–100 and combined with these weights (edit them in `con
 | Audience | 25% | IMDb weighted rating: titles with few votes are pulled toward the average (5,000 votes for movies, 2,000 for TV) |
 | New & recent | 20% | Full credit for titles released or premiered in the last year, fading to 0 at 5 years; a new season of an older show counts half; arriving on a service in the last 30 days counts fully |
 | Critics | 15% | Average of Rotten Tomatoes and Metacritic |
-| Buzz | 10% | Trakt watchers right now, log-scaled |
+| Trending | 10% | Average of Trakt watchers right now (log-scaled) and position on TMDB's daily trending list, each scaled separately for movies and TV |
 
 If a title is missing a signal (no critic score, or you haven't rated anything or picked any genres yet), that signal is skipped and the other weights scale up to fill the gap. Titles you've rated are left out of Top picks.
 

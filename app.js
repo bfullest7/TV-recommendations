@@ -170,9 +170,9 @@
         meta: (t) => metaBest(t),
       },
       {
-        key: "trending", title: "Trending now", source: "Trakt: what people are watching right now",
+        key: "trending", title: "Trending now", source: "Trakt watchers + TMDB trending: hot on both ranks highest",
         items: from(feed.rows.trending),
-        meta: (t) => `${fmtCount(t.watchers)} watching`,
+        meta: (t) => [t.watchers > 0 && `${fmtCount(t.watchers)} watching`, t.tmdb_trend_rank && `TMDB #${t.tmdb_trend_rank}`].filter(Boolean).join(" · "),
       },
       {
         key: "audience", title: "Top rated by audiences", source: "IMDb ratings, adjusted for vote count",
@@ -283,6 +283,7 @@
       t.rt != null && { v: `${t.rt}%`, l: "Rotten Tomatoes (critics)" },
       t.mc != null && { v: t.mc, l: "Metacritic" },
       t.watchers > 0 && { v: fmtCount(t.watchers), l: "Watching now on Trakt" },
+      t.tmdb_trend_rank && { v: `#${t.tmdb_trend_rank}`, l: `Trending on TMDB today (${t.type === "tv" ? "TV" : "movies"})` },
       t.netflix_rank && { v: `#${t.netflix_rank}`, l: "Netflix Top 10" },
       t.new_date && { v: fmtDate(t.new_date), l: "New on streaming" },
     ].filter(Boolean);
@@ -328,7 +329,11 @@
       const bits = [t.rt != null && `Rotten Tomatoes ${t.rt}%`, t.mc != null && `Metacritic ${t.mc}`].filter(Boolean).join(", ");
       return good ? `${s >= 80 ? "great" : "good"} reviews from critics (${bits})` : `mixed reviews from critics (${bits})`;
     }
-    if (k === "buzz") return `${s >= 80 ? "lots of people" : "people"} watching it right now (${fmtCount(t.watchers)} on Trakt)`;
+    if (k === "buzz") {
+      const bits = [t.watchers > 0 && `${fmtCount(t.watchers)} watching on Trakt`, t.tmdb_trend_rank && `#${t.tmdb_trend_rank} on TMDB`].filter(Boolean).join(", ");
+      const both = t.watchers > 0 && t.tmdb_trend_rank;
+      return `${both ? "trending on both Trakt and TMDB" : "trending right now"} (${bits})`;
+    }
     if (k === "fresh") {
       const r = recency(t).why;
       const monthYear = (iso) => new Date(iso + "T12:00:00").toLocaleDateString(undefined, { month: "short", year: "numeric" });
@@ -392,7 +397,7 @@
     const missing = parts.filter((p) => p.score === null && p.k !== "taste").map((p) => (p.k === "critic" ? "critic score" : "IMDb rating"));
     if (missing.length) sentence += ` It has no ${list(missing)}, so ${missing.length > 1 ? "those were" : "that was"} skipped.`;
 
-    const label = { audience: "Audience (IMDb)", taste: "Your taste", buzz: "Trending (Trakt)", critic: "Critics", fresh: "New & recent" };
+    const label = { audience: "Audience (IMDb)", taste: "Your taste", buzz: "Trending", critic: "Critics", fresh: "New & recent" };
     const rows = parts.map((p) => p.score === null
       ? `<tr class="skip"><td>${label[p.k]}</td><td colspan="3">${p.k === "taste" ? "No thumbs or genre likes yet" : "No score, skipped"}</td></tr>`
       : `<tr><td>${label[p.k]}</td><td>${Math.round(p.score)}</td><td>${Math.round(p.weight * 100)}%</td><td>${p.pts.toFixed(1)}</td></tr>`).join("");
@@ -472,7 +477,7 @@
   const SIGNALS = {
     audience: { name: "Audience rating", src: "IMDb, adjusted for vote count" },
     taste: { name: "Your taste", src: "Your 👍 and 👎 on titles, plus genres you like" },
-    buzz: { name: "Trending", src: "Trakt, people watching right now" },
+    buzz: { name: "Trending", src: "Trakt watchers + TMDB trending, averaged" },
     critic: { name: "Critics", src: "Rotten Tomatoes and Metacritic" },
     fresh: { name: "New & recent", src: "Released in the last few years; new seasons and new arrivals count too" },
   };

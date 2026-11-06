@@ -241,6 +241,21 @@ class Tmdb:
             "link": wp.get("link") or f"https://www.themoviedb.org/{kind}/{tmdb_id}/watch?locale={self.region}",
         }
 
+    def trending(self, pages: int) -> dict[str, int]:
+        """Title key -> position (1 = top) on TMDB's daily trending list, per type.
+        TMDB trending reflects activity across TMDB's much broader audience."""
+        out: dict[str, int] = {}
+        for kind in ("movie", "tv"):
+            pos = 0
+            for page in range(1, pages + 1):
+                res = self.get(f"/trending/{kind}/day", page=page)
+                for r in res.get("results", []):
+                    pos += 1
+                    out.setdefault(key_for(kind, r["id"]), pos)
+                if page >= res.get("total_pages", 1):
+                    break
+        return out
+
     def search(self, kind: str, query: str) -> list[int]:
         res = self.get(f"/search/{kind}", query=query, include_adult="false")
         return [r["id"] for r in res.get("results", [])[:3]]
@@ -331,11 +346,24 @@ def critic_score(rt, mc) -> float | None:
     return round(sum(vals) / len(vals), 1) if vals else None
 
 
-def buzz_score(watchers: int, max_watchers: int) -> float:
+def trakt_score(watchers: int, max_watchers: int) -> float:
     """Log-scaled so 10 vs 100 watchers matters as much as 100 vs 1,000."""
     if watchers <= 0 or max_watchers <= 0:
         return 0.0
     return round(100 * math.log10(watchers + 1) / math.log10(max_watchers + 1), 1)
+
+
+def tmdb_trend_score(rank: int | None, list_size: int) -> float:
+    """#1 on TMDB's trending list -> 100, falling evenly to 0 past the end of the list."""
+    if not rank or list_size <= 0:
+        return 0.0
+    return round(100 * (1 - (rank - 1) / list_size), 1)
+
+
+def buzz_score(trakt: float, tmdb: float) -> float:
+    """Average of the two, so a title needs to be hot on both to score high;
+    hot on only one source gets about half credit."""
+    return round((trakt + tmdb) / 2, 1)
 
 
 def fresh_score(new_date: str | None, window: int, ref: dt.date) -> float:
@@ -376,20 +404,24 @@ def new_date_for(t: dict, seen: dict, baseline: str | None, window: int, ref: dt
     return max(candidates).isoformat() if candidates else None
 
 
-def add_scores(titles: dict, watchers: dict, netflix_ranks: dict, seen: dict, baseline, cfg) -> None:
+def add_scores(titles: dict, watchers: dict, tmdb_trend: dict, netflix_ranks: dict, seen: dict, baseline, cfg) -> None:
     rk = cfg["ranking"]
     ref = today()
     rated = [t["imdb"] for t in titles.values() if t.get("imdb")]
     mean = sum(rated) / len(rated) if rated else 6.8
-    max_w = max(watchers.values(), default=0)
+    # scaled separately for movies and TV: Trakt movie audiences are much smaller
+    max_w = {k: max((w for key, w in watchers.items() if kind_of(key) == k), default=0) for k in ("movie", "tv")}
+    list_size = {k: max((r for key, r in tmdb_trend.items() if kind_of(key) == k), default=0) for k in ("movie", "tv")}
     for t in titles.values():
         t["watchers"] = watchers.get(t["id"], 0)
+        t["tmdb_trend_rank"] = tmdb_trend.get(t["id"])
         t["netflix_rank"] = netflix_ranks.get(t["id"])
         t["new_date"] = new_date_for(t, seen, baseline, rk["new_window_days"], ref)
         t["scores"] = {
             "audience": audience_score(t.get("imdb"), t.get("imdb_votes"), t["type"], mean, rk),
             "critic": critic_score(t.get("rt"), t.get("mc")),
-            "buzz": buzz_score(t["watchers"], max_w),
+            "buzz": buzz_score(trakt_score(t["watchers"], max_w[t["type"]]),
+                               tmdb_trend_score(t["tmdb_trend_rank"], list_size[t["type"]])),
             "fresh": fresh_score(t["new_date"], rk["new_window_days"], ref),
         }
 
@@ -401,8 +433,8 @@ def build_rows(titles: dict, netflix: list[dict], cfg) -> dict:
     pop = lambda t: t.get("popularity") or 0
     sc = lambda t, k: t["scores"][k]
 
-    trending = sorted((t for t in ts if t["watchers"] >= rk["trending_min_watchers"] and t["services"]),
-                      key=lambda t: (-t["watchers"], -pop(t)))
+    trending = sorted((t for t in ts if t["services"] and (t["watchers"] >= rk["trending_min_watchers"] or t.get("tmdb_trend_rank"))),
+                      key=lambda t: (-sc(t, "buzz"), -t["watchers"], -pop(t)))
     audience = sorted((t for t in ts if sc(t, "audience") is not None and t["services"]),
                       key=lambda t: (-sc(t, "audience"), -(t.get("imdb_votes") or 0)))
 
@@ -469,6 +501,13 @@ def run(mode: str = "auto") -> dict:
     # 1. Trakt: what people are watching right now (every run)
     watchers = trakt_trending(trakt_key, rf["trakt_trending_limit"])
     log(f"trakt trending: {len(watchers)}")
+    try:
+        tmdb_trend = tmdb.trending(rf.get("tmdb_trending_pages", 5))
+    except Exception as e:  # keep going on Trakt alone
+        log(f"warning: TMDB trending unavailable: {e}")
+        tmdb_trend = {}
+    log(f"tmdb trending: {len(tmdb_trend)}")
+    trending_keys = set(watchers) | set(tmdb_trend)
 
     netflix_week = old.get("netflix_week")
     netflix_rows = (old.get("rows") or {}).get("netflix", [])
@@ -492,8 +531,8 @@ def run(mode: str = "auto") -> dict:
                         pool.update(key_for(kind, i) for i in tmdb.discover(kind, ids, p, **params))
                     except Exception as e:
                         log(f"warning: discover {s['key']} {kind} {params}: {e}")
-        pool.update(watchers)
-        log(f"pool from discover + trakt: {len(pool)}")
+        pool.update(trending_keys)
+        log(f"pool from discover + trending: {len(pool)}")
 
         # 3. Netflix official Top 10 (best effort)
         nf_items = []
@@ -559,7 +598,7 @@ def run(mode: str = "auto") -> dict:
                     rec.setdefault(s, stamp)
     else:
         details = {k: dict(v) for k, v in (old.get("titles") or {}).items()}
-        missing = [k for k in watchers if k not in details]
+        missing = [k for k in trending_keys if k not in details]
         cached = {k: details_cache[k] for k in missing if k in details_cache}
         details.update(cached)
         details.update(fetch_details([k for k in missing if k not in cached]))
@@ -599,7 +638,7 @@ def run(mode: str = "auto") -> dict:
     nf_ids = {r["id"] for r in netflix_rows}
     titles = {k: d for k, d in details.items() if d["services"] or k in nf_ids}
     netflix_ranks = {r["id"]: r["rank"] for r in netflix_rows}
-    add_scores(titles, watchers, netflix_ranks, seen_cache["seen"], seen_cache.get("baseline"), cfg)
+    add_scores(titles, watchers, tmdb_trend, netflix_ranks, seen_cache["seen"], seen_cache.get("baseline"), cfg)
 
     stamp = now_iso()
     feed = {
