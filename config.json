@@ -23,7 +23,8 @@
   "row_tilt": {
     "min_imdb_votes": 20000,
     "audience_recency": 0.35,
-    "critics_recency": 0.25
+    "critics_recency": 0.25,
+    "trending_min_imdb_votes": 5000
   },
 
   "ranking": {

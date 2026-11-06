@@ -168,6 +168,7 @@
       .map((t) => ({ t, s: (1 - w) * t.scores[key] + w * recency(t).score }))
       .sort((a, b) => b.s - a.s)
       .map((x) => x.t);
+    const trendMin = tilt.trending_min_imdb_votes ?? 5000;
     const tiltNote = (w) => `tilted ${Math.round(w * 100)}% toward recent releases (${fmtCount(tilt.min_imdb_votes)}+ IMDb votes)`;
     const defs = [
       {
@@ -179,8 +180,8 @@
         meta: (t) => metaBest(t),
       },
       {
-        key: "trending", title: "Trending now", source: "Trakt watchers + TMDB trending: hot on both ranks highest",
-        items: from(feed.rows.trending),
+        key: "trending", title: "Trending now", source: `Trakt watchers + TMDB trending: hot on both ranks highest (${fmtCount(trendMin)}+ IMDb votes)`,
+        items: from(feed.rows.trending).filter((t) => (t.imdb_votes || 0) >= trendMin),
         meta: (t) => [t.watchers > 0 && `${fmtCount(t.watchers)} watching`, t.tmdb_trend_rank && `TMDB #${t.tmdb_trend_rank}`].filter(Boolean).join(" · "),
       },
       {
@@ -441,6 +442,7 @@
         <span class="dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${esc(s.color)}"></span>${esc(s.name)}</label>`).join("");
     renderGenres();
     renderRatings();
+    renderHow();
     showLastBackup();
     if (!$("#settings").open) showSheet($("#settings"));
   }
@@ -480,6 +482,47 @@
     renderGenres();
     renderWeights();
     renderRows();
+  }
+
+  // ---------------------------------------------------------------- how it's calculated
+  /* Plain-language explanations, built from the live settings in config.json. */
+  function renderHow() {
+    const w = feed.weights;
+    const t = feed.row_tilt || { min_imdb_votes: 20000, audience_recency: 0.35, critics_recency: 0.25 };
+    const p = (x) => `${Math.round(x * 100)}%`;
+    const votes = fmtCount(t.min_imdb_votes);
+    const trendVotes = fmtCount(t.trending_min_imdb_votes ?? 5000);
+    const items = [
+      ["Top picks for you", `
+        <p>Every title on your services gets a score from 0 to 100 for each signal below, and the weights combine them into a <b>match score</b>: ${list(Object.keys(w).map((k) => `${(SIGNALS[k] || { name: k }).name} ${p(w[k])}`))}.</p>
+        <p>If a title is missing a signal (no critic reviews, or you haven't rated anything yet), that signal is skipped for that title and the others are scaled up to fill the gap. Titles you've rated are left out, since you've likely seen them.</p>
+        <p>Open any title and scroll to <b>Why this pick</b> to see its exact numbers.</p>`],
+      ["Trending now", `
+        <p>The average of two scores, so a title needs to be popular on both to rank high:</p>
+        <ul><li><b>Trakt:</b> how many Trakt users are watching it right now. 10 vs 100 watchers counts as much as 100 vs 1,000.</li>
+        <li><b>TMDB:</b> its position on TMDB's daily trending list (#1 scores 100).</li></ul>
+        <p>Movies and TV are scaled separately, so smaller movie audiences aren't compared with TV's. Only titles with ${trendVotes}+ IMDb votes are shown. Updated every 2 hours.</p>`],
+      ["Top rated by audiences", `
+        <p><b>${p(1 - t.audience_recency)} IMDb rating + ${p(t.audience_recency)} "New &amp; recent"</b>, among titles with ${votes}+ IMDb votes.</p>
+        <p>The IMDb rating is adjusted for vote count: titles with few votes are pulled toward the average, so a handful of 10/10 votes can't top the list.</p>`],
+      ["Critics' favorites", `
+        <p><b>${p(1 - t.critics_recency)} critic score + ${p(t.critics_recency)} "New &amp; recent"</b>, among titles with ${votes}+ IMDb votes.</p>
+        <p>The critic score is the average of Rotten Tomatoes (critics, not audience) and Metacritic, from OMDb. Titles with neither are left out.</p>`],
+      ["New on your services", `
+        <p>Titles from the last 30 days, newest first: new movies, new seasons of shows, and titles that just arrived on one of your services. Streaming availability comes from TMDB, provided by JustWatch.</p>`],
+      ["Netflix Top 10", `
+        <p>Netflix's own official list of its most-watched shows and films in the US, published weekly. Shown as-is and not used in any ranking, since other services don't publish equivalent numbers.</p>`],
+      ["Signal: Your taste", `
+        <p>Starts at 50 (neutral). Each 👍 on a title raises its genres and each 👎 lowers them. A genre you set in <b>Genres you like</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you disliked a drop.</p>
+        <p>Not counted until you rate something or pick a genre.</p>`],
+      ["Signal: New & recent", `
+        <p>Full credit (100) for titles released or premiered in the last year, fading to 0 at 5 years old. A new season of an older show counts half. Arriving on a service in the last 30 days counts fully.</p>`],
+      ["Signal: Audience, Critics, Trending", `
+        <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the same blended score as the Trending now row.</p>`],
+      ["When data updates", `
+        <p>Trending numbers refresh every 2 hours. Everything else (what's on each service, ratings, Netflix Top 10) refreshes about once a day. Critic scores fill in gradually because of OMDb's daily limit. The time at the top of the app shows the last update.</p>`],
+    ];
+    $("#how").innerHTML = items.map(([title, body]) => `<details><summary>${esc(title)}</summary><div class="how-body">${body}</div></details>`).join("");
   }
 
   // ---------------------------------------------------------------- weights

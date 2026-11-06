@@ -216,6 +216,15 @@ body:has(dialog[open]) { overflow: hidden; }
 .backup-status.ok { color: var(--up); }
 .backup-status.err { color: var(--down); }
 
+.how details { border-bottom: 1px solid var(--line); }
+.how summary { padding: 11px 0; font-size: 14.5px; font-weight: 600; cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
+.how summary::-webkit-details-marker { display: none; }
+.how summary::after { content: "+"; color: var(--muted); font-weight: 400; font-size: 18px; line-height: 1; }
+.how details[open] summary::after { content: "–"; }
+.how-body { padding: 0 0 12px; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+.how-body p { margin: 0 0 8px; }
+.how-body ul { margin: 0 0 8px; padding-left: 18px; }
+.how-body b { color: var(--text); font-weight: 600; }
 .sources { margin: 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
 .sources b { color: var(--text); font-weight: 600; }
 .attribution { margin-top: 12px; font-size: 12px; color: var(--muted); }
