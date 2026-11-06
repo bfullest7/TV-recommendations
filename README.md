@@ -59,7 +59,7 @@ In this repository: **Settings → Secrets and variables → Actions → New rep
 
 **Actions → Refresh data and publish app → Run workflow**, mode `full`. It takes a few minutes. After that it runs on its own every 2 hours.
 
-The app is then at **https://bfullest7.github.io/tv-recommendations/**.
+The app is then at **https://bfullest7.github.io/TV-recommendations/**.
 
 The free OMDb key allows 1,000 lookups a day, so critic scores fill in over the first 2 days.
 
@@ -70,6 +70,8 @@ Open the link, then:
 - **Android (Chrome)**: ⋮ menu → Add to Home screen.
 
 Share the same link with friends; each person picks their own services and gives their own thumbs.
+
+Ratings live only on the phone. To keep them safe, use **Settings → Back up your ratings → Save a backup**, and **Restore a backup** on a new phone. On iPhone, the home-screen app and Safari keep separate settings, so use one or the other.
 
 ## Changing things
 

@@ -57,6 +57,17 @@
       </section>
 
       <section>
+        <h3>Back up your ratings</h3>
+        <p class="hint">Saves your services and ratings to a small file. Keep it in Files, iCloud Drive or an email to yourself, and restore it on a new phone or after clearing your browser.</p>
+        <div class="backup-btns">
+          <button id="backup-save" class="secondary-btn">Save a backup</button>
+          <button id="backup-restore" class="secondary-btn">Restore a backup</button>
+          <input id="backup-file" type="file" accept=".json,application/json" hidden>
+        </div>
+        <p id="backup-status" class="hint backup-status" role="status"></p>
+      </section>
+
+      <section>
         <h3>Where the data comes from</h3>
         <ul class="sources">
           <li><b>Trending now</b>: Trakt, people watching right now</li>

@@ -55,6 +55,7 @@ class FakeHttp:
             rows = ["country_name\tcountry_iso2\tweek\tcategory\tweekly_rank\tshow_title\tseason_title\tcumulative_weeks_in_top_10",
                     "United States\tUS\t2026-11-01\tTV\t1\tWednesdayish\tWednesdayish: Season 2\t3",
                     "United States\tUS\t2026-11-01\tFilms\t1\tGreat Movie\t\t2",
+                    "United States\tUS\t2026-11-01\tTV\t4\tWednesdayish\tWednesdayish: Season 1\t9",
                     "United States\tUS\t2026-10-25\tTV\t1\tOld Week Show\t\t1",
                     "Canada\tCA\t2026-11-01\tTV\t1\tSomething Else\t\t1"]
             return "\n".join(rows).encode()

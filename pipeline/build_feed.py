@@ -527,7 +527,8 @@ def run(mode: str = "auto") -> dict:
                         nf_map[mk] = k
                 if k and k not in details:
                     details.update(fetch_details([k]))
-                if k and k in details:
+                # Netflix ranks each season separately; keep a show once, at its best rank
+                if k and k in details and all(r["id"] != k for r in netflix_rows):
                     netflix_rows.append({"id": k, "rank": it["rank"], "kind": it["kind"], "season": it["season"]})
 
         # 4. IMDb ratings (full dataset, once a day)

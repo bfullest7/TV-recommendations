@@ -8,7 +8,8 @@
   "use strict";
 
   const IMG = "https://image.tmdb.org/t/p/";
-  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", filter: "wtw.filter" };
+  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", filter: "wtw.filter", lastBackup: "wtw.lastBackup" };
+  const BACKUP_APP = "what-to-watch";
 
   let feed = null;
   let myServices = [];
@@ -245,7 +246,8 @@
       <label><input type="checkbox" value="${esc(s.key)}" ${myServices.includes(s.key) ? "checked" : ""}>
         <span class="dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${esc(s.color)}"></span>${esc(s.name)}</label>`).join("");
     renderRatings();
-    showSheet($("#settings"));
+    showLastBackup();
+    if (!$("#settings").open) showSheet($("#settings"));
   }
 
   function renderRatings() {
@@ -253,6 +255,63 @@
     $("#ratings").innerHTML = items.length
       ? items.map(([id, r]) => `<li><span>${r.v > 0 ? "👍" : "👎"}</span><span class="t">${esc(r.title)}</span><button data-unrate="${esc(id)}" aria-label="Remove rating for ${esc(r.title)}">✕</button></li>`).join("")
       : `<li class="none">No ratings yet. Open any title and tap 👍 or 👎.</li>`;
+  }
+
+  // ---------------------------------------------------------------- backup
+  function backupStatus(text, kind = "") {
+    const el = $("#backup-status");
+    el.textContent = text;
+    el.className = `hint backup-status ${kind}`;
+  }
+
+  function showLastBackup() {
+    const last = load(STORE.lastBackup, null);
+    const n = Object.keys(thumbs).length;
+    backupStatus(last
+      ? `Last backup: ${new Date(last).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}.`
+      : n ? `No backup yet. You have ${n} rating${n === 1 ? "" : "s"} saved only on this phone.` : "");
+  }
+
+  async function saveBackup() {
+    const data = { app: BACKUP_APP, version: 1, saved_at: new Date().toISOString(), services: myServices, thumbs };
+    const name = `what-to-watch-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    const file = new File([JSON.stringify(data, null, 1)], name, { type: "application/json" });
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        // iPhone/Android: opens the share sheet (Save to Files, email, etc.)
+        await navigator.share({ files: [file], title: "What to Watch backup" });
+      } else {
+        const url = URL.createObjectURL(file);
+        const a = Object.assign(document.createElement("a"), { href: url, download: name });
+        document.body.append(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+      }
+      save(STORE.lastBackup, data.saved_at);
+      showLastBackup();
+    } catch (e) {
+      if (e && e.name === "AbortError") return; // share sheet closed without saving
+      backupStatus("Couldn't save the backup. Please try again.", "err");
+    }
+  }
+
+  async function restoreBackup(file) {
+    try {
+      const data = JSON.parse(await file.text());
+      if (!data || data.app !== BACKUP_APP || typeof data.thumbs !== "object") throw new Error("not a backup");
+      const valid = Object.entries(data.thumbs).filter(([, r]) => r && (r.v === 1 || r.v === -1) && r.title);
+      for (const [id, r] of valid) thumbs[id] = r;
+      const known = (data.services || []).filter((k) => svcInfo(k));
+      myServices = [...new Set([...myServices, ...known])];
+      save(STORE.thumbs, thumbs);
+      save(STORE.services, myServices);
+      openSettings();
+      render();
+      backupStatus(`Restored ${valid.length} rating${valid.length === 1 ? "" : "s"} and ${known.length} service${known.length === 1 ? "" : "s"}.`, "ok");
+    } catch {
+      backupStatus("That file isn't a What to Watch backup.", "err");
+    }
   }
 
   function showSheet(d) {
@@ -295,6 +354,13 @@
       save(STORE.thumbs, thumbs);
       renderRatings();
       renderRows();
+    });
+    $("#backup-save").addEventListener("click", saveBackup);
+    $("#backup-restore").addEventListener("click", () => $("#backup-file").click());
+    $("#backup-file").addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (f) restoreBackup(f);
+      e.target.value = "";
     });
     for (const d of document.querySelectorAll("dialog")) {
       d.addEventListener("click", (e) => {
