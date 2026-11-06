@@ -126,12 +126,12 @@ body:has(dialog[open]) { overflow: hidden; }
 .d-top { display: flex; gap: 14px; }
 .d-top .poster { width: 110px; flex: none; }
 .d-info { min-width: 0; flex: 1; }
-.d-info h2 { padding-right: 36px; }
+.d-info h2 { }
 .d-sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
 .d-services { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .svc { padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: #fff; }
 .svc.not-mine { background: var(--surface-2) !important; color: var(--muted); font-weight: 500; }
-.d-close { position: sticky; top: 12px; float: right; margin: 12px 0 0 12px; z-index: 2; background: var(--surface); }
+.d-head-title { font-weight: 600; font-size: 15px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .d-top { padding-top: 16px; }
 
 .scores { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin-top: 16px; }
@@ -164,6 +164,18 @@ body:has(dialog[open]) { overflow: hidden; }
 .ratings li span.t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ratings button { background: none; border: 0; color: var(--muted); padding: 4px 8px; }
 .ratings .none { color: var(--muted); }
+
+.why { margin-top: 22px; padding-top: 4px; border-top: 1px solid var(--line); }
+.why-text { margin: 4px 0 12px; font-size: 14.5px; line-height: 1.5; }
+.why-table { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.why-table th { text-align: right; font-weight: 600; color: var(--muted); font-size: 12px; padding: 0 0 6px; }
+.why-table td { text-align: right; padding: 7px 0; border-top: 1px solid var(--line); }
+.why-table th:first-child, .why-table td:first-child { text-align: left; }
+.why-table td:not(:first-child), .why-table th:not(:first-child) { padding-left: 10px; white-space: nowrap; }
+.why-table tr.skip td { color: var(--muted); }
+.why-table tr.skip td + td { text-align: right; font-style: italic; }
+.why-table tfoot td { font-weight: 700; font-size: 15px; border-top: 2px solid var(--line); }
+.why + .hint, .why .hint { margin-top: 8px; font-size: 12px; }
 
 .weights { list-style: none; margin: 0; padding: 0; }
 .weights li { padding: 7px 0; }

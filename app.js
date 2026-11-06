@@ -60,13 +60,40 @@
       for (const g of r.genres || []) { aff[g] = (aff[g] || 0) + r.v; n[g] = (n[g] || 0) + 1; }
       for (const id of r.recs || []) recs[id] = (recs[id] || 0) + r.v;
     }
-    return (t) => {
+    const score = (t) => {
       const gs = t.genres || [];
       // Sum (not average) so one strongly liked genre is enough to lift a title.
       const genre = Math.max(-1, Math.min(1, gs.reduce((sum, g) => sum + (aff[g] || 0) / ((n[g] || 0) + 1), 0)));
       const rec = Math.max(-1, Math.min(1, (recs[t.id] || 0) / 2));
       return Math.max(0, Math.min(100, 50 + 45 * genre + 25 * rec));
     };
+    // What drove the taste score, for "Why this pick"
+    score.explain = (t) => {
+      const gs = t.genres || [];
+      const similar = (v) => Object.values(thumbs).filter((r) => r.v === v && (r.recs || []).includes(t.id)).map((r) => r.title);
+      return {
+        likedGenres: gs.filter((g) => (aff[g] || 0) > 0),
+        dislikedGenres: gs.filter((g) => (aff[g] || 0) < 0),
+        likedSimilar: similar(1),
+        dislikedSimilar: similar(-1),
+      };
+    };
+    return score;
+  }
+
+  /* Each signal's score, its weight for this title (after skipping missing
+   * signals), and the points it adds to the match score. */
+  function breakdown(t, taste) {
+    const w = feed.weights;
+    const scores = { ...t.scores, taste: taste ? taste(t) : null };
+    const present = Object.keys(w).filter((k) => scores[k] !== null && scores[k] !== undefined);
+    const wsum = present.reduce((s, k) => s + w[k], 0) || 1;
+    const parts = Object.keys(w).map((k) => {
+      const has = present.includes(k);
+      const weight = has ? w[k] / wsum : 0;
+      return { k, score: has ? scores[k] : null, weight, pts: has ? scores[k] * weight : 0 };
+    });
+    return { parts, total: parts.reduce((s, p) => s + p.pts, 0) };
   }
 
   /* Weighted average of the signals a title has. Missing signals (no IMDb
@@ -212,7 +239,10 @@
     ].filter(Boolean);
     const services = t.services.map(svcInfo).filter(Boolean);
     $("#details-body").innerHTML = `
-      <button class="icon-btn close d-close" data-close aria-label="Close">✕</button>
+      <div class="sheet-head d-head">
+        <span class="d-head-title">${esc(t.title)}</span>
+        <button class="icon-btn close" data-close aria-label="Close">✕</button>
+      </div>
       <div class="d-top">
         <div class="poster">${t.poster ? `<img src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}</div>
         <div class="d-info">
@@ -227,9 +257,100 @@
         <button class="thumb up" data-thumb="1" aria-pressed="${thumb > 0}">👍 Like</button>
         <button class="thumb down" data-thumb="-1" aria-pressed="${thumb < 0}">👎 Not for me</button>
       </div>
-      <a class="watch-link" href="${esc(t.link)}" target="_blank" rel="noopener">Where to watch</a>`;
+      <a class="watch-link" href="${esc(t.link)}" target="_blank" rel="noopener">Where to watch</a>
+      ${whyThisPick(t)}`;
     $("#details").dataset.id = id;
     showSheet($("#details"));
+  }
+
+  // ---------------------------------------------------------------- why this pick
+  const list = (xs) => (xs.length < 2 ? xs.join("") : xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1]);
+
+  /* Plain-language phrase for a signal that helped (good) or held a title back. */
+  function phrase(k, p, t, taste, good) {
+    const s = p.score;
+    if (k === "audience") {
+      const votes = `${t.imdb.toFixed(1)} from ${fmtCount(t.imdb_votes || 0)} votes`;
+      if (good) return `its ${s >= 80 ? "excellent" : s >= 65 ? "strong" : "solid"} IMDb rating (${votes})`;
+      if ((t.imdb_votes || 0) < 2000) return `having few IMDb votes so far (${votes})`;
+      return `${s < 25 ? "a low" : "a middling"} IMDb rating (${votes})`;
+    }
+    if (k === "critic") {
+      const bits = [t.rt != null && `Rotten Tomatoes ${t.rt}%`, t.mc != null && `Metacritic ${t.mc}`].filter(Boolean).join(", ");
+      return good ? `${s >= 80 ? "great" : "good"} reviews from critics (${bits})` : `mixed reviews from critics (${bits})`;
+    }
+    if (k === "buzz") return `${s >= 80 ? "lots of people" : "people"} watching it right now (${fmtCount(t.watchers)} on Trakt)`;
+    if (k === "fresh") {
+      const svc = svcInfo(t.services.find((x) => activeServices().includes(x)) || t.services[0]);
+      const season = t.type === "tv" && t.latest_air === t.new_date && t.release !== t.new_date;
+      return `${season ? "a new season" : "being new"}${svc ? ` on ${svc.name}` : ""} (${fmtDate(t.new_date)})`;
+    }
+    if (k === "taste") {
+      const e = taste.explain(t);
+      if (good) {
+        if (e.likedSimilar.length) return `being similar to ${list(e.likedSimilar.slice(0, 2))}, which you liked`;
+        if (e.likedGenres.length) { const g = e.likedGenres.slice(0, 2); return `being ${list(g)}, ${g.length > 1 ? "genres" : "a genre"} you've liked`; }
+        return "matching your ratings";
+      }
+      if (e.dislikedSimilar.length) return `being similar to ${list(e.dislikedSimilar.slice(0, 2))}, which you didn't like`;
+      if (e.dislikedGenres.length) { const g = e.dislikedGenres.slice(0, 2); return `being ${list(g)}, ${g.length > 1 ? "genres" : "a genre"} you've rated down`; }
+      return "not matching your ratings";
+    }
+    return k;
+  }
+
+  function whyThisPick(t) {
+    const taste = tasteModel();
+    const { parts, total } = breakdown(t, taste);
+    const match = Math.round(total);
+    const has = parts.filter((p) => p.score !== null);
+
+    let lead;
+    if (thumbs[t.id]) lead = `You've rated this, so it's left out of your Top picks. Its match score of ${match} comes`;
+    else if (!visible(t)) lead = `This isn't on ${filter === "all" ? "your services" : "the service you're viewing"}, so it's not in your Top picks. Its match score of ${match} comes`;
+    else {
+      const picks = topPicks();
+      const rank = picks.findIndex((x) => x.id === t.id) + 1;
+      const shown = feed.row_length || 30;
+      lead = rank <= shown ? `#${rank} in your Top picks` : `#${rank} of ${picks.length} in your Top picks (below the ${shown} shown)`;
+    }
+
+    // Helped: signals scoring 60+, biggest contribution first. Held back: a weak
+    // audience, critic or taste score with real weight (trending and new are
+    // bonuses, so missing out on them isn't called a drawback).
+    let helped = has.filter((p) => p.score >= 60).sort((a, b) => b.pts - a.pts);
+    // the top two, plus a third if it adds nearly as much as the second
+    helped = helped.slice(0, helped.length > 2 && helped[2].pts >= 0.9 * helped[1].pts ? 3 : 2);
+    const held = has.filter((p) => ["audience", "critic", "taste"].includes(p.k) && p.score < 45 && p.weight >= 0.15)
+      .sort((a, b) => b.weight * (100 - b.score) - a.weight * (100 - a.score))[0];
+
+    let sentence = lead;
+    const ranked = !lead.endsWith(" comes");
+    if (helped.length) sentence += `${ranked ? ", mostly because of" : " mostly from"} ${list(helped.map((p) => phrase(p.k, p, t, taste, true)))}`;
+    else {
+      if (!ranked) sentence = sentence.replace(/ Its match score of (\d+) comes$/, " Its match score is $1");
+      sentence += ". None of its scores stand out";
+    }
+    if (held) sentence += `${helped.length ? ", held back by" : ". It's held back by"} ${phrase(held.k, held, t, taste, false)}`;
+    sentence += ".";
+    const missing = parts.filter((p) => p.score === null && p.k !== "taste").map((p) => (p.k === "critic" ? "critic score" : "IMDb rating"));
+    if (missing.length) sentence += ` It has no ${list(missing)}, so ${missing.length > 1 ? "those were" : "that was"} skipped.`;
+
+    const label = { audience: "Audience (IMDb)", taste: "Your thumbs", buzz: "Trending (Trakt)", critic: "Critics", fresh: "New on streaming" };
+    const rows = parts.map((p) => p.score === null
+      ? `<tr class="skip"><td>${label[p.k]}</td><td colspan="3">${p.k === "taste" ? "No ratings yet" : "No score, skipped"}</td></tr>`
+      : `<tr><td>${label[p.k]}</td><td>${Math.round(p.score)}</td><td>${Math.round(p.weight * 100)}%</td><td>${p.pts.toFixed(1)}</td></tr>`).join("");
+    return `
+      <section class="why">
+        <h3>Why this pick</h3>
+        <p class="why-text">${esc(sentence)}</p>
+        <table class="why-table">
+          <thead><tr><th>Signal</th><th>Score</th><th>Weight</th><th>Points</th></tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr><td>Match score</td><td></td><td></td><td>${match}</td></tr></tfoot>
+        </table>
+        <p class="hint">Scores are out of 100. Points = score × weight; the points add up to the match score that ranks Top picks.</p>
+      </section>`;
   }
 
   function setThumb(id, v) {
@@ -237,7 +358,9 @@
     if (thumbs[id]?.v === v) delete thumbs[id];
     else thumbs[id] = { v, title: t.title, genres: t.genres, recs: t.recs, type: t.type };
     save(STORE.thumbs, thumbs);
-    $("#details").querySelectorAll("[data-thumb]").forEach((b) => b.setAttribute("aria-pressed", String(thumbs[id]?.v === Number(b.dataset.thumb))));
+    const d = $("#details"), y = d.scrollTop;
+    openDetails(id); // redraw so "Why this pick" reflects the new rating
+    d.scrollTop = y;
     renderRows();
   }
 
@@ -356,6 +479,7 @@
   }
 
   function showSheet(d) {
+    if (d.open) return;
     if (typeof d.showModal === "function") d.showModal();
     else d.setAttribute("open", "");
   }
