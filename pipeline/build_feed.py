@@ -628,7 +628,7 @@ def run(mode: str = "auto") -> dict:
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--mode", choices=["auto", "full", "trending"], default="auto")
+    ap.add_argument("--mode", type=str.lower, choices=["auto", "full", "trending"], default="auto")
     run(ap.parse_args().mode)
 
 

@@ -6,8 +6,10 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "auto (default), full, or trending"
-        default: auto
+        description: "What to refresh"
+        type: choice
+        options: [full, auto, trending]
+        default: full
         required: false
   push:
     branches: [main]
@@ -29,9 +31,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
