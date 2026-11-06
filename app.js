@@ -160,6 +160,15 @@
   function rowDefs() {
     const T = feed.titles;
     const from = (ids) => ids.map((id) => T[id]).filter(visible);
+    // Audience and critics rows lean toward recent titles: score = (1 - w) x rating
+    // + w x "New & recent", among titles with enough IMDb votes to be well known.
+    const tilt = feed.row_tilt || { min_imdb_votes: 20000, audience_recency: 0.35, critics_recency: 0.25 };
+    const tilted = (ids, key, w) => from(ids)
+      .filter((t) => (t.imdb_votes || 0) >= tilt.min_imdb_votes && t.scores[key] != null)
+      .map((t) => ({ t, s: (1 - w) * t.scores[key] + w * recency(t).score }))
+      .sort((a, b) => b.s - a.s)
+      .map((x) => x.t);
+    const tiltNote = (w) => `tilted ${Math.round(w * 100)}% toward recent releases (${fmtCount(tilt.min_imdb_votes)}+ IMDb votes)`;
     const defs = [
       {
         key: "picks", title: "Top picks for you",
@@ -175,13 +184,13 @@
         meta: (t) => [t.watchers > 0 && `${fmtCount(t.watchers)} watching`, t.tmdb_trend_rank && `TMDB #${t.tmdb_trend_rank}`].filter(Boolean).join(" · "),
       },
       {
-        key: "audience", title: "Top rated by audiences", source: "IMDb ratings, adjusted for vote count",
-        items: from(feed.rows.audience),
+        key: "audience", title: "Top rated by audiences", source: `IMDb ratings, ${tiltNote(tilt.audience_recency)}`,
+        items: tilted(feed.rows.audience, "audience", tilt.audience_recency),
         meta: (t) => `IMDb ${t.imdb.toFixed(1)} · ${fmtCount(t.imdb_votes)} votes`,
       },
       {
-        key: "critics", title: "Critics' favorites", source: "Rotten Tomatoes and Metacritic (via OMDb)",
-        items: from(feed.rows.critics),
+        key: "critics", title: "Critics' favorites", source: `Rotten Tomatoes and Metacritic, ${tiltNote(tilt.critics_recency)}`,
+        items: tilted(feed.rows.critics, "critic", tilt.critics_recency),
         meta: (t) => [t.rt != null && `RT ${t.rt}%`, t.mc != null && `MC ${t.mc}`].filter(Boolean).join(" · "),
       },
       {
@@ -668,6 +677,7 @@
     try {
       const cfg = await (await fetch("config.json", { cache: "no-cache" })).json();
       if (cfg && cfg.weights) data.weights = cfg.weights;
+      if (cfg && cfg.row_tilt) data.row_tilt = cfg.row_tilt;
     } catch { /* keep the weights saved with the data */ }
     return data;
   }

@@ -8,8 +8,8 @@ A phone web app that shows the best things to stream right now on the services y
 |---|---|
 | Top picks for you | All the signals below, plus your 👍 / 👎 |
 | Trending now | Trakt watchers averaged with TMDB daily trending: titles hot on both rank highest |
-| Top rated by audiences | IMDb ratings, adjusted for vote count |
-| Critics' favorites | Rotten Tomatoes and Metacritic (via OMDb) |
+| Top rated by audiences | IMDb ratings (adjusted for vote count), 65% rating + 35% "New & recent", titles with 20K+ IMDb votes |
+| Critics' favorites | Rotten Tomatoes and Metacritic (via OMDb), 75% critics + 25% "New & recent", titles with 20K+ IMDb votes |
 | New on your services | TMDB, with streaming availability from JustWatch |
 | Netflix Top 10 | Netflix's official weekly list (shown only, never used in rankings) |
 
@@ -75,7 +75,7 @@ Ratings live only on the phone. To keep them safe, use **Settings → Back up yo
 
 ## Changing things
 
-- **Services, weights, thresholds, refresh limits**: `config.json`.
+- **Services, weights, thresholds, refresh limits**: `config.json` (`row_tilt` sets how much the audience and critics rows lean toward recent releases).
 - **Refresh schedule**: the `cron` line in `.github/workflows/refresh.yml`.
 - **Tests**: `python -m unittest discover -s tests`.
 

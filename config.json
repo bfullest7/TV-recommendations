@@ -20,6 +20,12 @@
     "buzz":     0.10
   },
 
+  "row_tilt": {
+    "min_imdb_votes": 20000,
+    "audience_recency": 0.35,
+    "critics_recency": 0.25
+  },
+
   "ranking": {
     "imdb_min_votes_movie": 5000,
     "imdb_min_votes_tv": 2000,
