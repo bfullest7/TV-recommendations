@@ -97,14 +97,28 @@ h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
 .notice b { color: var(--text); }
 
 /* Sheets (details, settings) */
+/* The sheet is its own scroll area and never taller than the visible screen,
+   leaving room for the phone's status bar (clock, battery) at the top. */
 .sheet {
-  width: 100%; max-width: 560px; max-height: 92vh; margin: auto auto 0; padding: 0;
+  position: fixed; inset: auto 0 0 0;
+  width: 100%; max-width: 560px; margin: 0 auto; padding: 0;
+  max-height: calc(100vh - env(safe-area-inset-top) - 24px);
+  max-height: calc(100dvh - env(safe-area-inset-top) - 24px);
+  overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
   border: 0; border-radius: 16px 16px 0 0; background: var(--surface); color: var(--text);
 }
-@media (min-width: 700px) { .sheet { margin: auto; border-radius: 16px; } }
+@media (min-width: 700px) { .sheet { inset: 0; margin: auto; height: fit-content; border-radius: 16px; } }
 .sheet::backdrop { background: rgba(0,0,0,.6); }
-.sheet-body { padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); }
-.sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.sheet-body { padding: 0 16px calc(24px + env(safe-area-inset-bottom)); }
+.sheet-body > :first-child { margin-top: 16px; }
+/* Settings title and ✕ stay pinned at the top while scrolling */
+.sheet-head {
+  position: sticky; top: 0; z-index: 2; margin: 0 -16px; padding: 14px 16px 10px;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.sheet-body > .sheet-head:first-child { margin-top: 0; }
+body:has(dialog[open]) { overflow: hidden; }
 .sheet h2 { margin: 0; font-size: 20px; }
 .sheet h3 { margin: 22px 0 4px; font-size: 15px; }
 .hint { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
@@ -117,7 +131,8 @@ h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
 .d-services { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .svc { padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: #fff; }
 .svc.not-mine { background: var(--surface-2) !important; color: var(--muted); font-weight: 500; }
-.d-close { position: absolute; right: 12px; top: 12px; }
+.d-close { position: sticky; top: 12px; float: right; margin: 12px 0 0 12px; z-index: 2; background: var(--surface); }
+.d-top { padding-top: 16px; }
 
 .scores { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin-top: 16px; }
 .score { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; }
