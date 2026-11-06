@@ -14,8 +14,8 @@
 
   "weights": {
     "audience": 0.30,
-    "taste":    0.25,
-    "buzz":     0.20,
+    "taste":    0.30,
+    "buzz":     0.15,
     "critic":   0.15,
     "fresh":    0.10
   },

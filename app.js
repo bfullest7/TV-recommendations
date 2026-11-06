@@ -601,7 +601,14 @@
   async function fetchFeed() {
     const res = await fetch("data/feed.json", { cache: "no-cache" });
     if (!res.ok) throw new Error(res.status);
-    return res.json();
+    const data = await res.json();
+    // Weights come from config.json when available, so a change there takes
+    // effect as soon as it's published (not only after the next data refresh).
+    try {
+      const cfg = await (await fetch("config.json", { cache: "no-cache" })).json();
+      if (cfg && cfg.weights) data.weights = cfg.weights;
+    } catch { /* keep the weights saved with the data */ }
+    return data;
   }
 
   async function refresh() {
