@@ -27,11 +27,11 @@ Each signal is scored 0–100 and combined with these weights (edit them in `con
 
 | Signal | Weight | How it's scored |
 |---|---|---|
-| Audience | 30% | IMDb weighted rating: titles with few votes are pulled toward the average (5,000 votes for movies, 2,000 for TV) |
 | Your taste | 30% | Your thumbs on titles plus genres you like or dislike in Settings (a genre set in Settings counts like two title thumbs), and TMDB's "more like this" for titles you rated |
-| Buzz | 15% | Trakt watchers right now, log-scaled |
+| Audience | 25% | IMDb weighted rating: titles with few votes are pulled toward the average (5,000 votes for movies, 2,000 for TV) |
+| New & recent | 20% | Full credit for titles released or premiered in the last year, fading to 0 at 5 years; a new season of an older show counts half; arriving on a service in the last 30 days counts fully |
 | Critics | 15% | Average of Rotten Tomatoes and Metacritic |
-| Freshness | 10% | New releases, new seasons, and titles newly added to a service, fading over 30 days |
+| Buzz | 10% | Trakt watchers right now, log-scaled |
 
 If a title is missing a signal (no critic score, or you haven't rated anything or picked any genres yet), that signal is skipped and the other weights scale up to fill the gap. Titles you've rated are left out of Top picks.
 

@@ -13,11 +13,11 @@
   ],
 
   "weights": {
-    "audience": 0.30,
+    "audience": 0.25,
     "taste":    0.30,
-    "buzz":     0.15,
+    "fresh":    0.20,
     "critic":   0.15,
-    "fresh":    0.10
+    "buzz":     0.10
   },
 
   "ranking": {

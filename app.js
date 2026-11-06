@@ -95,11 +95,33 @@
     return score;
   }
 
+  /* "New & recent" (0-100): full credit for titles released or premiered in
+   * the last year, fading to 0 at 5 years. A new season of an older show
+   * counts half. Arriving on a service in the last 30 days counts fully. */
+  const RECENT_FULL_DAYS = 365, RECENT_ZERO_DAYS = 5 * 365;
+  function ageScore(iso) {
+    if (!iso) return 0;
+    const days = (Date.now() - new Date(iso + "T12:00:00").getTime()) / 86400000;
+    if (days < 0) return 0;
+    if (days <= RECENT_FULL_DAYS) return 100;
+    return Math.max(0, 100 * (1 - (days - RECENT_FULL_DAYS) / (RECENT_ZERO_DAYS - RECENT_FULL_DAYS)));
+  }
+  function recency(t) {
+    const parts = {
+      release: ageScore(t.release),
+      season: t.type === "tv" && t.latest_air !== t.release ? 0.5 * ageScore(t.latest_air) : 0,
+      arrival: t.scores.fresh || 0,
+    };
+    const top = Object.keys(parts).reduce((a, b) => (parts[b] > parts[a] ? b : a));
+    return { score: Math.round(parts[top] * 10) / 10, why: top };
+  }
+  const signalScores = (t, taste) => ({ ...t.scores, fresh: recency(t).score, taste: taste ? taste(t) : null });
+
   /* Each signal's score, its weight for this title (after skipping missing
    * signals), and the points it adds to the match score. */
   function breakdown(t, taste) {
     const w = feed.weights;
-    const scores = { ...t.scores, taste: taste ? taste(t) : null };
+    const scores = signalScores(t, taste);
     const present = Object.keys(w).filter((k) => scores[k] !== null && scores[k] !== undefined);
     const wsum = present.reduce((s, k) => s + w[k], 0) || 1;
     const parts = Object.keys(w).map((k) => {
@@ -115,7 +137,7 @@
    * weights are scaled up to fill the gap. */
   function pickScore(t, taste) {
     const w = feed.weights;
-    const parts = { ...t.scores, taste: taste ? taste(t) : null };
+    const parts = signalScores(t, taste);
     let sum = 0, wsum = 0;
     for (const k of Object.keys(w)) {
       const v = parts[k];
@@ -308,9 +330,15 @@
     }
     if (k === "buzz") return `${s >= 80 ? "lots of people" : "people"} watching it right now (${fmtCount(t.watchers)} on Trakt)`;
     if (k === "fresh") {
-      const svc = svcInfo(t.services.find((x) => activeServices().includes(x)) || t.services[0]);
-      const season = t.type === "tv" && t.latest_air === t.new_date && t.release !== t.new_date;
-      return `${season ? "a new season" : "being new"}${svc ? ` on ${svc.name}` : ""} (${fmtDate(t.new_date)})`;
+      const r = recency(t).why;
+      const monthYear = (iso) => new Date(iso + "T12:00:00").toLocaleDateString(undefined, { month: "short", year: "numeric" });
+      if (r === "arrival") {
+        const svc = svcInfo(t.services.find((x) => activeServices().includes(x)) || t.services[0]);
+        const season = t.type === "tv" && t.latest_air === t.new_date && t.release !== t.new_date;
+        return `${season ? "a new season" : "being new"}${svc ? ` on ${svc.name}` : ""} (${fmtDate(t.new_date)})`;
+      }
+      if (r === "season") return `a recent season (${monthYear(t.latest_air)})`;
+      return `${t.type === "tv" ? "premiering" : "coming out"} recently (${monthYear(t.release)})`;
     }
     if (k === "taste") {
       const e = taste.explain(t);
@@ -364,7 +392,7 @@
     const missing = parts.filter((p) => p.score === null && p.k !== "taste").map((p) => (p.k === "critic" ? "critic score" : "IMDb rating"));
     if (missing.length) sentence += ` It has no ${list(missing)}, so ${missing.length > 1 ? "those were" : "that was"} skipped.`;
 
-    const label = { audience: "Audience (IMDb)", taste: "Your taste", buzz: "Trending (Trakt)", critic: "Critics", fresh: "New on streaming" };
+    const label = { audience: "Audience (IMDb)", taste: "Your taste", buzz: "Trending (Trakt)", critic: "Critics", fresh: "New & recent" };
     const rows = parts.map((p) => p.score === null
       ? `<tr class="skip"><td>${label[p.k]}</td><td colspan="3">${p.k === "taste" ? "No thumbs or genre likes yet" : "No score, skipped"}</td></tr>`
       : `<tr><td>${label[p.k]}</td><td>${Math.round(p.score)}</td><td>${Math.round(p.weight * 100)}%</td><td>${p.pts.toFixed(1)}</td></tr>`).join("");
@@ -446,7 +474,7 @@
     taste: { name: "Your taste", src: "Your 👍 and 👎 on titles, plus genres you like" },
     buzz: { name: "Trending", src: "Trakt, people watching right now" },
     critic: { name: "Critics", src: "Rotten Tomatoes and Metacritic" },
-    fresh: { name: "New on streaming", src: "New releases, new seasons, newly added" },
+    fresh: { name: "New & recent", src: "Released in the last few years; new seasons and new arrivals count too" },
   };
   const pct = (x) => `${Math.round(x * 100)}%`;
 
