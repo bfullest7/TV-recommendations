@@ -201,6 +201,16 @@
   }
 
   function renderRows() {
+    if (!myServices.length) {
+      $("#rows").innerHTML = `
+        <div class="notice welcome">
+          <b>Welcome to What to Watch!</b>
+          <p>See the best things to stream right now on the services you have: what's trending, top rated, critics' favorites, what's new, and picks just for you.</p>
+          <p>To get started, choose your streaming services.</p>
+          <button class="done-btn" data-open-settings>Pick your services</button>
+        </div>`;
+      return;
+    }
     const n = feed.row_length || 30;
     $("#rows").innerHTML = rowDefs().map((def) => `
       <section class="row" aria-labelledby="row-${def.key}">
@@ -215,6 +225,7 @@
   }
 
   function renderFilters() {
+    if (!myServices.length) { $("#filters").innerHTML = ""; return; }
     const chips = [{ key: "all", name: "All" }, ...myServices.map(svcInfo).filter(Boolean)];
     $("#filters").innerHTML = chips.map((s) => `
       <button class="chip" data-filter="${esc(s.key)}" aria-pressed="${filter === s.key}">
@@ -515,7 +526,7 @@
   }
 
   function goHome() {
-    if (!feed || !myServices.length) return; // first-time setup stays open
+    if (!feed) return;
     for (const d of document.querySelectorAll("dialog")) if (d.open) closeSheet(d);
     window.scrollTo({ top: 0 });
     for (const s of document.querySelectorAll(".scroller")) s.scrollLeft = 0;
@@ -542,6 +553,7 @@
       window.scrollTo({ top: 0 });
     });
     $("#rows").addEventListener("click", (e) => {
+      if (e.target.closest("[data-open-settings]")) return openSettings();
       const c = e.target.closest(".card");
       if (c) openDetails(c.dataset.id);
     });
@@ -635,10 +647,6 @@
     }
     myServices = myServices.filter((k) => svcInfo(k));
     render();
-    if (!myServices.length) {
-      $("#rows").innerHTML = `<div class="notice"><b>Welcome!</b><br>Pick your streaming services in Settings to get started.</div>`;
-      openSettings();
-    }
   }
 
   start();
