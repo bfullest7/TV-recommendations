@@ -324,7 +324,7 @@
     return `
       <section class="row" data-row="${def.key}" aria-labelledby="row-${def.key}">
         <div class="row-head">
-          <div class="row-title-line"><h2 id="row-${def.key}">${esc(def.title)}</h2>${def.key === "watchlist" ? `<button class="see-all" data-open-mylist>See all ›</button>` : ""}</div>
+          <div class="row-title-line"><div class="title-group"><h2 id="row-${def.key}">${esc(def.title)}</h2>${def.key === "picks" ? `<button class="row-info" data-how-picks aria-label="How Top picks work"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor"/></svg></button>` : ""}</div>${def.key === "watchlist" ? `<button class="see-all" data-open-mylist>See all ›</button>` : ""}</div>
           <p class="source">${esc(def.source)}</p>
         </div>
         ${def.items.length
@@ -783,6 +783,22 @@
     return days <= full ? 100 : Math.max(0, 100 * (1 - (days - full) / (zero - full)));
   };
   const ageText = (days) => (days % 365 === 0 ? `${days / 365} year${days === 365 ? "" : "s"}` : `${Math.round(days / 30)} months`);
+  /* How Top picks works: shown in Settings and on the full-screen page behind the
+     ⓘ next to "Top picks for you". The chart is filled in by renderWeights(). */
+  function picksHowHtml() {
+    return `
+        <p>Every title on your services gets a score from 0 to 100 for each signal, and these weights combine into a <b>match score</b>. These percentages shift as you rate titles and like genres.</p>
+        <ul class="weights js-weights"></ul>
+        <p class="weights-note js-weights-note"></p>
+        <p>If a title is missing a signal (for example, no critic reviews), that signal is skipped for that title and the others are scaled up to fill the gap. Titles you've marked watched or Not for me are left out, and so are titles with fewer than ${fmtCount(picksMinVotes())} IMDb votes, so brand-new or little-known titles with no real rating yet can't top the list.</p>
+        <p>Open any title and scroll to <b>Why this pick</b> to see its exact numbers.</p>`;
+  }
+  function openHowPicks() {
+    $("#howpicks-body").innerHTML = picksHowHtml();
+    renderWeights();
+    showSheet($("#howpicks"));
+    $("#howpicks").scrollTop = 0;
+  }
   function renderHow() {
     const w = feed.weights;
     const t = feed.row_tilt || { min_imdb_votes: 20000, audience_recency: 0.35, critics_recency: 0.35 };
@@ -790,12 +806,7 @@
     const votes = fmtCount(t.min_imdb_votes);
     const trendVotes = fmtCount(t.trending_min_imdb_votes ?? 5000);
     const items = [
-      ["Top picks for you", `
-        <p>Every title on your services gets a score from 0 to 100 for each signal, and these weights combine into a <b>match score</b>. These percentages shift as you rate titles and like genres.</p>
-        <ul id="weights" class="weights"></ul>
-        <p id="weights-note" class="weights-note"></p>
-        <p>If a title is missing a signal (for example, no critic reviews), that signal is skipped for that title and the others are scaled up to fill the gap. Titles you've marked watched or Not for me are left out, and so are titles with fewer than ${fmtCount(picksMinVotes())} IMDb votes, so brand-new or little-known titles with no real rating yet can't top the list.</p>
-        <p>Open any title and scroll to <b>Why this pick</b> to see its exact numbers.</p>`],
+      ["Top picks for you", picksHowHtml()],
       ["Trending now", `
         ${(() => {
           const r = t.trending_recency ?? 0.25, sh = t.trending_tmdb_share ?? 0.7;
@@ -850,12 +861,11 @@
   /* Shows the weights that apply to this viewer right now: until they rate
    * something or pick a genre, "Your taste" is skipped and the others are scaled up. */
   function renderWeights() {
-    if (!$("#weights")) return; // lives inside "How it's calculated"
     const w = feed.weights;
     const rated = hasTaste();
     const active = Object.keys(w).filter((k) => rated || k !== "taste");
     const total = active.reduce((s, k) => s + w[k], 0) || 1;
-    $("#weights").innerHTML = Object.keys(w).map((k) => {
+    const html = Object.keys(w).map((k) => {
       const on = active.includes(k);
       const share = on ? w[k] / total : 0;
       const s = SIGNALS[k] || { name: k, src: "" };
@@ -865,8 +875,10 @@
         <div class="w-bar"><span style="width:${(share * 100).toFixed(1)}%"></span></div>
       </li>`;
     }).join("");
-    $("#weights-note").textContent = rated ? ""
+    const note = rated ? ""
       : `Your taste will count for ${pct(w.taste / Object.values(w).reduce((a, b) => a + b, 0))} once you rate a title or like a genre; until then the other signals are scaled up to fill the gap.`;
+    for (const ul of document.querySelectorAll(".js-weights")) ul.innerHTML = html; // Settings and the Top picks page
+    for (const p of document.querySelectorAll(".js-weights-note")) p.textContent = note;
   }
 
   // ---------------------------------------------------------------- backup
@@ -981,6 +993,7 @@
     $("#rows").addEventListener("click", (e) => {
       if (e.target.closest("[data-open-settings]")) return openSettings();
       if (e.target.closest("[data-open-mylist]")) return openMyList();
+      if (e.target.closest("[data-how-picks]")) return openHowPicks();
       const c = e.target.closest(".card");
       if (c) openDetails(c.dataset.id);
     });

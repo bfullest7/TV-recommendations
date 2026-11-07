@@ -244,6 +244,9 @@ body:has(dialog[open]) { overflow: hidden; }
 
 /* "See all" on the Your watchlist row */
 .row-title-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.title-group { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.row-info { flex: none; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; background: none; color: var(--muted); }
+.how-body.howpicks-body { padding-top: 20px; }
 .see-all { flex: none; padding: 4px 0 4px 8px; border: 0; background: none; color: var(--muted); font-size: 14px; }
 
 /* Your list page: back arrow and title, two tabs, sort and filters, then posters three across */
