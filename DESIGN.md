@@ -72,7 +72,9 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - A watched TV series counts as unwatched again once a season premieres after the date it was marked watched, so the new season shows in the rows. Marking it watched again hides it until the next season.
 - "Not for me" (👎) titles are hidden from every row except "Your watchlist" and the Netflix Top 10. Search still finds them so the rating can be undone.
 - Search opens full screen on the page background, with the search box where the app title sits. It starts empty each time it's opened (viewing a result and coming back keeps the search). Settings and the detail screen are sheets that slide up over the home screen.
-- Changing services in Settings updates the home screen when Settings closes, so nothing flashes behind the sheet.
+- **Nothing moves while browsing.** Like, Not for me and Mark watched leave the title where it is. A title that will leave the row dims (watched also shows "✓ Watched"); liked titles look unchanged and stay in Top picks. The rows update at natural moments: reopening the app, coming back to it, changing a filter, or closing Settings.
+- Adding to or removing from the list updates "Your watchlist" right away, and the page shifts by the same height so what's on screen doesn't move.
+- Changes made in Settings (services, genre likes, restoring a backup) update the home screen when Settings closes, so nothing flashes behind the sheet.
 
 ## Checking a visual change
 

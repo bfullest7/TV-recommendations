@@ -179,7 +179,7 @@
     const taste = tasteModel();
     const min = picksMinVotes();
     const ranked = Object.values(feed.titles)
-      .filter((t) => visible(t) && !thumbs[t.id] && (t.imdb_votes || 0) >= min)
+      .filter((t) => visible(t) && (t.imdb_votes || 0) >= min)
       .map((t) => ({ t, s: pickScore(t, taste) }))
       .sort((a, b) => b.s - a.s);
     return ranked.map((x) => x.t);
@@ -316,8 +316,11 @@
         </div>`;
       return;
     }
+    $("#rows").innerHTML = rowDefs().map(rowHtml).join("");
+  }
+  function rowHtml(def) {
     const n = feed.row_length || 30;
-    $("#rows").innerHTML = rowDefs().map((def) => `
+    return `
       <section class="row" data-row="${def.key}" aria-labelledby="row-${def.key}">
         <div class="row-head">
           <h2 id="row-${def.key}">${esc(def.title)}</h2>
@@ -326,7 +329,7 @@
         ${def.items.length
           ? `<div class="scroller">${def.items.slice(0, n).map((t) => cardHtml(t, def)).join("")}</div>`
           : `<p class="empty">No ${kindWord() === "titles" ? "titles" : kindWord()} here for ${filter === "all" ? "your services" : esc(svcInfo(filter).name)} right now.</p>`}
-      </section>`).join("");
+      </section>`;
   }
 
   function renderFilters() {
@@ -363,6 +366,7 @@
   }
 
   function render(keepPlace = false) {
+    homeStale = false;
     if (!myServices.includes(filter)) filter = "all";
     renderFilters();
     renderRows(keepPlace);
@@ -466,7 +470,7 @@
 
     let lead;
     if (isWatched(t)) lead = `You've marked this as watched, so it's hidden from your rows. Its match score of ${match} comes`;
-    else if (thumbs[t.id]) lead = `You've rated this, so it's left out of your Top picks. Its match score of ${match} comes`;
+    else if (thumbs[t.id]?.v < 0) lead = `You marked this Not for me, so it's hidden from your rows. Its match score of ${match} comes`;
     else if (!onMyServices(t)) lead = `This isn't on ${filter === "all" ? "your services" : "the service you're viewing"}, so it's not in your Top picks. Its match score of ${match} comes`;
     else if ((t.imdb_votes || 0) < picksMinVotes()) lead = `Top picks only includes titles with ${fmtCount(picksMinVotes())}+ IMDb votes, and this has ${t.imdb_votes ? fmtCount(t.imdb_votes) : "no IMDb rating yet"}, so it's not in your Top picks. Its match score of ${match} comes`;
     else if (!rightKind(t)) lead = `This is a ${t.type === "tv" ? "TV show" : "movie"}, and you're viewing ${kindWord()} only, so it's not in your Top picks right now. Its match score of ${match} comes`;
@@ -521,12 +525,56 @@
     openDetails(id);
     d.scrollTop = y;
   }
+  /* Like, Not for me and Mark watched never move titles while browsing. The poster
+     changes in place (dimmed, "✓ Watched", bookmark) and the rows update at the next
+     natural moment: reopening the app, changing a filter or closing Settings. */
+  let homeStale = false;
+  const KEEPS = ["watchlist", "netflix"]; // rows that keep watched and Not for me titles
+  function patchCards(id) {
+    const t = feed.titles[id];
+    for (const card of document.querySelectorAll(`#rows .card[data-id="${CSS.escape(id)}"]`)) {
+      const row = card.closest(".row").dataset.row;
+      const seen = isWatched(t);
+      card.classList.toggle("is-watched", seen);
+      card.classList.toggle("is-passed", !KEEPS.includes(row) && thumbs[id]?.v < 0);
+      const poster = card.querySelector(".poster");
+      const badge = poster.querySelector(".watched-badge");
+      if (seen && !badge) poster.insertAdjacentHTML("beforeend", `<span class="watched-badge">✓ Watched</span>`);
+      if (!seen && badge) badge.remove();
+      const marks = poster.querySelector(".marks");
+      const mark = marks.querySelector(".mark");
+      const wantMark = watchlist[id] && row !== "watchlist";
+      if (wantMark && !mark) marks.insertAdjacentHTML("beforeend", `<span class="mark" title="On your watchlist">${BOOKMARK}</span>`);
+      if (!wantMark && mark) mark.remove();
+    }
+  }
+  /* Adding to or removing from the list updates "Your watchlist" right away. If that
+     changes the height above what you're looking at, the page scrolls by the same
+     amount so nothing on screen moves. */
+  function updateWatchlistRow() {
+    const rows = $("#rows");
+    const old = rows.querySelector('[data-row="watchlist"]');
+    const anchor = [...rows.querySelectorAll('.row:not([data-row="watchlist"])')].find((r) => r.getBoundingClientRect().bottom > 0);
+    const before = anchor && anchor.getBoundingClientRect().top;
+    const keepX = old && old.querySelector(".scroller")?.scrollLeft;
+    const def = myServices.length && rowDefs().find((d) => d.key === "watchlist");
+    if (def) {
+      const tmp = document.createElement("div");
+      tmp.innerHTML = rowHtml(def).trim();
+      const fresh = tmp.firstElementChild;
+      if (old) old.replaceWith(fresh); else rows.prepend(fresh);
+      const sc = fresh.querySelector(".scroller");
+      if (sc && keepX) sc.scrollLeft = keepX;
+    } else if (old) old.remove();
+    if (anchor) window.scrollBy(0, anchor.getBoundingClientRect().top - before);
+  }
   function toggleWatchlist(id) {
     if (watchlist[id]) delete watchlist[id];
     else watchlist[id] = entry(feed.titles[id]);
     save(STORE.watchlist, watchlist);
     redrawDetails(id);
-    renderRows(true);
+    patchCards(id);
+    updateWatchlistRow();
     if ($("#search").open) renderSearch();
   }
   function toggleWatched(id) {
@@ -534,7 +582,8 @@
     else watched[id] = entry(feed.titles[id]);
     save(STORE.watched, watched);
     redrawDetails(id);
-    renderRows(true);
+    patchCards(id);
+    homeStale = true;
     if ($("#search").open) renderSearch();
   }
 
@@ -546,7 +595,8 @@
     const d = $("#details"), y = d.scrollTop;
     openDetails(id); // redraw so "Why this pick" reflects the new rating
     d.scrollTop = y;
-    renderRows(true);
+    patchCards(id);
+    homeStale = true;
   }
 
   // ---------------------------------------------------------------- search
@@ -649,7 +699,7 @@
     save(STORE.genres, genrePrefs);
     renderGenres();
     renderWeights();
-    renderRows(true);
+    homeStale = true; // the home screen updates when Settings closes
   }
 
   // ---------------------------------------------------------------- how it's calculated
@@ -678,7 +728,7 @@
         <p>Every title on your services gets a score from 0 to 100 for each signal, and these weights combine into a <b>match score</b>. These percentages shift as you rate titles and like genres.</p>
         <ul id="weights" class="weights"></ul>
         <p id="weights-note" class="weights-note"></p>
-        <p>If a title is missing a signal (for example, no critic reviews), that signal is skipped for that title and the others are scaled up to fill the gap. Titles you've rated or marked watched are left out, and so are titles with fewer than ${fmtCount(picksMinVotes())} IMDb votes, so brand-new or little-known titles with no real rating yet can't top the list.</p>
+        <p>If a title is missing a signal (for example, no critic reviews), that signal is skipped for that title and the others are scaled up to fill the gap. Titles you've marked watched or Not for me are left out, and so are titles with fewer than ${fmtCount(picksMinVotes())} IMDb votes, so brand-new or little-known titles with no real rating yet can't top the list.</p>
         <p>Open any title and scroll to <b>Why this pick</b> to see its exact numbers.</p>`],
       ["Trending now", `
         ${(() => {
@@ -714,7 +764,7 @@
       ["Signal: Audience, Critics, Trending", `
         <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the TMDB/Trakt blend from the Trending now row (without that row's recency share, since New &amp; recent is its own signal).</p>`],
       ["Watchlist & watched", `
-        <p><b>＋ Add to list</b> on any title adds it to the "Your watchlist" row at the top, newest first. <b>Mark watched</b> hides a title from every row except "Your watchlist" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. A watched series comes back if a new season premieres after you marked it. <b>👎 Not for me</b> hides a title from the same rows. All are saved on this phone and included in backups. To undo any of them, open the title (search finds watched titles too) and tap the button again.</p>`],
+        <p><b>＋ Add to list</b> on any title adds it to the "Your watchlist" row at the top, newest first. <b>Mark watched</b> hides a title from every row except "Your watchlist" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. A watched series comes back if a new season premieres after you marked it. <b>👎 Not for me</b> hides a title from the same rows. Titles you like stay in Top picks. Nothing moves while you're browsing: the rows update the next time you open the app, change a filter or close Settings. All are saved on this phone and included in backups. To undo any of them, open the title (search finds watched titles too) and tap the button again.</p>`],
       ["When data updates", `
         <p>Trending numbers refresh every 2 hours. Everything else (what's on each service, ratings, Netflix Top 10) refreshes about once a day. Critic scores fill in gradually because of OMDb's and MDBList's daily limits. The time at the top of the app shows the last update.</p>`],
     ];
@@ -813,7 +863,7 @@
       save(STORE.genres, genrePrefs);
       save(STORE.services, myServices);
       openSettings();
-      render();
+      servicesChanged = true; // the home screen updates when Settings closes
       const nG = genres.length;
       backupStatus(`Restored ${valid.length} rating${valid.length === 1 ? "" : "s"}, ${nG} genre${nG === 1 ? "" : "s"}, ${wl.length} watchlist title${wl.length === 1 ? "" : "s"}, ${wd.length} watched title${wd.length === 1 ? "" : "s"} and ${known.length} service${known.length === 1 ? "" : "s"}.`, "ok");
     } catch {
@@ -838,13 +888,12 @@
     else d.removeAttribute("open");
     if (d.id === "settings") applyServiceChanges();
   }
-  /* Service picks made in Settings take effect on the home screen once Settings closes.
-     Redrawing it behind the open sheet made the screen flash on the first and last pick. */
+  /* Changes waiting for the home screen are applied when Settings closes. Redrawing
+     behind the open sheet made the screen flash on the first and last service pick. */
   let servicesChanged = false;
   function applyServiceChanges() {
-    if (!servicesChanged) return;
-    servicesChanged = false;
-    render();
+    if (servicesChanged) { servicesChanged = false; render(); }
+    else if (homeStale) render(true);
   }
 
   // ---------------------------------------------------------------- events
@@ -915,6 +964,7 @@
       }
       if (hiddenAt && Date.now() - hiddenAt >= RESET_AFTER_MS) goHome();
       hiddenAt = null;
+      if (homeStale && !document.querySelector("dialog[open]")) render(true);
       refresh();
       checkForUpdate();
     });

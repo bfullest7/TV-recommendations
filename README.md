@@ -19,6 +19,7 @@ A filter at the top limits every row to one service. Your services and thumbs ar
 - **＋ Add to list** on any title adds it to a "Your watchlist" row at the top, newest first. Titles in your list show a bookmark on their poster in other rows.
 - **Mark watched** hides a title from every row except "Your watchlist" and the Netflix Top 10, where it shows a "✓ Watched" badge. It doesn't take the title off your list. A watched series comes back to the rows when a new season premieres after you marked it.
 - **👎 Not for me** hides a title from the same rows. 👍 and 👎 show only on a title's detail screen, never on posters.
+- Nothing moves while you browse: a title you like, mark Not for me or mark watched stays where it is (dimmed if it's going to leave the row), and the rows update the next time you open the app, change a filter or close Settings. Adding to your list updates "Your watchlist" right away without moving what's on screen.
 - To undo any of these, open the title (search finds every title) and tap the button again.
 - **Search** (magnifying glass) opens full screen and starts empty each time. It finds any title the app tracks, across all services; titles on your services come first, with "In your list" and "✓ Watched" labels.
 
@@ -40,7 +41,7 @@ Each signal is scored 0–100 and combined with these weights (edit them in `con
 | Critics | 15% | Average of Rotten Tomatoes and Metacritic |
 | Trending | 10% | Average of Trakt watchers right now (log-scaled) and position on TMDB's daily trending list, each scaled separately for movies and TV |
 
-If a title is missing a signal (no critic score, or you haven't rated anything or picked any genres yet), that signal is skipped and the other weights scale up to fill the gap. Titles you've rated or marked watched are left out of Top picks, as are titles with fewer than 5,000 IMDb votes (`row_tilt.top_picks_min_imdb_votes` in `config.json`).
+If a title is missing a signal (no critic score, or you haven't rated anything or picked any genres yet), that signal is skipped and the other weights scale up to fill the gap. Titles you've marked watched or Not for me are left out of Top picks (titles you like stay in and are re-ranked), as are titles with fewer than 5,000 IMDb votes (`row_tilt.top_picks_min_imdb_votes` in `config.json`).
 
 ## Setup
 
