@@ -22,6 +22,6 @@
 
 ## iPhone home-screen quirks (already handled; be careful changing)
 - The status bar is black-translucent with `viewport-fit=cover`. On a fresh launch, iOS briefly doubles the status-bar space. `settleLayout()` in `app.js` corrects it in the first 0.3 seconds.
-- A launch screen (`#splash` in `index.html`) hides that correction: a white screen, then the logo fades in at about 0.4 seconds, then a 0.5-second fade to the dark app at about 1.15 seconds. It applies only when `navigator.standalone` is true.
+- A launch screen (`#splash` in `index.html`) hides that correction: a white screen, then the logo fades in at about 0.4 seconds, then a 0.3-second fade to the dark app at about 1.15 seconds. It applies only when `navigator.standalone` is true.
 - The launch screen is white on purpose: iOS always shows a white screen while starting the app, and a matching white launch screen hides that. Dark `apple-touch-startup-image` launch images were tried and removed: iOS still flashed white before them.
 - The header has 24px of extra top padding so the title clears the iOS status-bar fade.

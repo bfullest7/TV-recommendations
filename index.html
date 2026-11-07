@@ -25,12 +25,12 @@
     /* launch screen (home-screen app): white with the app logo, matching the white
        screen iOS shows while starting the app, then a gentle fade to the dark app */
     html.settling, html.settling body { background: #fff; }
-    body > :not(#splash) { transition: opacity .5s ease-out; }
+    body > :not(#splash) { transition: opacity .3s ease-out; }
     html.settling body > :not(#splash) { opacity: 0; }
     #splash { display: none; }
     html.settling #splash, #splash.leaving {
       display: grid; place-items: center; position: fixed; inset: 0; z-index: 100;
-      background: #fff; pointer-events: none; transition: opacity .5s ease-out;
+      background: #fff; pointer-events: none; transition: opacity .3s ease-out;
     }
     #splash.leaving { opacity: 0; }
     #splash svg { width: 88px; height: 88px; opacity: 0; transition: opacity .25s ease-out; }
