@@ -1,0 +1,26 @@
+# Notes for Claude
+
+## How Beth likes to work
+- **Don't push until Beth says so.** Commit changes locally and bundle them; push only when asked.
+- When Beth asks for options or "what do you think", explain the options and a recommendation **before** building anything.
+- Keep explanations plain and non-technical.
+- Never ask for API keys in chat. Keys live only in GitHub Secrets: `TMDB_API_KEY`, `TRAKT_CLIENT_ID`, `OMDB_API_KEY`, `MDBLIST_API_KEY`.
+
+## The app
+- Phone web app ("What to Watch"), mostly used as an iPhone home-screen app.
+- Live at https://bfullest7.github.io/TV-recommendations/ (the address is case-sensitive). Repo: `bfullest7/TV-recommendations`, branch `main`.
+- Files: `index.html`, `app.js`, `styles.css`, `sw.js` (helper that always loads the newest page), `manifest.webmanifest`, `icons/`, `config.json` (services, score weights, row settings; read live by the app).
+- Data: `pipeline/build_feed.py` (Python standard library only) builds `data/feed.json` from TMDB, Trakt, IMDb, OMDb, MDBList and Netflix Top 10. Tests: `python3 -m unittest discover -s tests`.
+- `README.md` explains the rows, scoring and setup.
+
+## Publishing
+- `.github/workflows/refresh.yml` refreshes the data every 2 hours and publishes the site on every push (data-only commits are skipped).
+- On publish, the app version is a fingerprint of `index.html`, `app.js` and `styles.css`. It's stamped into the page and `version.json`, which drives the "Update available" banner.
+- New site files must be added to the workflow's "Collect site files" copy step.
+- Don't push while a manually started data refresh is still queued: a newer run cancels the pending one.
+
+## iPhone home-screen quirks (already handled; be careful changing)
+- The status bar is black-translucent with `viewport-fit=cover`. On a fresh launch, iOS briefly doubles the status-bar space. `settleLayout()` in `app.js` corrects it in the first 0.3 seconds.
+- A launch screen (`#splash` in `index.html`) hides that correction: a dark screen, then the logo fades in at about 0.4 seconds, then the app at about 1.15 seconds. It applies only when `navigator.standalone` is true.
+- Plain dark `apple-touch-startup-image` files in `icons/launch/` (one per iPhone screen size) stop a white flash before the page loads. iOS may only pick these up when the app is added to the home screen.
+- The header has 24px of extra top padding so the title clears the iOS status-bar fade.
