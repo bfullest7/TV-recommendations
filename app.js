@@ -332,8 +332,25 @@
       </button>`).join("");
   }
 
+  // Data refresh status, shown at the bottom of Settings. The refresh job is
+  // scheduled at :17 past every even hour (UTC); GitHub often starts it late.
+  function nextRefreshText(lastIso) {
+    const last = new Date(lastIso);
+    const next = new Date(last);
+    next.setUTCMinutes(17, 0, 0);
+    while (next <= last) next.setUTCHours(next.getUTCHours() + 1);
+    while (next.getUTCHours() % 2) next.setUTCHours(next.getUTCHours() + 1);
+    const mins = Math.round((next - Date.now()) / 60000);
+    if (mins <= 2) return "Next refresh any minute now.";
+    if (mins < 60) return `Next refresh in about ${mins} min.`;
+    const h = Math.floor(mins / 60), m = Math.round((mins % 60) / 5) * 5;
+    return `Next refresh in about ${h} hr${m ? ` ${m} min` : ""}.`;
+  }
   function renderUpdated() {
-    $("#updated").textContent = feed ? `Updated ${timeAgo(feed.trending_updated_at)}` : "";
+    const iso = feed?.trending_updated_at;
+    $("#data-updated").textContent = iso
+      ? `Data last updated ${timeAgo(iso)}. ${nextRefreshText(iso)} The data refreshes about every 2 hours.`
+      : "";
   }
 
   function render(keepPlace = false) {
@@ -588,6 +605,7 @@
     renderHow();
     renderWeights();
     showLastBackup();
+    renderUpdated();
     if (!$("#settings").open) showSheet($("#settings"));
   }
 

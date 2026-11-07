@@ -33,7 +33,7 @@
       background: #fff; pointer-events: none; transition: opacity .5s ease-out;
     }
     #splash.leaving { opacity: 0; }
-    #splash img { width: 96px; height: 96px; border-radius: 22px; opacity: 0; transition: opacity .25s ease-out; }
+    #splash img { width: 104px; height: 104px; border-radius: 50%; opacity: 0; transition: opacity .25s ease-out; }
     #splash.ready img { opacity: 1; }
   </style>
 </head>
@@ -41,10 +41,7 @@
   <div id="splash" aria-hidden="true"><img src="icons/icon-192.png" alt=""></div>
   <header class="top">
     <div class="top-row">
-      <div>
-        <h1>What to Watch</h1>
-        <p id="updated" class="updated"></p>
-      </div>
+      <h1>What to Watch</h1>
       <div class="top-btns">
       <button id="open-search" class="icon-btn" aria-label="Search">
         <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg>
@@ -119,6 +116,8 @@
         </div>
         <p id="backup-status" class="hint backup-status" role="status"></p>
       </section>
+
+      <p id="data-updated" class="data-updated"></p>
 
     </div>
   </dialog>
