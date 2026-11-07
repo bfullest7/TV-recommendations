@@ -1016,6 +1016,15 @@
       const c = e.target.closest(".card");
       if (c) openDetails(c.dataset.id);
     });
+    // Closing a title opened from Your list updates the page right away, so a title you
+    // removed from the list (or marked watched, or un-marked) disappears from its tab.
+    $("#details").addEventListener("close", () => {
+      const page = $("#mylist");
+      if (!page.open) return;
+      const y = page.scrollTop;
+      renderMyList();
+      page.scrollTop = y;
+    });
     $("#ml-sort").addEventListener("change", (e) => { ml.sort[ml.tab] = e.target.value; renderMyList(); });
     $("#ml-kind").addEventListener("change", (e) => { ml.kind = e.target.value; renderMyList(); });
     $("#search-results").addEventListener("click", (e) => {
