@@ -254,6 +254,9 @@
   /* Line 1 of every card's subtitle: latest year and IMDb rating. */
   const metaLine1 = (t) => [latestYear(t), t.imdb != null && `IMDb ${t.imdb.toFixed(1)}`].filter(Boolean).join(" · ");
 
+  /* "On your list" icon: a simple bookmark ribbon, drawn like the header icons. */
+  const BOOKMARK = `<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4.2L6 21V4a1 1 0 0 1 1-1z"/></svg>`;
+
   function cardHtml(t, def) {
     const svcKey = def.forceService || t.services.find((s) => activeServices().includes(s));
     const svc = svcKey && svcInfo(svcKey);
@@ -263,7 +266,7 @@
         <div class="poster">
           ${t.poster ? `<img loading="lazy" src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}
           ${def.rank ? `<span class="rank">#${t._rank}</span>` : ""}
-          <span class="marks">${watchlist[t.id] ? `<span class="mark" title="On your watchlist">🔖</span>` : ""}${thumb ? `<span class="mark">${thumb.v > 0 ? "👍" : "👎"}</span>` : ""}</span>
+          <span class="marks">${watchlist[t.id] && def.key !== "watchlist" ? `<span class="mark" title="On your watchlist">${BOOKMARK}</span>` : ""}${thumb ? `<span class="mark">${thumb.v > 0 ? "👍" : "👎"}</span>` : ""}</span>
           ${watched[t.id] ? `<span class="watched-badge">✓ Watched</span>` : ""}
           ${svc ? `<span class="badge" style="background:${esc(svc.color)}">${esc(svc.name)}</span>` : ""}
         </div>
@@ -578,7 +581,7 @@
             <span class="r-text"><span class="r-title">${esc(t.title)}</span>
               <span class="r-sub">${[t.year, t.type === "tv" ? "TV" : "Movie", t.imdb && `IMDb ${t.imdb.toFixed(1)}`].filter(Boolean).map(esc).join(" · ")}</span>
               <span class="r-where ${mine.length ? "" : "not-mine"}">${esc(where)}</span></span>
-            <span class="r-marks">${watchlist[t.id] ? "🔖" : ""}${watched[t.id] ? "✓" : ""}</span>
+            <span class="r-marks">${watchlist[t.id] ? BOOKMARK : ""}${watched[t.id] ? "✓" : ""}</span>
           </button></li>`;
         }).join("")
       : `<li class="none">No matches for "${esc(q)}". The app tracks popular, top-rated, new and trending titles, so less-known ones may be missing.</li>`;

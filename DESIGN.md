@@ -59,6 +59,12 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - Use "list" in buttons ("＋ Add to list", "✓ Added to list") and "Your watchlist" for the row.
 - Use "＋" for an action that adds and "✓" for a state that's on ("✓ Added to list", "✓ Watched").
 
+## Icons
+
+- Icons are simple drawn shapes in the style of the search and settings buttons, not emoji (emoji look different on each phone).
+- **On your list:** a white bookmark ribbon in a small dark circle in the poster's top-right corner, and an orange bookmark in search results. It's hidden in "Your watchlist", where every title is on the list.
+- **Watched:** a dimmed poster with a "✓ Watched" label in the middle.
+
 ## Behavior rules tied to the design
 
 - Marking a title watched doesn't change any other button. A watched title stays on the list and keeps showing in "Your watchlist" (dimmed, with a "✓ Watched" badge), but leaves every other row except the Netflix Top 10.
