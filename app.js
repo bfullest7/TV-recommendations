@@ -175,7 +175,7 @@
     const from = (ids) => ids.map((id) => T[id]).filter(visible);
     // Audience and critics rows lean toward recent titles: score = (1 - w) x rating
     // + w x "New & recent", among titles with enough IMDb votes to be well known.
-    const tilt = feed.row_tilt || { min_imdb_votes: 20000, audience_recency: 0.35, critics_recency: 0.25 };
+    const tilt = feed.row_tilt || { min_imdb_votes: 20000, audience_recency: 0.35, critics_recency: 0.35 };
     const tilted = (ids, key, w) => from(ids)
       .filter((t) => (t.imdb_votes || 0) >= tilt.min_imdb_votes && t.scores[key] != null)
       .map((t) => ({ t, s: (1 - w) * t.scores[key] + w * recency(t).score }))
@@ -612,7 +612,7 @@
   /* Plain-language explanations, built from the live settings in config.json. */
   function renderHow() {
     const w = feed.weights;
-    const t = feed.row_tilt || { min_imdb_votes: 20000, audience_recency: 0.35, critics_recency: 0.25 };
+    const t = feed.row_tilt || { min_imdb_votes: 20000, audience_recency: 0.35, critics_recency: 0.35 };
     const p = (x) => `${Math.round(x * 100)}%`;
     const votes = fmtCount(t.min_imdb_votes);
     const trendVotes = fmtCount(t.trending_min_imdb_votes ?? 5000);
