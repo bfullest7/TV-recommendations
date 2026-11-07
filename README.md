@@ -17,7 +17,7 @@ A filter at the top limits every row to one service. Your services and thumbs ar
 
 **Your lists and search:**
 - **＋ Watchlist** on any title adds it to a "Your watchlist" row at the top, newest first.
-- **Mark watched** hides a title from every row (it stays in the Netflix Top 10 with a "Watched" badge) and takes it off your watchlist. Manage both lists in Settings.
+- **Mark watched** hides a title from every row (it stays in the Netflix Top 10 with a "Watched" badge) and takes it off your watchlist. To undo either, open the title (search finds watched titles) and tap the button again.
 - **Search** (magnifying glass) finds any title the app tracks, across all services; titles on your services come first.
 
 ## How it works
@@ -76,7 +76,7 @@ Open the link, then:
 
 Share the same link with friends; each person picks their own services and gives their own thumbs.
 
-Ratings live only on the phone. To keep them safe, use **Settings → Back up your ratings → Save a backup**, and **Restore a backup** on a new phone. On iPhone, the home-screen app and Safari keep separate settings, so use one or the other.
+Ratings live only on the phone. To keep them safe, use **Settings → Back up your data → Save a backup**, and **Restore a backup** on a new phone. On iPhone, the home-screen app and Safari keep separate settings, so use one or the other.
 
 ## Changing things
 

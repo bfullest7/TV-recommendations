@@ -562,31 +562,13 @@
       <label><input type="checkbox" value="${esc(s.key)}" ${myServices.includes(s.key) ? "checked" : ""}>
         <span class="dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${esc(s.color)}"></span>${esc(s.name)}</label>`).join("");
     renderGenres();
-    renderLists();
-    renderRatings();
+    renderWeights();
     renderHow();
     showLastBackup();
     if (!$("#settings").open) showSheet($("#settings"));
   }
 
-  function renderLists() {
-    const li = (store, key, label) => {
-      const items = Object.entries(store).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || ""));
-      return items.length
-        ? items.map(([id, r]) => `<li><span class="t">${esc(r.title)}</span><button data-remove="${key}" data-id="${esc(id)}" aria-label="Remove ${esc(r.title)} from ${label}">✕</button></li>`).join("")
-        : `<li class="none">Nothing here yet. Open any title and tap ${key === "watchlist" ? "＋ Watchlist" : "Mark watched"}.</li>`;
-    };
-    $("#watchlist-list").innerHTML = li(watchlist, "watchlist", "your watchlist");
-    $("#watched-list").innerHTML = li(watched, "watched", "watched");
-  }
 
-  function renderRatings() {
-    renderWeights();
-    const items = Object.entries(thumbs);
-    $("#ratings").innerHTML = items.length
-      ? items.map(([id, r]) => `<li><span>${r.v > 0 ? "👍" : "👎"}</span><span class="t">${esc(r.title)}</span><button data-unrate="${esc(id)}" aria-label="Remove rating for ${esc(r.title)}">✕</button></li>`).join("")
-      : `<li class="none">No ratings yet. Open any title and tap 👍 or 👎.</li>`;
-  }
 
   // ---------------------------------------------------------------- genres
   /* Genres in the current data, most common first. */
@@ -646,14 +628,14 @@
       ["Netflix Top 10", `
         <p>Netflix's own official list of its most-watched shows and films in the US, published weekly. Shown as-is and not used in any ranking, since other services don't publish equivalent numbers.</p>`],
       ["Signal: Your taste", `
-        <p>Starts at 50 (neutral). Each 👍 on a title raises its genres and each 👎 lowers them. A genre you set in <b>Genres you like</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you disliked a drop.</p>
+        <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres you like</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres and each 👎 lowers them. A genre you set in <b>Genres you like</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you disliked a drop.</p>
         <p>Not counted until you rate something or pick a genre.</p>`],
       ["Signal: New & recent", `
         <p>Full credit (100) for titles released or premiered in the last year, fading to 0 at 5 years old. A new season of an older show counts half. Arriving on a service in the last 30 days counts fully.</p>`],
       ["Signal: Audience, Critics, Trending", `
         <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the same blended score as the Trending now row.</p>`],
       ["Watchlist & watched", `
-        <p><b>＋ Watchlist</b> on any title adds it to the "Your watchlist" row at the top, newest first. <b>Mark watched</b> hides a title from every row (it stays in the Netflix Top 10 with a "Watched" badge) and takes it off your watchlist. Both are saved on this phone and included in backups; manage them in Settings.</p>`],
+        <p><b>＋ Watchlist</b> on any title adds it to the "Your watchlist" row at the top, newest first. <b>Mark watched</b> hides a title from every row (it stays in the Netflix Top 10 with a "Watched" badge) and takes it off your watchlist. Both are saved on this phone and included in backups. To undo either, open the title (search finds watched titles too) and tap the button again.</p>`],
       ["When data updates", `
         <p>Trending numbers refresh every 2 hours. Everything else (what's on each service, ratings, Netflix Top 10) refreshes about once a day. Critic scores fill in gradually because of OMDb's daily limit. The time at the top of the app shows the last update.</p>`],
     ];
@@ -819,25 +801,6 @@
       myServices = [...$("#service-picker").querySelectorAll("input:checked")].map((i) => i.value);
       save(STORE.services, myServices);
       render();
-    });
-    for (const sel of ["#watchlist-list", "#watched-list"]) {
-      $(sel).addEventListener("click", (e) => {
-        const b = e.target.closest("[data-remove]");
-        if (!b) return;
-        const store = b.dataset.remove === "watchlist" ? watchlist : watched;
-        delete store[b.dataset.id];
-        save(b.dataset.remove === "watchlist" ? STORE.watchlist : STORE.watched, store);
-        renderLists();
-        renderRows(true);
-      });
-    }
-    $("#ratings").addEventListener("click", (e) => {
-      const b = e.target.closest("[data-unrate]");
-      if (!b) return;
-      delete thumbs[b.dataset.unrate];
-      save(STORE.thumbs, thumbs);
-      renderRatings();
-      renderRows(true);
     });
     $("#genre-picker").addEventListener("click", (e) => {
       const b = e.target.closest("[data-genre]");
