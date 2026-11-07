@@ -20,11 +20,20 @@
     if (navigator.standalone) document.documentElement.classList.add("settling");
   </script>
   <style>
-    html.settling body { opacity: 0; }
-    body { transition: opacity .15s ease-out; }
+    /* launch screen: app logo while the layout settles, then crossfade to the app */
+    body > :not(#splash) { transition: opacity .3s ease-out; }
+    html.settling body > :not(#splash) { opacity: 0; }
+    #splash { display: none; }
+    html.settling #splash, #splash.leaving {
+      display: grid; place-items: center; position: fixed; inset: 0; z-index: 100;
+      background: #0f1115; pointer-events: none; transition: opacity .3s ease-out;
+    }
+    #splash.leaving { opacity: 0; }
+    #splash img { width: 96px; height: 96px; border-radius: 22px; }
   </style>
 </head>
 <body>
+  <div id="splash" aria-hidden="true"><img src="icons/icon-192.png" alt=""></div>
   <header class="top">
     <div class="top-row">
       <div>

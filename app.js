@@ -974,12 +974,23 @@
     });
   }
   function settleSoon() {
-    [50, 300, 900].forEach((ms) => setTimeout(settleLayout, ms));
+    [50, 300, 700].forEach((ms) => setTimeout(settleLayout, ms));
     // reveal once the layout has settled, so the correction isn't visible
-    setTimeout(() => document.documentElement.classList.remove("settling"), 350);
+    setTimeout(revealApp, 1000);
+  }
+  // fade the logo out and the app in (home-screen launch only)
+  function revealApp() {
+    const root = document.documentElement;
+    if (!root.classList.contains("settling")) return;
+    const splash = document.getElementById("splash");
+    if (splash) {
+      splash.classList.add("leaving");
+      setTimeout(() => splash.remove(), 400);
+    }
+    root.classList.remove("settling");
   }
   // safety net: never stay hidden, even if "load" doesn't fire as expected
-  setTimeout(() => document.documentElement.classList.remove("settling"), 1500);
+  setTimeout(revealApp, 2500);
   window.addEventListener("load", settleSoon);
   window.addEventListener("pageshow", (e) => { if (e.persisted) settleSoon(); });
 
