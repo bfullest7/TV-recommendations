@@ -7,7 +7,7 @@ A phone web app that shows the best things to stream right now on the services y
 | Row | Source |
 |---|---|
 | Top picks for you | All the signals below, plus your 👍 / 👎 |
-| Trending now | Trakt watchers averaged with TMDB daily trending: titles hot on both rank highest (5K+ IMDb votes) |
+| Trending now | 75% trending (70% TMDB daily trending + 30% Trakt watchers) + 25% "New & recent", titles with 5K+ IMDb votes |
 | Top rated by audiences | IMDb ratings (adjusted for vote count), 65% rating + 35% "New & recent", titles with 20K+ IMDb votes |
 | Critics' favorites | Rotten Tomatoes and Metacritic (via OMDb and MDBList), 75% critics + 25% "New & recent", titles with 20K+ IMDb votes |
 | New on your services | TMDB, with streaming availability from JustWatch |

@@ -439,10 +439,10 @@ def tmdb_trend_score(rank: int | None, list_size: int) -> float:
     return round(100 * (1 - (rank - 1) / list_size), 1)
 
 
-def buzz_score(trakt: float, tmdb: float) -> float:
-    """Average of the two, so a title needs to be hot on both to score high;
-    hot on only one source gets about half credit."""
-    return round((trakt + tmdb) / 2, 1)
+def buzz_score(trakt: float, tmdb: float, tmdb_share: float = 0.5) -> float:
+    """Weighted blend of the two (TMDB's audience is broader, so it can count
+    more); a title needs to be hot on both to score high."""
+    return round(tmdb_share * tmdb + (1 - tmdb_share) * trakt, 1)
 
 
 def fresh_score(new_date: str | None, window: int, ref: dt.date) -> float:
@@ -494,13 +494,16 @@ def add_scores(titles: dict, watchers: dict, tmdb_trend: dict, netflix_ranks: di
     for t in titles.values():
         t["watchers"] = watchers.get(t["id"], 0)
         t["tmdb_trend_rank"] = tmdb_trend.get(t["id"])
+        trakt_part = trakt_score(t["watchers"], max_w[t["type"]])
+        tmdb_part = tmdb_trend_score(t["tmdb_trend_rank"], list_size[t["type"]])
+        # the two parts are kept so the app can re-blend them using config.json
+        t["trend_parts"] = {"trakt": trakt_part, "tmdb": tmdb_part}
         t["netflix_rank"] = netflix_ranks.get(t["id"])
         t["new_date"] = new_date_for(t, seen, baseline, rk["new_window_days"], ref)
         t["scores"] = {
             "audience": audience_score(t.get("imdb"), t.get("imdb_votes"), t["type"], mean, rk),
             "critic": critic_score(t.get("rt"), t.get("mc")),
-            "buzz": buzz_score(trakt_score(t["watchers"], max_w[t["type"]]),
-                               tmdb_trend_score(t["tmdb_trend_rank"], list_size[t["type"]])),
+            "buzz": buzz_score(trakt_part, tmdb_part, cfg.get("row_tilt", {}).get("trending_tmdb_share", 0.5)),
             "fresh": fresh_score(t["new_date"], rk["new_window_days"], ref),
         }
 

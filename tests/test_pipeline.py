@@ -161,16 +161,17 @@ class PipelineTest(unittest.TestCase):
         # audience: the 120-vote 9.6 indie must not beat the 900k-vote 8.6 movie
         self.assertLess(rows["audience"].index("m1"), rows["audience"].index("m2"))
         self.assertGreater(T["m1"]["scores"]["audience"], 80)
-        # trending blends Trakt watchers with TMDB trending (each scaled per type):
-        # t1: Trakt 100 (most TV watchers), TMDB #2 of 2 -> 50  => 75
-        # t2: Trakt 24.5 (5 watchers),      TMDB #1 of 2 -> 100 => 62.3
-        # m1: Trakt 65.1 (40 of max 300),   TMDB #2 of 2 -> 50  => 57.5
-        # m3: no Trakt watchers,            TMDB #1 of 2 -> 100 => 50
-        self.assertEqual(rows["trending"], ["t1", "t2", "m1", "m3"])
-        self.assertEqual(T["t1"]["scores"]["buzz"], 75.0)
-        self.assertAlmostEqual(T["t2"]["scores"]["buzz"], 62.3, delta=0.1)
-        self.assertAlmostEqual(T["m1"]["scores"]["buzz"], 57.5, delta=0.1)
-        self.assertEqual(T["m3"]["scores"]["buzz"], 50.0)
+        # trending blends TMDB trending (70%) with Trakt watchers (30%), each scaled per type:
+        # t2: Trakt 24.5 (5 watchers),      TMDB #1 of 2 -> 100 => 77.3
+        # m3: no Trakt watchers,            TMDB #1 of 2 -> 100 => 70
+        # t1: Trakt 100 (most TV watchers), TMDB #2 of 2 -> 50  => 65
+        # m1: Trakt 65.1 (40 of max 300),   TMDB #2 of 2 -> 50  => 54.5
+        self.assertEqual(rows["trending"], ["t2", "m3", "t1", "m1"])
+        self.assertEqual(T["t1"]["scores"]["buzz"], 65.0)
+        self.assertAlmostEqual(T["t2"]["scores"]["buzz"], 77.35, delta=0.1)
+        self.assertAlmostEqual(T["m1"]["scores"]["buzz"], 54.5, delta=0.1)
+        self.assertEqual(T["m3"]["scores"]["buzz"], 70.0)
+        self.assertEqual(T["t1"]["trend_parts"], {"trakt": 100.0, "tmdb": 50.0})
         self.assertEqual(T["t2"]["tmdb_trend_rank"], 1)
         # critics: averages RT and Metacritic; titles with neither are absent
         self.assertEqual(T["m1"]["scores"]["critic"], 91.5)
@@ -204,8 +205,9 @@ class PipelineTest(unittest.TestCase):
         new_calls = self.fake.calls[calls_before:]
         self.assertTrue(all("trakt" in u or "/trending/" in u for u in new_calls), new_calls)
         self.assertEqual(self.fake.omdb_calls, omdb_before)  # critic scores are cached
-        # t2 now has 900 watchers (Trakt ~93) and is #1 on TMDB -> overtakes t1
-        self.assertEqual(feed["rows"]["trending"][:2], ["t2", "t1"])
+        # t2 now has 900 watchers (Trakt ~93) and is #1 on TMDB -> stays first, well ahead
+        self.assertEqual(feed["rows"]["trending"][0], "t2")
+        self.assertGreater(feed["titles"]["t2"]["scores"]["buzz"], 95)
         self.assertEqual(feed["full_refreshed_at"], f"{TODAY}T12:00:00Z")
         self.assertEqual(feed["trending_updated_at"], f"{TODAY}T14:00:00Z")
 
@@ -229,6 +231,7 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(bf.tmdb_trend_score(1, 100), 100.0)
         self.assertEqual(bf.tmdb_trend_score(None, 100), 0.0)
         self.assertEqual(bf.buzz_score(100, 0), 50.0)
+        self.assertEqual(bf.buzz_score(100, 0, 0.7), 30.0)
         # a general sports keyword is enough on its own
         for yes in ["formula 1", "sports", "Sports Documentary", "professional wrestling", "college football", "nba"]:
             self.assertTrue(bf.is_sports([yes]), yes)

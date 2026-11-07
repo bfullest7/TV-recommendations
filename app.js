@@ -117,7 +117,15 @@
     const top = Object.keys(parts).reduce((a, b) => (parts[b] > parts[a] ? b : a));
     return { score: Math.round(parts[top] * 10) / 10, why: top };
   }
-  const signalScores = (t, taste) => ({ ...t.scores, fresh: recency(t).score, taste: taste ? taste(t) : null });
+  /* Trending score: TMDB trending and Trakt watchers blended by config.json
+   * (TMDB's broader audience counts more). */
+  function trendScore(t) {
+    const p = t.trend_parts;
+    if (!p) return t.scores.buzz || 0;
+    const share = (feed.row_tilt || {}).trending_tmdb_share ?? 0.7;
+    return share * p.tmdb + (1 - share) * p.trakt;
+  }
+  const signalScores = (t, taste) => ({ ...t.scores, buzz: trendScore(t), fresh: recency(t).score, taste: taste ? taste(t) : null });
 
   /* Each signal's score, its weight for this title (after skipping missing
    * signals), and the points it adds to the match score. */
@@ -174,6 +182,8 @@
       .sort((a, b) => b.s - a.s)
       .map((x) => x.t);
     const trendMin = tilt.trending_min_imdb_votes ?? 5000;
+    const trendShare = tilt.trending_tmdb_share ?? 0.7;
+    const trendRecency = tilt.trending_recency ?? 0.25;
     const tiltNote = (w) => `tilted ${Math.round(w * 100)}% toward recent releases (${fmtCount(tilt.min_imdb_votes)}+ IMDb votes)`;
     const listed = Object.entries(watchlist).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || "")).map(([id]) => T[id]).filter(visible);
     const defs = [
@@ -189,8 +199,13 @@
         items: topPicks(),
       },
       {
-        key: "trending", title: "Trending now", source: `Trakt watchers + TMDB trending: hot on both ranks highest (${fmtCount(trendMin)}+ IMDb votes)`,
-        items: from(feed.rows.trending).filter((t) => (t.imdb_votes || 0) >= trendMin),
+        key: "trending", title: "Trending now",
+        source: `TMDB trending ${Math.round(trendShare * 100)}% + Trakt watchers ${Math.round((1 - trendShare) * 100)}%, ${tiltNote(trendRecency).replace(/ \(.*\)$/, "")} (${fmtCount(trendMin)}+ IMDb votes)`,
+        items: from(feed.rows.trending)
+          .filter((t) => (t.imdb_votes || 0) >= trendMin)
+          .map((t) => ({ t, s: (1 - trendRecency) * trendScore(t) + trendRecency * recency(t).score }))
+          .sort((a, b) => b.s - a.s)
+          .map((x) => x.t),
       },
       {
         key: "audience", title: "Top rated by audiences", source: `IMDb ratings, ${tiltNote(tilt.audience_recency)}`,
@@ -607,7 +622,7 @@
         <p>If a title is missing a signal (no critic reviews, or you haven't rated anything yet), that signal is skipped for that title and the others are scaled up to fill the gap. Titles you've rated or marked watched are left out, and so are titles with fewer than ${fmtCount(picksMinVotes())} IMDb votes, so brand-new or little-known titles with no real rating yet can't top the list.</p>
         <p>Open any title and scroll to <b>Why this pick</b> to see its exact numbers.</p>`],
       ["Trending now", `
-        <p>The average of two scores, so a title needs to be popular on both to rank high:</p>
+        <p><b>${p(1 - (t.trending_recency ?? 0.25))} trending + ${p(t.trending_recency ?? 0.25)} "New &amp; recent"</b>. The trending score blends two sources, <b>${p(t.trending_tmdb_share ?? 0.7)} TMDB</b> (broader audience) and <b>${p(1 - (t.trending_tmdb_share ?? 0.7))} Trakt</b>:</p>
         <ul><li><b>Trakt:</b> how many Trakt users are watching it right now. 10 vs 100 watchers counts as much as 100 vs 1,000.</li>
         <li><b>TMDB:</b> its position on TMDB's daily trending list (#1 scores 100).</li></ul>
         <p>Movies and TV are scaled separately, so smaller movie audiences aren't compared with TV's. Only titles with ${trendVotes}+ IMDb votes are shown. Updated every 2 hours.</p>`],
@@ -627,7 +642,7 @@
       ["Signal: New & recent", `
         <p>Full credit (100) for titles released or premiered in the last year, fading to 0 at 5 years old. A new season of an older show counts half. Arriving on a service in the last 30 days counts fully.</p>`],
       ["Signal: Audience, Critics, Trending", `
-        <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the same blended score as the Trending now row.</p>`],
+        <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the TMDB/Trakt blend from the Trending now row (without that row's recency share, since New &amp; recent is its own signal).</p>`],
       ["Watchlist & watched", `
         <p><b>＋ Watchlist</b> on any title adds it to the "Your watchlist" row at the top, newest first. <b>Mark watched</b> hides a title from every row (it stays in the Netflix Top 10 with a "Watched" badge) and takes it off your watchlist. Both are saved on this phone and included in backups. To undo either, open the title (search finds watched titles too) and tap the button again.</p>`],
       ["When data updates", `

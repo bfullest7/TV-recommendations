@@ -25,6 +25,8 @@
     "audience_recency": 0.35,
     "critics_recency": 0.25,
     "trending_min_imdb_votes": 5000,
+    "trending_tmdb_share": 0.7,
+    "trending_recency": 0.25,
     "top_picks_min_imdb_votes": 5000
   },
 
