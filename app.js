@@ -597,6 +597,8 @@
   }
 
   function openSearch() {
+    $("#search-input").value = ""; // every visit starts a brand new search
+    $("#search-results").scrollTop = 0;
     showSheet($("#search"));
     renderSearch();
     setTimeout(() => $("#search-input").focus(), 50);
