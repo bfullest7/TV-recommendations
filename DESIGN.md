@@ -34,7 +34,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 | `--accent` | #ffb547 (orange) | Main call to action only ("Pick your services"), checked boxes |
 | `--up` / `--down` | green / red | "Like" and "Not for me" when selected |
 
-**Orange is not a "selected" or "focused" color.** The search box shows a thin grey (`--muted`) outline while you type. The list and watched buttons stay white with a plain outline when on; the icon and wording show the state.
+**Orange is not a "selected" or "focused" color.** The search box shows a thin grey (`--muted`) outline while you type. Nothing else ever shows a focus outline or tap flash: dropdowns, buttons, pills, posters and tabs just respond. The list and watched buttons stay white with a plain outline when on; the icon and wording show the state.
 
 ## Buttons
 

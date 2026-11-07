@@ -26,6 +26,13 @@ body {
 
 button { font: inherit; color: inherit; cursor: pointer; }
 
+/* No blue focus ring or grey tap flash on anything you tap: dropdowns, buttons,
+   filter pills, posters, tabs, checkboxes and "How it's calculated" items.
+   (The search box keeps its thin grey outline while you type.) */
+* { -webkit-tap-highlight-color: transparent; }
+button:focus, select:focus, summary:focus, a:focus, label:focus, input[type="checkbox"]:focus,
+button:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visible, input[type="checkbox"]:focus-visible { outline: none; }
+
 /* Header and filters */
 .top {
   position: sticky; top: 0; z-index: 5;
