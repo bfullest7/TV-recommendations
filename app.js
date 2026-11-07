@@ -391,7 +391,7 @@
       ${scores.length ? `<div class="scores">${scores.map((s) => `<div class="score"><div class="v">${esc(s.v)}</div><div class="l">${esc(s.l)}</div></div>`).join("")}</div>` : ""}
       ${t.overview ? `<p class="overview">${esc(t.overview)}</p>` : ""}
       <div class="list-btns">
-        <button class="list-btn" data-watchlist aria-pressed="${!!watchlist[id]}">${watchlist[id] ? "✓ Added to My List" : "＋ Add to My List"}</button>
+        <button class="list-btn" data-watchlist aria-pressed="${!!watchlist[id]}">${watchlist[id] ? "✓ Added to List" : "＋ Add to List"}</button>
         <button class="list-btn" data-watched aria-pressed="${!!watched[id]}">${watched[id] ? "✓ Watched" : "Mark watched"}</button>
       </div>
       <div class="thumbs">
