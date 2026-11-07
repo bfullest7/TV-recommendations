@@ -207,7 +207,7 @@
       }] : []),
       {
         key: "picks", title: "Top picks for you",
-        source: "Highly rated, popular and new. Rate titles to tune it.",
+        source: "Highly rated, popular and new",
         items: topPicks(),
       },
       {
