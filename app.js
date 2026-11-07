@@ -150,10 +150,13 @@
   }
 
   let pickScores = new Map(); // id -> match score from the last Top picks ranking
+  // Top picks only includes titles with this many IMDb votes (none = no rating yet)
+  const picksMinVotes = () => (feed.row_tilt || {}).top_picks_min_imdb_votes ?? 5000;
   function topPicks() {
     const taste = tasteModel();
+    const min = picksMinVotes();
     const ranked = Object.values(feed.titles)
-      .filter((t) => visible(t) && !thumbs[t.id])
+      .filter((t) => visible(t) && !thumbs[t.id] && (t.imdb_votes || 0) >= min)
       .map((t) => ({ t, s: pickScore(t, taste) }))
       .sort((a, b) => b.s - a.s);
     pickScores = new Map(ranked.map((x) => [x.t.id, x.s]));
@@ -420,6 +423,7 @@
     if (watched[t.id]) lead = `You've marked this as watched, so it's hidden from your rows. Its match score of ${match} comes`;
     else if (thumbs[t.id]) lead = `You've rated this, so it's left out of your Top picks. Its match score of ${match} comes`;
     else if (!onMyServices(t)) lead = `This isn't on ${filter === "all" ? "your services" : "the service you're viewing"}, so it's not in your Top picks. Its match score of ${match} comes`;
+    else if ((t.imdb_votes || 0) < picksMinVotes()) lead = `Top picks only includes titles with ${fmtCount(picksMinVotes())}+ IMDb votes, and this has ${t.imdb_votes ? fmtCount(t.imdb_votes) : "no IMDb rating yet"}, so it's not in your Top picks. Its match score of ${match} comes`;
     else if (!rightKind(t)) lead = `This is a ${t.type === "tv" ? "TV show" : "movie"}, and you're viewing ${kindWord()} only, so it's not in your Top picks right now. Its match score of ${match} comes`;
     else {
       const picks = topPicks();
@@ -447,7 +451,7 @@
     if (held) sentence += `${helped.length ? ", held back by" : ". It's held back by"} ${phrase(held.k, held, t, taste, false)}`;
     sentence += ".";
     const missing = parts.filter((p) => p.score === null && p.k !== "taste").map((p) => (p.k === "critic" ? "critic score" : "IMDb rating"));
-    if (missing.length) sentence += ` It has no ${list(missing)}, so ${missing.length > 1 ? "those were" : "that was"} skipped.`;
+    if (missing.length) sentence += ` It has no ${missing.join(" or ")}, so ${missing.length > 1 ? "those were" : "that was"} skipped.`;
 
     const label = { audience: "Audience (IMDb)", taste: "Your taste", buzz: "Trending", critic: "Critics", fresh: "New & recent" };
     const rows = parts.map((p) => p.score === null
@@ -610,7 +614,7 @@
     const items = [
       ["Top picks for you", `
         <p>Every title on your services gets a score from 0 to 100 for each signal below, and the weights combine them into a <b>match score</b>: ${list(Object.keys(w).map((k) => `${(SIGNALS[k] || { name: k }).name} ${p(w[k])}`))}.</p>
-        <p>If a title is missing a signal (no critic reviews, or you haven't rated anything yet), that signal is skipped for that title and the others are scaled up to fill the gap. Titles you've rated are left out, since you've likely seen them.</p>
+        <p>If a title is missing a signal (no critic reviews, or you haven't rated anything yet), that signal is skipped for that title and the others are scaled up to fill the gap. Titles you've rated or marked watched are left out, and so are titles with fewer than ${fmtCount(picksMinVotes())} IMDb votes, so brand-new or little-known titles with no real rating yet can't top the list.</p>
         <p>Open any title and scroll to <b>Why this pick</b> to see its exact numbers.</p>`],
       ["Trending now", `
         <p>The average of two scores, so a title needs to be popular on both to rank high:</p>

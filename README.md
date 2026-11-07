@@ -38,7 +38,7 @@ Each signal is scored 0–100 and combined with these weights (edit them in `con
 | Critics | 15% | Average of Rotten Tomatoes and Metacritic |
 | Trending | 10% | Average of Trakt watchers right now (log-scaled) and position on TMDB's daily trending list, each scaled separately for movies and TV |
 
-If a title is missing a signal (no critic score, or you haven't rated anything or picked any genres yet), that signal is skipped and the other weights scale up to fill the gap. Titles you've rated are left out of Top picks.
+If a title is missing a signal (no critic score, or you haven't rated anything or picked any genres yet), that signal is skipped and the other weights scale up to fill the gap. Titles you've rated or marked watched are left out of Top picks, as are titles with fewer than 5,000 IMDb votes (`row_tilt.top_picks_min_imdb_votes` in `config.json`).
 
 ## Setup
 
