@@ -355,7 +355,7 @@
     $("#details-body").innerHTML = `
       <div class="sheet-head d-head">
         <span class="d-head-title">${esc(t.title)}</span>
-        <button class="icon-btn close" data-close aria-label="Close">✕</button>
+        <button class="icon-btn close" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="d-top">
         <div class="poster">${t.poster ? `<img src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}</div>
@@ -580,8 +580,8 @@
       <label><input type="checkbox" value="${esc(s.key)}" ${myServices.includes(s.key) ? "checked" : ""}>
         <span class="dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${esc(s.color)}"></span>${esc(s.name)}</label>`).join("");
     renderGenres();
-    renderWeights();
     renderHow();
+    renderWeights();
     showLastBackup();
     if (!$("#settings").open) showSheet($("#settings"));
   }
@@ -628,8 +628,10 @@
     const trendVotes = fmtCount(t.trending_min_imdb_votes ?? 5000);
     const items = [
       ["Top picks for you", `
-        <p>Every title on your services gets a score from 0 to 100 for each signal below, and the weights combine them into a <b>match score</b>: ${list(Object.keys(w).map((k) => `${(SIGNALS[k] || { name: k }).name} ${p(w[k])}`))}.</p>
-        <p>If a title is missing a signal (no critic reviews, or you haven't rated anything yet), that signal is skipped for that title and the others are scaled up to fill the gap. Titles you've rated or marked watched are left out, and so are titles with fewer than ${fmtCount(picksMinVotes())} IMDb votes, so brand-new or little-known titles with no real rating yet can't top the list.</p>
+        <p>Every title on your services gets a score from 0 to 100 for each signal, and these weights combine them into a <b>match score</b>. The percentages are the ones that apply to you right now.</p>
+        <ul id="weights" class="weights"></ul>
+        <p id="weights-note" class="weights-note"></p>
+        <p>If a title is missing a signal (for example, no critic reviews), that signal is skipped for that title and the others are scaled up to fill the gap. Titles you've rated or marked watched are left out, and so are titles with fewer than ${fmtCount(picksMinVotes())} IMDb votes, so brand-new or little-known titles with no real rating yet can't top the list.</p>
         <p>Open any title and scroll to <b>Why this pick</b> to see its exact numbers.</p>`],
       ["Trending now", `
         <p><b>${p(1 - (t.trending_recency ?? 0.25))} trending + ${p(t.trending_recency ?? 0.25)} "New &amp; recent"</b>. The trending score blends two sources, <b>${p(t.trending_tmdb_share ?? 0.7)} TMDB</b> (broader audience) and <b>${p(1 - (t.trending_tmdb_share ?? 0.7))} Trakt</b>:</p>
@@ -674,6 +676,7 @@
   /* Shows the weights that apply to this viewer right now: until they rate
    * something or pick a genre, "Your taste" is skipped and the others are scaled up. */
   function renderWeights() {
+    if (!$("#weights")) return; // lives inside "How it's calculated"
     const w = feed.weights;
     const rated = hasTaste();
     const active = Object.keys(w).filter((k) => rated || k !== "taste");
@@ -688,9 +691,8 @@
         <div class="w-bar"><span style="width:${(share * 100).toFixed(1)}%"></span></div>
       </li>`;
     }).join("");
-    $("#weights-note").textContent = rated
-      ? "If a title is missing a score (for example, no critic reviews), that signal is skipped for that title and the others are scaled up to fill the gap."
-      : `Your taste will count for ${pct(w.taste / Object.values(w).reduce((a, b) => a + b, 0))} once you rate a title or like a genre. Until then the other signals are scaled up to fill the gap, and the same happens for any title missing a score.`;
+    $("#weights-note").textContent = rated ? ""
+      : `Your taste will count for ${pct(w.taste / Object.values(w).reduce((a, b) => a + b, 0))} once you rate a title or like a genre; until then the other signals are scaled up to fill the gap.`;
   }
 
   // ---------------------------------------------------------------- backup

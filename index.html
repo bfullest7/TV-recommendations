@@ -48,7 +48,7 @@
     <div class="sheet-body">
       <div class="sheet-head">
         <input id="search-input" class="search-input" type="search" placeholder="Search movies and shows" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
-        <button class="icon-btn close" data-close aria-label="Close">✕</button>
+        <button class="icon-btn close" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <ul id="search-results" class="results"></ul>
     </div>
@@ -59,7 +59,7 @@
     <div class="sheet-body">
       <div class="sheet-head">
         <h2 id="s-title">Settings</h2>
-        <button class="icon-btn close" data-close aria-label="Close">✕</button>
+        <button class="icon-btn close" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
 
       <section>
@@ -72,13 +72,6 @@
         <h3>Genres you like</h3>
         <p class="hint">Optional. Tap 👍 or 👎 for genres you like or don't. They count toward "Your taste" in Top picks, along with your thumbs on titles. Tap again to clear.</p>
         <div id="genre-picker" class="genre-picker"></div>
-      </section>
-
-      <section>
-        <h3>How Top picks are ranked</h3>
-        <p class="hint">Each title gets a score from 0 to 100 for each signal, and these weights combine them.</p>
-        <ul id="weights" class="weights"></ul>
-        <p id="weights-note" class="hint weights-note"></p>
       </section>
 
       <section>
@@ -99,7 +92,6 @@
         <p id="backup-status" class="hint backup-status" role="status"></p>
       </section>
 
-      <button class="done-btn" data-close>Done</button>
     </div>
   </dialog>
 

@@ -43,6 +43,9 @@ h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
   width: 40px; height: 40px; border-radius: 50%;
   background: var(--surface); border: 1px solid var(--line);
 }
+/* Close buttons: filled and bolder so they stand out in sheet headers */
+.icon-btn.close { background: #3a404d; border-color: #4a5160; color: #fff; }
+.icon-btn.close:active { background: #4a5160; }
 
 .filters {
   display: flex; gap: 8px; overflow-x: auto; margin: 12px -16px 0; padding: 0 16px 2px;
@@ -242,7 +245,10 @@ body:has(dialog[open]) { overflow: hidden; }
 .weights .w-bar { height: 6px; margin-top: 5px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
 .weights .w-bar span { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
 .weights li.off .w-pct, .weights li.off .w-name { color: var(--muted); }
-.weights-note { margin-top: 6px; }
+.weights-note { margin: 6px 0 10px; }
+.weights-note:empty { display: none; }
+.how-body .weights { margin: 4px 0 4px; padding: 0; }
+.how-body .weights .w-name, .how-body .weights .w-pct { color: var(--text); }
 
 .backup-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .secondary-btn {
