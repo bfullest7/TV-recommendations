@@ -33,12 +33,19 @@
       background: #fff; pointer-events: none; transition: opacity .5s ease-out;
     }
     #splash.leaving { opacity: 0; }
-    #splash img { width: 104px; height: 104px; border-radius: 50%; opacity: 0; transition: opacity .25s ease-out; }
-    #splash.ready img { opacity: 1; }
+    #splash svg { width: 80px; height: 80px; opacity: 0; transition: opacity .25s ease-out; }
+    #splash.ready svg { opacity: 1; }
   </style>
 </head>
 <body>
-  <div id="splash" aria-hidden="true"><img src="icons/icon-192.png" alt=""></div>
+  <div id="splash" aria-hidden="true">
+    <svg viewBox="0 0 512 512"><circle cx="256" cy="256" r="256" fill="#0f1115"/>
+      <g transform="translate(256 256) scale(.62) translate(-256 -266)">
+        <rect x="96" y="140" width="320" height="210" rx="28" fill="none" stroke="#ffb547" stroke-width="28"/>
+        <path d="M226 200 L306 245 L226 290 Z" fill="#ffb547"/>
+        <path d="M196 392 H316" stroke="#ffb547" stroke-width="28" stroke-linecap="round"/>
+      </g></svg>
+  </div>
   <header class="top">
     <div class="top-row">
       <h1>What to Watch</h1>
