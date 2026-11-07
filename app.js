@@ -237,7 +237,29 @@
       </button>`;
   }
 
-  function renderRows() {
+  /* keepPlace: after a rating, genre change or data refresh, every row keeps
+   * its scroll position except Top picks, which re-ranks and starts over at
+   * its first title. Without keepPlace (filter changes), all rows start over. */
+  function renderRows(keepPlace = false) {
+    const saved = {};
+    const pageY = window.scrollY;
+    if (keepPlace) {
+      for (const sc of document.querySelectorAll("#rows .row .scroller")) {
+        const key = sc.closest(".row").dataset.row;
+        if (key && key !== "picks") saved[key] = sc.scrollLeft;
+      }
+    }
+    drawRows();
+    if (keepPlace) {
+      for (const sc of document.querySelectorAll("#rows .row .scroller")) {
+        const key = sc.closest(".row").dataset.row;
+        if (key in saved) sc.scrollLeft = saved[key];
+      }
+      window.scrollTo({ top: pageY });
+    }
+  }
+
+  function drawRows() {
     if (!myServices.length) {
       $("#rows").innerHTML = `
         <div class="notice welcome">
@@ -250,7 +272,7 @@
     }
     const n = feed.row_length || 30;
     $("#rows").innerHTML = rowDefs().map((def) => `
-      <section class="row" aria-labelledby="row-${def.key}">
+      <section class="row" data-row="${def.key}" aria-labelledby="row-${def.key}">
         <div class="row-head">
           <h2 id="row-${def.key}">${esc(def.title)}</h2>
           <p class="source">${esc(def.source)}</p>
@@ -276,10 +298,10 @@
     $("#updated").textContent = feed ? `Updated ${timeAgo(feed.trending_updated_at)}` : "";
   }
 
-  function render() {
+  function render(keepPlace = false) {
     if (!myServices.includes(filter)) filter = "all";
     renderFilters();
-    renderRows();
+    renderRows(keepPlace);
     renderUpdated();
   }
 
@@ -432,7 +454,7 @@
     const d = $("#details"), y = d.scrollTop;
     openDetails(id); // redraw so "Why this pick" reflects the new rating
     d.scrollTop = y;
-    renderRows();
+    renderRows(true);
   }
 
   // ---------------------------------------------------------------- settings
@@ -481,7 +503,7 @@
     save(STORE.genres, genrePrefs);
     renderGenres();
     renderWeights();
-    renderRows();
+    renderRows(true);
   }
 
   // ---------------------------------------------------------------- how it's calculated
@@ -674,7 +696,7 @@
       delete thumbs[b.dataset.unrate];
       save(STORE.thumbs, thumbs);
       renderRatings();
-      renderRows();
+      renderRows(true);
     });
     $("#genre-picker").addEventListener("click", (e) => {
       const b = e.target.closest("[data-genre]");
@@ -730,7 +752,7 @@
       const next = await fetchFeed();
       if (!feed || next.generated_at !== feed.generated_at) {
         feed = next;
-        render();
+        render(true);
       }
     } catch { /* keep showing what we have */ }
   }
