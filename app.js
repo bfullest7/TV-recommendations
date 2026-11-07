@@ -625,7 +625,6 @@
     for (const b of document.querySelectorAll(".ml-tab")) {
       const tab = b.dataset.tab;
       b.setAttribute("aria-selected", tab === ml.tab);
-      b.innerHTML = `${tab === "list" ? "In your list" : "Watched"} <span class="n">${mlTitles(tab).length}</span>`;
     }
     const sorts = ML_SORTS[ml.tab];
     $("#ml-sort").innerHTML = sorts.map(([k, l]) => `<option value="${k}" ${ml.sort[ml.tab] === k ? "selected" : ""}>${l}</option>`).join("");

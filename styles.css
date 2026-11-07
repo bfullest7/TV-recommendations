@@ -247,10 +247,9 @@ body:has(dialog[open]) { overflow: hidden; }
 
 /* Your list page: back arrow and title, two tabs, sort and filters, then posters three across */
 .head-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.ml-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 16px; padding: 4px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.ml-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 16px; padding: 4px; border-radius: 12px; background: var(--surface); }
 .ml-tab { padding: 8px 4px; border: 0; border-radius: 9px; background: none; color: var(--muted); font-size: 15px; font-weight: 600; }
 .ml-tab[aria-selected="true"] { background: var(--surface-2); color: var(--text); }
-.ml-tab .n { font-weight: 400; color: var(--muted); }
 .ml-filters { margin-top: 12px; }
 .ml-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; margin-top: 16px; }
 .ml-grid .card { width: auto; }
