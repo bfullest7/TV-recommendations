@@ -955,16 +955,5 @@
     render();
   }
 
-  /* iPhone home-screen apps sometimes add the status-bar space twice right
-   * at launch (the header sits too low until the first scroll). A tiny
-   * scroll after layout makes iOS correct it, same as scrolling by hand. */
-  function settleTop() {
-    if (window.scrollY > 1) return; // don't disturb a real scroll position
-    window.scrollTo(0, 1);
-    requestAnimationFrame(() => window.scrollTo(0, 0));
-  }
-  window.addEventListener("load", () => setTimeout(settleTop, 50));
-  window.addEventListener("pageshow", (e) => { if (e.persisted) setTimeout(settleTop, 50); });
-
   start();
 })();
