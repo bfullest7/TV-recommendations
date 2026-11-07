@@ -665,9 +665,9 @@
   const SIGNALS = {
     audience: { name: "Audience rating", src: "IMDb, adjusted for vote count" },
     taste: { name: "Your taste", src: "Your 👍 and 👎 on titles, plus genres you like" },
-    buzz: { name: "Trending", src: "Trakt watchers + TMDB trending, averaged" },
+    buzz: { name: "Trending", src: "TMDB trending 70% + Trakt watchers 30%" },
     critic: { name: "Critics", src: "Rotten Tomatoes and Metacritic" },
-    fresh: { name: "New & recent", src: "Released in the last few years; new seasons and new arrivals count too" },
+    fresh: { name: "New & recent", src: "Newest releases count most, fading over 3 years" },
   };
   const pct = (x) => `${Math.round(x * 100)}%`;
 

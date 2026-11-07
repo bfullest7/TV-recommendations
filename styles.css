@@ -134,6 +134,9 @@ h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
 body:has(dialog[open]) { overflow: hidden; }
 .sheet h2 { margin: 0; font-size: 20px; }
 .sheet h3 { margin: 22px 0 4px; font-size: 15px; }
+/* Divider between Settings sections */
+#settings .sheet-body > section { padding-top: 6px; }
+#settings .sheet-body > section + section { margin-top: 22px; border-top: 1px solid var(--line); }
 .hint { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
 
 .d-top { display: flex; gap: 14px; }
