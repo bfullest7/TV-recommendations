@@ -675,7 +675,7 @@
     const trendVotes = fmtCount(t.trending_min_imdb_votes ?? 5000);
     const items = [
       ["Top picks for you", `
-        <p>Every title on your services gets a score from 0 to 100 for each signal, and these weights combine into a <b>match score</b>. The percentages are the ones that apply to you right now.</p>
+        <p>Every title on your services gets a score from 0 to 100 for each signal, and these weights combine into a <b>match score</b>. These percentages shift as you rate titles and like genres.</p>
         <ul id="weights" class="weights"></ul>
         <p id="weights-note" class="weights-note"></p>
         <p>If a title is missing a signal (for example, no critic reviews), that signal is skipped for that title and the others are scaled up to fill the gap. Titles you've rated or marked watched are left out, and so are titles with fewer than ${fmtCount(picksMinVotes())} IMDb votes, so brand-new or little-known titles with no real rating yet can't top the list.</p>
