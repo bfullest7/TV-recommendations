@@ -73,14 +73,18 @@
         <div id="genre-picker" class="genre-picker"></div>
       </section>
 
-
-
-
       <section>
         <h3>How Top picks are ranked</h3>
         <p class="hint">Each title gets a score from 0 to 100 for each signal, and these weights combine them.</p>
         <ul id="weights" class="weights"></ul>
         <p id="weights-note" class="hint weights-note"></p>
+      </section>
+
+      <section>
+        <h3>How it's calculated</h3>
+        <p class="hint">Tap any item to see how it works.</p>
+        <div id="how" class="how"></div>
+        <p class="attribution">This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability data provided by JustWatch.</p>
       </section>
 
       <section>
@@ -92,13 +96,6 @@
           <input id="backup-file" type="file" accept=".json,application/json" hidden>
         </div>
         <p id="backup-status" class="hint backup-status" role="status"></p>
-      </section>
-
-      <section>
-        <h3>How it's calculated</h3>
-        <p class="hint">Tap any item to see how it works.</p>
-        <div id="how" class="how"></div>
-        <p class="attribution">This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability data provided by JustWatch.</p>
       </section>
 
       <button class="done-btn" data-close>Done</button>
