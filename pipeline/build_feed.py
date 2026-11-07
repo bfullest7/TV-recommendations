@@ -26,6 +26,7 @@ import gzip
 import io
 import json
 import math
+import re
 import os
 import sys
 import time
@@ -53,6 +54,24 @@ GENRE_SPLIT = {
     "Sci-Fi & Fantasy": ["Science Fiction", "Fantasy"],
     "War & Politics": ["War", "Politics"],
 }
+
+# TMDB has no Sports genre, so titles get one from their TMDB keywords.
+# A keyword counts if it is (or contains, as a whole word) one of these.
+SPORT_WORDS = [
+    "sport", "sports", "athlete", "olympics", "olympic games", "paralympics",
+    "football", "american football", "soccer", "basketball", "baseball", "ice hockey", "hockey",
+    "tennis", "golf", "boxing", "boxer", "mixed martial arts", "mma", "ufc", "wrestling", "professional wrestling",
+    "formula 1", "formula one", "nascar", "motorsport", "car racing", "auto racing", "horse racing",
+    "cycling", "tour de france", "marathon", "track and field", "gymnastics", "figure skating",
+    "skateboarding", "surfing", "snowboarding", "skiing", "swimming", "rugby", "cricket", "volleyball",
+    "nba", "nfl", "mlb", "nhl", "super bowl", "world cup", "premier league", "sports team", "sports documentary",
+    "sports coach", "quarterback", "pitcher", "rodeo", "bowling", "darts", "chess tournament", "esports",
+]
+_SPORT_RE = re.compile(r"\b(" + "|".join(re.escape(w) for w in sorted(SPORT_WORDS, key=len, reverse=True)) + r")\b")
+
+
+def is_sports(keywords: list[str]) -> bool:
+    return any(_SPORT_RE.search(k.lower()) for k in keywords)
 
 
 def log(*args):
@@ -201,7 +220,7 @@ class Tmdb:
 
     def details(self, kind: str, tmdb_id: int, provider_to_service: dict[int, str]) -> dict | None:
         try:
-            d = self.get(f"/{kind}/{tmdb_id}", append_to_response="external_ids,watch/providers,recommendations")
+            d = self.get(f"/{kind}/{tmdb_id}", append_to_response="external_ids,watch/providers,recommendations,keywords")
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return None
@@ -213,6 +232,10 @@ class Tmdb:
             for name in GENRE_SPLIT.get(g["name"], [g["name"]]):
                 if name not in genres:
                     genres.append(name)
+        kw = d.get("keywords") or {}
+        keywords = [k.get("name", "") for k in (kw.get("keywords") or kw.get("results") or [])]
+        if is_sports(keywords) and "Sports" not in genres:
+            genres.append("Sports")
         if kind == "movie":
             title, date = d.get("title"), d.get("release_date")
             latest = date

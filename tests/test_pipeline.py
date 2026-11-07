@@ -22,7 +22,8 @@ TODAY = "2026-11-06"
 # A small fake universe: key -> facts
 # services use TMDB provider ids: 8 Netflix, 1796 Netflix w/ ads, 15 Hulu, 1899 Max, 582 Paramount+ Amazon Channel
 U = {
-    "m1": dict(title="Great Movie", prov=[8], imdb=("tt001", 8.6, 900000), rt=95, mc=88, release="2024-03-01", genres=["Drama"]),
+    "m1": dict(title="Great Movie", prov=[8], imdb=("tt001", 8.6, 900000), rt=95, mc=88, release="2024-03-01", genres=["Drama"],
+               keywords=["based on true story", "boxing", "underdog"]),
     "m2": dict(title="Tiny Indie", prov=[15], imdb=("tt002", 9.6, 120), rt=100, mc=None, release="2025-01-10", genres=["Drama"]),
     "m3": dict(title="Fresh Release", prov=[1796], imdb=("tt003", 7.1, 40000), rt=70, mc=65, release="2026-10-30", genres=["Comedy"]),
     "m4": dict(title="Channel Only", prov=[582], imdb=("tt004", 8.0, 50000), rt=90, mc=80, release="2023-05-05", genres=["Action"]),
@@ -30,7 +31,7 @@ U = {
     "t1": dict(title="Big Show", prov=[8, 1899], imdb=("tt101", 8.9, 500000), rt=None, mc=None, release="2020-01-01",
                seasons=["2020-01-01", "2026-10-20"], genres=["Sci-Fi & Fantasy"]),
     "t2": dict(title="Cozy Show", prov=[15], imdb=("tt102", 7.4, 15000), rt=82, mc=70, release="2022-02-02",
-               seasons=["2022-02-02"], genres=["Comedy"]),
+               seasons=["2022-02-02"], genres=["Comedy"], keywords=["sitcom", "passport", "transport"]),
     "t3": dict(title="Wednesdayish", prov=[8], imdb=("tt103", 8.1, 300000), rt=None, mc=72, release="2022-11-23",
                seasons=["2022-11-23"], genres=["Comedy"]),
 }
@@ -110,6 +111,8 @@ class FakeHttp:
             "watch/providers": {"results": {"US": {"link": f"https://tmdb.example/{k}", "flatrate": [{"provider_id": x} for x in f["prov"]]}}},
             "recommendations": {"results": [{"id": 1}]},
         }
+        kws = [{"name": k} for k in f.get("keywords", [])]
+        d["keywords"] = {"keywords": kws} if kind == "movie" else {"results": kws}
         if kind == "movie":
             d.update(title=f["title"], release_date=f["release"])
         else:
@@ -145,6 +148,9 @@ class PipelineTest(unittest.TestCase):
         self.assertNotIn("m5", T)  # trending but not on any service
         self.assertEqual(T["t1"]["services"], ["hbomax", "netflix"])
         self.assertEqual(T["t1"]["genres"], ["Science Fiction", "Fantasy"])
+        # Sports comes from keywords; "transport"/"passport" must not match "sport"
+        self.assertEqual(T["m1"]["genres"], ["Drama", "Sports"])
+        self.assertNotIn("Sports", T["t2"]["genres"])
 
         # audience: the 120-vote 9.6 indie must not beat the 900k-vote 8.6 movie
         self.assertLess(rows["audience"].index("m1"), rows["audience"].index("m2"))
@@ -214,6 +220,10 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(bf.tmdb_trend_score(1, 100), 100.0)
         self.assertEqual(bf.tmdb_trend_score(None, 100), 0.0)
         self.assertEqual(bf.buzz_score(100, 0), 50.0)
+        for yes in ["formula 1", "basketball", "Sports Documentary", "professional wrestling", "college football"]:
+            self.assertTrue(bf.is_sports([yes]), yes)
+        for no in ["passport", "transport", "running away", "spaceship", "sportscar", "life coach"]:
+            self.assertFalse(bf.is_sports([no]), no)
         import datetime as dt
         self.assertEqual(bf.fresh_score("2026-11-06", 30, dt.date(2026, 11, 6)), 100.0)
         self.assertEqual(bf.fresh_score("2026-09-01", 30, dt.date(2026, 11, 6)), 0.0)
