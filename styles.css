@@ -244,8 +244,6 @@ body:has(dialog[open]) { overflow: hidden; }
 
 /* "See all" on the Your watchlist row */
 .row-title-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-/* ⓘ on Top picks: on the right edge like "See all ›"; a 40-wide tap area that doesn't make the row taller */
-.row-info { flex: none; display: grid; place-items: center; width: 40px; height: 40px; margin: -9px -9px -9px 0; padding: 0; border: 0; background: none; color: var(--muted); }
 .how-body.howpicks-body { padding-top: 20px; }
 .see-all { flex: none; padding: 4px 0 4px 8px; border: 0; background: none; color: var(--muted); font-size: 14px; }
 

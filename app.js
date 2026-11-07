@@ -324,7 +324,7 @@
     return `
       <section class="row" data-row="${def.key}" aria-labelledby="row-${def.key}">
         <div class="row-head">
-          <div class="row-title-line"><h2 id="row-${def.key}">${esc(def.title)}</h2>${def.key === "picks" ? `<button class="row-info" data-how-picks aria-label="How Top picks work"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor"/></svg></button>` : ""}${def.key === "watchlist" ? `<button class="see-all" data-open-mylist>See all ›</button>` : ""}</div>
+          <div class="row-title-line"><h2 id="row-${def.key}">${esc(def.title)}</h2>${def.key === "picks" ? `<button class="see-all" data-how-picks>How it works ›</button>` : ""}${def.key === "watchlist" ? `<button class="see-all" data-open-mylist>See all ›</button>` : ""}</div>
           <p class="source">${esc(def.source)}</p>
         </div>
         ${def.items.length
@@ -784,7 +784,7 @@
   };
   const ageText = (days) => (days % 365 === 0 ? `${days / 365} year${days === 365 ? "" : "s"}` : `${Math.round(days / 30)} months`);
   /* How Top picks works: shown in Settings and on the full-screen page behind the
-     ⓘ next to "Top picks for you". The chart is filled in by renderWeights(). */
+     "How it works ›" link next to "Top picks for you". The chart is filled in by renderWeights(). */
   function picksHowHtml() {
     return `
         <p>Every title on your services gets a score from 0 to 100 for each signal, and these weights combine into a <b>match score</b>. These percentages shift as you rate titles and like genres.</p>
