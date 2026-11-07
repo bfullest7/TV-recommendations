@@ -825,6 +825,15 @@
   function closeSheet(d) {
     if (typeof d.close === "function") d.close();
     else d.removeAttribute("open");
+    if (d.id === "settings") applyServiceChanges();
+  }
+  /* Service picks made in Settings take effect on the home screen once Settings closes.
+     Redrawing it behind the open sheet made the screen flash on the first and last pick. */
+  let servicesChanged = false;
+  function applyServiceChanges() {
+    if (!servicesChanged) return;
+    servicesChanged = false;
+    render();
   }
 
   // ---------------------------------------------------------------- events
@@ -866,8 +875,9 @@
     $("#service-picker").addEventListener("change", () => {
       myServices = [...$("#service-picker").querySelectorAll("input:checked")].map((i) => i.value);
       save(STORE.services, myServices);
-      render();
+      servicesChanged = true; // the home screen is redrawn when Settings closes, so it doesn't flash behind the sheet
     });
+    $("#settings").addEventListener("close", applyServiceChanges);
     $("#genre-picker").addEventListener("click", (e) => {
       const b = e.target.closest("[data-genre]");
       if (b) setGenre(b.dataset.genre, Number(b.dataset.v));
