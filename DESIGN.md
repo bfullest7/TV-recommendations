@@ -16,7 +16,7 @@ The app uses one small scale. Each size has one job; avoid in-between sizes like
 | 15 | Buttons and tappable labels | Add to list, Mark watched, Like, Not for me, backup buttons, "Pick your services", "How it's calculated" item names, name in a detail screen's top bar, show names in search results |
 | 14 | Body text and subtitles | Home row subtitles, Settings descriptions, "How it's calculated" text, genre and service names, show description, "Why this pick" text, detail-screen year/type/genres line, welcome card text, filter buttons |
 | 13 | Title details in lists | Show names under posters (posters are narrow, so 13 keeps long names readable); the year/type/rating and service lines in search results |
-| 12 | Fine print | Year and rating under posters, score labels, service badges on the detail screen, "✓ Watched" badge, "In your list" and "✓ Watched" pills in search, "Data updated" note, table headers |
+| 12 | Fine print | Year and rating under posters, score labels, service badges on the detail screen, "✓ Watched" badge, "In your list" and "✓ Watched" pills in search, "Data updated" note, table headers, the grey source line under each signal in "Why this pick" |
 | 10.5 | Badges on posters | Service badge on a poster ("Netflix") |
 
 Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1.5 line spacing.

@@ -503,10 +503,13 @@
     const missing = parts.filter((p) => p.score === null && p.k !== "taste").map((p) => (p.k === "critic" ? "critic score" : "IMDb rating"));
     if (missing.length) sentence += ` It has no ${missing.join(" or ")}, so ${missing.length > 1 ? "those were" : "that was"} skipped.`;
 
-    const label = { audience: "Audience (IMDb)", taste: "Your taste", buzz: "Trending", critic: "Critics", fresh: "New & recent" };
+    const label = { audience: "Audience", taste: "Your taste", buzz: "Trending", critic: "Critics", fresh: "New & recent" };
+    // Where each signal's numbers come from, shown in small grey under its name
+    const source = { audience: "IMDb", taste: "Your likes and genres", buzz: "TMDB and Trakt", critic: "Rotten Tomatoes and Metacritic", fresh: "Release and streaming dates" };
+    const name = (k) => `${label[k]}<span class="src">${source[k]}</span>`;
     const rows = parts.map((p) => p.score === null
-      ? `<tr class="skip"><td>${label[p.k]}</td><td colspan="3">${p.k === "taste" ? "No thumbs or genre likes yet" : "No score, skipped"}</td></tr>`
-      : `<tr><td>${label[p.k]}</td><td>${Math.round(p.score)}</td><td>${Math.round(p.weight * 100)}%</td><td>${p.pts.toFixed(1)}</td></tr>`).join("");
+      ? `<tr class="skip"><td>${name(p.k)}</td><td colspan="3">${p.k === "taste" ? "No thumbs or genre likes yet" : "No score, skipped"}</td></tr>`
+      : `<tr><td>${name(p.k)}</td><td>${Math.round(p.score)}</td><td>${Math.round(p.weight * 100)}%</td><td>${p.pts.toFixed(1)}</td></tr>`).join("");
     return `
       <section class="why">
         <h3>Why this pick</h3>

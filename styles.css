@@ -215,6 +215,7 @@ body:has(dialog[open]) { overflow: hidden; }
 .why-table td { text-align: right; padding: 7px 0; border-top: 1px solid var(--line); }
 .why-table th:first-child, .why-table td:first-child { text-align: left; }
 .why-table td:not(:first-child), .why-table th:not(:first-child) { padding-left: 10px; white-space: nowrap; }
+.why-table .src { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
 .why-table tr.skip td { color: var(--muted); }
 .why-table tr.skip td + td { text-align: right; font-style: italic; }
 .why-table tfoot td { font-weight: 700; font-size: 15px; border-top: 2px solid var(--line); }
