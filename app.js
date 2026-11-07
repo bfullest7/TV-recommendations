@@ -959,5 +959,23 @@
     render();
   }
 
+  /* iPhone home-screen apps: on a fresh launch iOS can add the status-bar
+   * space twice (the header sits too low) until its next layout pass, which
+   * happens on a scroll or when you leave and come back. Trigger that layout
+   * pass ourselves a few times in the first second: a 1pt scroll and back,
+   * plus a forced re-layout. Only when at the top, so a real scroll is kept. */
+  function settleLayout() {
+    if (window.scrollY > 1) return;
+    window.scrollTo(0, 1);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      const h = document.querySelector("header.top");
+      if (h) { h.style.transform = "translateZ(0)"; void h.offsetHeight; h.style.transform = ""; }
+    });
+  }
+  function settleSoon() { [50, 300, 900].forEach((ms) => setTimeout(settleLayout, ms)); }
+  window.addEventListener("load", settleSoon);
+  window.addEventListener("pageshow", (e) => { if (e.persisted) settleSoon(); });
+
   start();
 })();
