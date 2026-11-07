@@ -624,6 +624,18 @@
 
   // ---------------------------------------------------------------- how it's calculated
   /* Plain-language explanations, built from the live settings in config.json. */
+  /* Bar chart in the same style as the Top picks weights. Each item:
+   * { name, src, value (0-1 for bar length), label (text on the right) } */
+  const barsHtml = (items) => `<ul class="weights">${items.map((it) => `
+    <li><div class="w-top"><span><span class="w-name">${esc(it.name)}</span>${it.src ? `<br><span class="w-src">${esc(it.src)}</span>` : ""}</span>
+      <span class="w-pct">${esc(it.label)}</span></div>
+      <div class="w-bar"><span style="width:${(Math.max(0, Math.min(1, it.value)) * 100).toFixed(1)}%"></span></div></li>`).join("")}</ul>`;
+  const mixBars = (parts) => barsHtml(parts.map(([name, src, share]) => ({ name, src, value: share, label: `${Math.round(share * 100)}%` })));
+  // the "New & recent" score for a title of a given age, using the live curve
+  const scoreAtAge = (days) => {
+    const full = recentFullDays(), zero = recentZeroDays();
+    return days <= full ? 100 : Math.max(0, 100 * (1 - (days - full) / (zero - full)));
+  };
   const ageText = (days) => (days % 365 === 0 ? `${days / 365} year${days === 365 ? "" : "s"}` : `${Math.round(days / 30)} months`);
   function renderHow() {
     const w = feed.weights;
@@ -639,15 +651,23 @@
         <p>If a title is missing a signal (for example, no critic reviews), that signal is skipped for that title and the others are scaled up to fill the gap. Titles you've rated or marked watched are left out, and so are titles with fewer than ${fmtCount(picksMinVotes())} IMDb votes, so brand-new or little-known titles with no real rating yet can't top the list.</p>
         <p>Open any title and scroll to <b>Why this pick</b> to see its exact numbers.</p>`],
       ["Trending now", `
-        <p><b>${p(1 - (t.trending_recency ?? 0.25))} trending + ${p(t.trending_recency ?? 0.25)} "New &amp; recent"</b>. The trending score blends two sources, <b>${p(t.trending_tmdb_share ?? 0.7)} TMDB</b> (broader audience) and <b>${p(1 - (t.trending_tmdb_share ?? 0.7))} Trakt</b>:</p>
-        <ul><li><b>Trakt:</b> how many Trakt users are watching it right now. 10 vs 100 watchers counts as much as 100 vs 1,000.</li>
-        <li><b>TMDB:</b> its position on TMDB's daily trending list (#1 scores 100).</li></ul>
+        ${(() => {
+          const r = t.trending_recency ?? 0.25, sh = t.trending_tmdb_share ?? 0.7;
+          return mixBars([
+            ["TMDB trending", "How many people are looking it up today", (1 - r) * sh],
+            ["Trakt watchers", "How many Trakt users are watching right now", (1 - r) * (1 - sh)],
+            ["New & recent", "Newest releases count most", r],
+          ]);
+        })()}
+        <p>TMDB's #1 trending title scores 100. Trakt counts are scaled so 10 vs 100 watchers counts as much as 100 vs 1,000.</p>
         <p>Movies and TV are scaled separately, so smaller movie audiences aren't compared with TV's. Only titles with ${trendVotes}+ IMDb votes are shown. Updated every 2 hours.</p>`],
       ["Top rated by audiences", `
-        <p><b>${p(1 - t.audience_recency)} IMDb rating + ${p(t.audience_recency)} "New &amp; recent"</b>, among titles with ${votes}+ IMDb votes.</p>
+        ${mixBars([["IMDb rating", "Adjusted for vote count", 1 - t.audience_recency], ["New & recent", "Newest releases count most", t.audience_recency]])}
+        <p>Only titles with ${votes}+ IMDb votes.</p>
         <p>The IMDb rating is adjusted for vote count: titles with few votes are pulled toward the average, so a handful of 10/10 votes can't top the list.</p>`],
       ["Critics' favorites", `
-        <p><b>${p(1 - t.critics_recency)} critic score + ${p(t.critics_recency)} "New &amp; recent"</b>, among titles with ${votes}+ IMDb votes.</p>
+        ${mixBars([["Critic score", "Rotten Tomatoes and Metacritic", 1 - t.critics_recency], ["New & recent", "Newest releases count most", t.critics_recency]])}
+        <p>Only titles with ${votes}+ IMDb votes.</p>
         <p>The critic score is the average of Rotten Tomatoes (critics, not audience) and Metacritic, from OMDb, with MDBList filling in what OMDb lacks (most TV shows). Titles with neither are left out.</p>`],
       ["New on your services", `
         <p>Titles from the last 30 days, newest first: new movies, new seasons of shows, and titles that just arrived on one of your services. Streaming availability comes from TMDB, provided by JustWatch.</p>`],
@@ -657,6 +677,9 @@
         <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres you like</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres and each 👎 lowers them. A genre you set in <b>Genres you like</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you disliked a drop.</p>
         <p>Not counted until you rate something or pick a genre.</p>`],
       ["Signal: New & recent", `
+        <p>Score by how long ago a title came out:</p>
+        ${barsHtml([["Up to 3 months", 90], ["6 months", 182], ["1 year", 365], ["18 months", 547], ["2 years", 730], ["3 years", 1095]]
+          .map(([name, days]) => { const v = Math.round(scoreAtAge(days)); return { name, value: v / 100, label: String(v) }; }))}
         <p>Full credit (100) for titles released or premiered in the last ${ageText(recentFullDays())}, then fading steadily to 0 at ${ageText(recentZeroDays())} old (for example, a 1-year-old title scores ${Math.round(100 * (1 - (365 - recentFullDays()) / (recentZeroDays() - recentFullDays())))}). A new season of an older show counts ${seasonCredit() === 0.25 ? "a quarter" : seasonCredit() === 0.5 ? "half" : Math.round(seasonCredit() * 100) + "%"}, so long-running shows don't look brand new every season. Arriving on a service in the last 30 days counts fully.</p>`],
       ["Signal: Audience, Critics, Trending", `
         <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the TMDB/Trakt blend from the Trending now row (without that row's recency share, since New &amp; recent is its own signal).</p>`],
