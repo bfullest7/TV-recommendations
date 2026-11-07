@@ -16,7 +16,7 @@ The app uses one small scale. Each size has one job; avoid in-between sizes like
 | 15 | Buttons and tappable labels | Add to list, Mark watched, Like, Not for me, backup buttons, "Pick your services", "How it's calculated" item names, name in a detail screen's top bar, show names in search results |
 | 14 | Body text and subtitles | Home row subtitles, Settings descriptions, "How it's calculated" text, genre and service names, show description, "Why this pick" text, detail-screen year/type/genres line, welcome card text, filter buttons |
 | 13 | Show names under posters | Posters are narrow, so 13 keeps long names readable |
-| 12 | Fine print | Year and rating under posters, score labels, service badges on the detail screen, "✓ Watched" badge, "Data updated" note, table headers |
+| 12 | Fine print | Year and rating under posters, score labels, service badges on the detail screen, "✓ Watched" badge, "In your list" and "✓ Watched" pills in search, "Data updated" note, table headers |
 | 10.5 | Badges on posters | Service badge on a poster ("Netflix") |
 
 Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1.5 line spacing.
@@ -34,7 +34,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 | `--accent` | #ffb547 (orange) | Main call to action only ("Pick your services"), checked boxes |
 | `--up` / `--down` | green / red | "Like" and "Not for me" when selected |
 
-**Orange is not a "selected" or "focused" color.** The search box shows a thin grey (`--muted`) outline while you type. The list and watched buttons stay white with a plain outline when on; the checkmark and wording show the state.
+**Orange is not a "selected" or "focused" color.** The search box shows a thin grey (`--muted`) outline while you type. The list and watched buttons stay white with a plain outline when on; the icon and wording show the state.
 
 ## Buttons
 
@@ -57,7 +57,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - **Periods:** leave the period off a subtitle or description that is a single sentence. Keep periods when there are two or more sentences.
 - The Top picks subtitle stays the same before and after the user rates titles.
 - Use "list" in buttons ("＋ Add to list", then a bookmark icon + "Added to list") and "Your watchlist" for the row.
-- Use "＋" for an action that adds and "✓" for a state that's on (bookmark + "Added to list", "✓ Watched").
+- Use "＋" for an action that adds ("＋ Add to list"). Show a state that's on with its icon: the bookmark for the list ("Added to list", "In your list"), "✓" for watched ("✓ Watched").
 
 ## Icons
 
@@ -71,7 +71,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - Marking a title watched doesn't change any other button. A watched title stays on the list and keeps showing in "Your watchlist" (dimmed, with a "✓ Watched" badge), but leaves every other row except the Netflix Top 10.
 - A watched TV series counts as unwatched again once a season premieres after the date it was marked watched, so the new season shows in the rows. Marking it watched again hides it until the next season.
 - "Not for me" (👎) titles are hidden from every row except "Your watchlist" and the Netflix Top 10. Search still finds them so the rating can be undone.
-- Search opens full screen on the page background, with the search box where the app title sits. Settings and the detail screen are sheets that slide up over the home screen.
+- Search opens full screen on the page background, with the search box where the app title sits. It starts empty each time it's opened (viewing a result and coming back keeps the search). Settings and the detail screen are sheets that slide up over the home screen.
 - Changing services in Settings updates the home screen when Settings closes, so nothing flashes behind the sheet.
 
 ## Checking a visual change
