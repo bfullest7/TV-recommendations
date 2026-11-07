@@ -35,8 +35,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
   border-bottom: 1px solid var(--line);
 }
 .top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
-.updated { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+h1 { margin: 0; font-size: 22px; line-height: 1.1; letter-spacing: -0.01em; }
+.updated { margin: 1px 0 0; color: var(--muted); font-size: 12px; line-height: 1.25; }
 
 .icon-btn {
   display: grid; place-items: center;
