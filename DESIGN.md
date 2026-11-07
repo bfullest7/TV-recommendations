@@ -71,6 +71,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - Marking a title watched doesn't change any other button. A watched title stays on the list and keeps showing in "Your watchlist" (dimmed, with a "✓ Watched" badge), but leaves every other row except the Netflix Top 10.
 - A watched TV series counts as unwatched again once a season premieres after the date it was marked watched, so the new season shows in the rows. Marking it watched again hides it until the next season.
 - "Not for me" (👎) titles are hidden from every row except "Your watchlist" and the Netflix Top 10. Search still finds them so the rating can be undone.
+- Search opens full screen on the page background, with the search box where the app title sits. Settings and the detail screen are sheets that slide up over the home screen.
 - Changing services in Settings updates the home screen when Settings closes, so nothing flashes behind the sheet.
 
 ## Checking a visual change

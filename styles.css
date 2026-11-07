@@ -225,7 +225,12 @@ body:has(dialog[open]) { overflow: hidden; }
 .genre.disliked { border-color: var(--down); }
 
 .top-btns { display: flex; gap: 8px; }
-.search-sheet { min-height: 70vh; }
+/* Search takes over the whole screen, with its search box where the app title sits */
+.sheet.search-sheet {
+  inset: 0; max-width: none; height: 100vh; height: 100dvh; max-height: none; margin: 0;
+  border-radius: 0; background: var(--bg);
+}
+.search-sheet .sheet-head { padding-top: calc(env(safe-area-inset-top) + 24px); background: var(--bg); }
 .search-input {
   flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
   background: var(--surface-2); color: var(--text); font: inherit; font-size: 16px;
