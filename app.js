@@ -214,6 +214,8 @@
       {
         key: "critics", title: "Critics' favorites", source: `Rotten Tomatoes and Metacritic, ${tiltNote(tilt.critics_recency)}`,
         items: tilted(feed.rows.critics, "critic", tilt.critics_recency),
+        // this row shows the score it's ranked by: Rotten Tomatoes, or Metacritic if there's no RT
+        line: (t) => [latestYear(t), t.rt != null ? `RT ${t.rt}%` : t.mc != null ? `MC ${t.mc}` : null].filter(Boolean).join(" · "),
       },
       {
         key: "new", title: "New on your services", source: "Streaming availability from TMDB / JustWatch",
@@ -256,7 +258,7 @@
           ${svc ? `<span class="badge" style="background:${esc(svc.color)}">${esc(svc.name)}</span>` : ""}
         </div>
         <div class="name">${esc(t.title)}</div>
-        <div class="meta">${esc(metaLine1(t)) || "&nbsp;"}</div>
+        <div class="meta">${esc(def.line ? def.line(t) : metaLine1(t)) || "&nbsp;"}</div>
       </button>`;
   }
 
