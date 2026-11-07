@@ -78,7 +78,7 @@ h1 { margin: 0; font-size: 22px; line-height: 1.1; letter-spacing: -0.01em; }
 .row { margin-top: 18px; }
 .row-head { padding: 0 16px; }
 .row h2 { margin: 0; font-size: 18px; }
-.row .source { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+.row .source { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
 .scroller {
   display: flex; align-items: flex-start; gap: 10px; overflow-x: auto; padding: 10px 16px 4px;
   scroll-snap-type: x proximity; scroll-padding-inline: 16px; scrollbar-width: none;
