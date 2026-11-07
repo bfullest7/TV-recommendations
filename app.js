@@ -230,7 +230,8 @@
     // Only Netflix publishes official viewing numbers, so its Top 10 shows only when the Netflix filter is selected
     const hasNetflix = myServices.includes("netflix") && filter === "netflix";
     if (hasNetflix && feed.rows.netflix.length) {
-      defs.push({
+      // right after Top picks: it's the only real viewing data, so it leads the popularity rows
+      defs.splice(defs.findIndex((d) => d.key === "picks") + 1, 0, {
         key: "netflix", title: "Netflix Top 10",
         source: "Netflix's own list of its most-watched shows and movies in the US" + (feed.netflix_week ? `, for the week ending ${fmtDate(feed.netflix_week)}.` : ", updated weekly."),
         items: feed.rows.netflix.map((r) => T[r.id] && { ...T[r.id], _rank: r.rank, _kind: r.kind }).filter((t) => t && rightKind(t)),
