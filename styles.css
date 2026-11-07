@@ -249,11 +249,12 @@ body:has(dialog[open]) { overflow: hidden; }
 
 /* Your list page: back arrow and title, two tabs, sort and filters, then posters three across */
 .head-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.ml-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 16px; padding: 4px; border-radius: 12px; background: var(--surface); }
-.ml-tab { padding: 8px 4px; border: 0; border-radius: 9px; background: none; color: var(--muted); font-size: 15px; font-weight: 600; }
-.ml-tab[aria-selected="true"] { background: var(--surface-2); color: var(--text); }
-.ml-filters { margin-top: 12px; }
-.ml-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; margin-top: 16px; }
+/* Tabs: plain words with an underline; the active tab's underline is the app color */
+.ml-tabs { display: flex; gap: 8px; margin-top: 16px; border-bottom: 1px solid var(--line); }
+.ml-tab { flex: none; padding: 10px 14px 9px; margin-bottom: -1px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted); font-size: 15px; font-weight: 600; }
+.ml-tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+.ml-filters { margin-top: 20px; }
+.ml-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; margin-top: 20px; }
 .ml-grid .card { width: auto; }
 .ml-empty { grid-column: 1 / -1; padding: 24px 0; color: var(--muted); font-size: 14px; text-align: center; }
 .search-input {
