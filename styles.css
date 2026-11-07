@@ -47,20 +47,30 @@ h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
 .icon-btn.close { background: #3a404d; border-color: #4a5160; color: #fff; }
 .icon-btn.close:active { background: #4a5160; }
 
+/* One row: TV/Movies dropdown, then the service chips (which scroll sideways) */
+.filter-bar { display: flex; align-items: center; gap: 8px; margin: 12px -16px 0; padding-left: 16px; }
+.filter-bar[hidden] { display: none; }
 .filters {
-  display: flex; gap: 8px; overflow-x: auto; margin: 12px -16px 0; padding: 0 16px 2px;
+  flex: 1; min-width: 0;
+  display: flex; gap: 8px; overflow-x: auto; padding: 0 16px 2px 0;
   scrollbar-width: none;
+}
+.kind-select {
+  flex: none; appearance: none; -webkit-appearance: none;
+  height: 36px; padding: 0 30px 0 13px; border-radius: 999px; border: 1px solid var(--line); line-height: 34px;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239aa1ad' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 11px center;
+  color: var(--text); font: inherit; font-size: 16px; /* 16px avoids iPhone zooming in */
+}
+.kind-select.active {
+  background-color: var(--text); color: var(--bg); border-color: var(--text); font-weight: 600;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230f1115' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
 .filters::-webkit-scrollbar { display: none; }
 .chip {
-  flex: none; padding: 7px 14px; border-radius: 999px;
+  flex: none; height: 36px; padding: 0 14px; border-radius: 999px;
   background: var(--surface); border: 1px solid var(--line); font-size: 14px; white-space: nowrap;
 }
 .chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 600; }
-.kinds { display: flex; margin-top: 8px; padding: 3px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
-.kinds:empty { display: none; }
-.seg { flex: 1; padding: 6px 8px; border: 0; border-radius: 7px; background: none; font-size: 13.5px; color: var(--muted); }
-.seg[aria-pressed="true"] { background: var(--surface-2); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
 .chip .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
 
 /* Rows */

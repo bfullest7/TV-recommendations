@@ -38,7 +38,6 @@
   const onMyServices = (t) => t && t.services.some((s) => activeServices().includes(s));
   const rightKind = (t) => kind === "all" || t.type === kind;
   const visible = (t) => onMyServices(t) && rightKind(t) && !watched[t.id];
-  const KINDS = [{ key: "all", name: "All" }, { key: "tv", name: "TV shows" }, { key: "movie", name: "Movies" }];
   const kindWord = () => (kind === "tv" ? "TV shows" : kind === "movie" ? "movies" : "titles");
   const fmtCount = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K" : String(n));
   const fmtDate = (iso) => new Date(iso + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -316,8 +315,9 @@
   }
 
   function renderFilters() {
-    $("#kinds").innerHTML = myServices.length ? KINDS.map((k) => `
-      <button class="seg" data-kind="${k.key}" aria-pressed="${kind === k.key}">${k.name}</button>`).join("") : "";
+    $("#filter-bar").hidden = !myServices.length;
+    $("#kind-select").value = kind;
+    $("#kind-select").classList.toggle("active", kind !== "all");
     if (!myServices.length) { $("#filters").innerHTML = ""; return; }
     const chips = [{ key: "all", name: "All" }, ...myServices.map(svcInfo).filter(Boolean)];
     $("#filters").innerHTML = chips.map((s) => `
@@ -790,10 +790,8 @@
       render();
       window.scrollTo({ top: 0 });
     });
-    $("#kinds").addEventListener("click", (e) => {
-      const b = e.target.closest("[data-kind]");
-      if (!b) return;
-      kind = b.dataset.kind;
+    $("#kind-select").addEventListener("change", (e) => {
+      kind = e.target.value;
       save(STORE.kind, kind);
       render();
       window.scrollTo({ top: 0 });
