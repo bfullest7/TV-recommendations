@@ -29,7 +29,8 @@
       background: #0f1115; pointer-events: none; transition: opacity .3s ease-out;
     }
     #splash.leaving { opacity: 0; }
-    #splash img { width: 96px; height: 96px; border-radius: 22px; }
+    #splash img { width: 96px; height: 96px; border-radius: 22px; opacity: 0; transition: opacity .25s ease-out; }
+    #splash.ready img { opacity: 1; }
   </style>
 </head>
 <body>

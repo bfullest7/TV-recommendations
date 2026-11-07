@@ -974,9 +974,11 @@
     });
   }
   function settleSoon() {
-    [50, 300, 700].forEach((ms) => setTimeout(settleLayout, ms));
-    // reveal once the layout has settled, so the correction isn't visible
-    setTimeout(revealApp, 1000);
+    [50, 150, 300].forEach((ms) => setTimeout(settleLayout, ms));
+    // show the logo only after the layout has settled (so it doesn't move),
+    // then reveal the app
+    setTimeout(() => { const s = document.getElementById("splash"); if (s) s.classList.add("ready"); }, 400);
+    setTimeout(revealApp, 1150);
   }
   // fade the logo out and the app in (home-screen launch only)
   function revealApp() {
