@@ -149,13 +149,15 @@
     return wsum ? sum / wsum : 0;
   }
 
+  let pickScores = new Map(); // id -> match score from the last Top picks ranking
   function topPicks() {
     const taste = tasteModel();
-    return Object.values(feed.titles)
+    const ranked = Object.values(feed.titles)
       .filter((t) => visible(t) && !thumbs[t.id])
       .map((t) => ({ t, s: pickScore(t, taste) }))
-      .sort((a, b) => b.s - a.s)
-      .map((x) => x.t);
+      .sort((a, b) => b.s - a.s);
+    pickScores = new Map(ranked.map((x) => [x.t.id, x.s]));
+    return ranked.map((x) => x.t);
   }
 
   // ---------------------------------------------------------------- rows
@@ -177,7 +179,7 @@
       ...(listed.length ? [{
         key: "watchlist", title: "Your watchlist", source: "Titles you saved to watch next, newest first",
         items: listed,
-        meta: (t) => metaBest(t),
+        meta: () => "",
       }] : []),
       {
         key: "picks", title: "Top picks for you",
@@ -185,17 +187,17 @@
           ? "Combines IMDb, Rotten Tomatoes and Metacritic, Trakt trending, what's new, and your taste (thumbs and genre likes)"
           : "Combines IMDb, Rotten Tomatoes and Metacritic, Trakt trending, and what's new. Rate titles to make it yours.",
         items: topPicks(),
-        meta: (t) => metaBest(t),
+        meta: (t) => `Match ${Math.round(pickScores.get(t.id) || 0)}`,
       },
       {
         key: "trending", title: "Trending now", source: `Trakt watchers + TMDB trending: hot on both ranks highest (${fmtCount(trendMin)}+ IMDb votes)`,
         items: from(feed.rows.trending).filter((t) => (t.imdb_votes || 0) >= trendMin),
-        meta: (t) => [t.watchers > 0 && `${fmtCount(t.watchers)} watching`, t.tmdb_trend_rank && `TMDB #${t.tmdb_trend_rank}`].filter(Boolean).join(" · "),
+        meta: (t) => (t.watchers > 0 ? `${fmtCount(t.watchers)} watching` : t.tmdb_trend_rank ? `TMDB #${t.tmdb_trend_rank} today` : ""),
       },
       {
         key: "audience", title: "Top rated by audiences", source: `IMDb ratings, ${tiltNote(tilt.audience_recency)}`,
         items: tilted(feed.rows.audience, "audience", tilt.audience_recency),
-        meta: (t) => `IMDb ${t.imdb.toFixed(1)} · ${fmtCount(t.imdb_votes)} votes`,
+        meta: (t) => `${fmtCount(t.imdb_votes)} votes`,
       },
       {
         key: "critics", title: "Critics' favorites", source: `Rotten Tomatoes and Metacritic, ${tiltNote(tilt.critics_recency)}`,
@@ -205,7 +207,7 @@
       {
         key: "new", title: "New on your services", source: "Streaming availability from TMDB / JustWatch",
         items: from(feed.rows.new),
-        meta: (t) => (t.type === "tv" && t.latest_air === t.new_date && t.release !== t.new_date ? "New season · " : "New · ") + fmtDate(t.new_date),
+        meta: (t) => (t.type === "tv" && t.latest_air === t.new_date && t.release !== t.new_date ? "New season " : "New ") + fmtDate(t.new_date),
       },
     ];
     const hasNetflix = myServices.includes("netflix") && (filter === "all" || filter === "netflix");
@@ -214,7 +216,7 @@
         key: "netflix", title: "Netflix Top 10",
         source: "Netflix official Top 10" + (feed.netflix_week ? `, week ending ${fmtDate(feed.netflix_week)}` : ", updated weekly"),
         items: feed.rows.netflix.map((r) => T[r.id] && { ...T[r.id], _rank: r.rank, _kind: r.kind }).filter((t) => t && rightKind(t)),
-        meta: (t) => (t._kind === "tv" ? "TV" : "Film"),
+        meta: (t) => `#${t._rank} ${t._kind === "tv" ? "TV" : "Film"}`,
         rank: true,
         forceService: "netflix",
       });
@@ -222,11 +224,14 @@
     return defs;
   }
 
-  function metaBest(t) {
-    if (t.imdb) return `IMDb ${t.imdb.toFixed(1)}` + (t.rt != null ? ` · RT ${t.rt}%` : "");
-    if (t.rt != null) return `RT ${t.rt}%`;
-    return t.year ? String(t.year) : "";
-  }
+  /* Year of the latest release: the release year for movies, the most recent
+   * season's year for TV (falling back to the premiere year). */
+  const latestYear = (t) => {
+    const d = (t.type === "tv" && t.latest_air) || t.release;
+    return d ? d.slice(0, 4) : t.year ? String(t.year) : "";
+  };
+  /* Line 1 of every card's subtitle: latest year and IMDb rating. */
+  const metaLine1 = (t) => [latestYear(t), t.imdb != null && `IMDb ${t.imdb.toFixed(1)}`].filter(Boolean).join(" · ");
 
   function cardHtml(t, def) {
     const svcKey = def.forceService || t.services.find((s) => activeServices().includes(s));
@@ -242,7 +247,8 @@
           ${svc ? `<span class="badge" style="background:${esc(svc.color)}">${esc(svc.name)}</span>` : ""}
         </div>
         <div class="name">${esc(t.title)}</div>
-        <div class="meta">${esc(def.meta(t))}</div>
+        <div class="meta">${esc(metaLine1(t)) || "&nbsp;"}</div>
+        <div class="meta">${esc(def.meta(t)) || "&nbsp;"}</div>
       </button>`;
   }
 
