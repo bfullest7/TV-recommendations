@@ -192,19 +192,17 @@
     const listed = Object.entries(watchlist).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || "")).map(([id]) => T[id]).filter((t) => t && onMyServices(t) && rightKind(t)); // watched titles stay here
     const defs = [
       ...(listed.length ? [{
-        key: "watchlist", title: "Your watchlist", source: "Titles you saved to watch next, most recently added first.",
+        key: "watchlist", title: "Your watchlist", source: "Titles you saved, newest first.",
         items: listed,
       }] : []),
       {
         key: "picks", title: "Top picks for you",
-        source: hasTaste()
-          ? "Picked for you by blending how well viewers and critics rate each title, how popular it is right now and how new it is, plus your thumbs and genre likes."
-          : "Picked for you by blending how well viewers and critics rate each title, how popular it is right now and how new it is. Rate titles to make it yours.",
+        source: "Highly rated, popular and new. Rate titles to tune it.",
         items: topPicks(),
       },
       {
         key: "trending", title: "Trending now",
-        source: "Most popular today, based on how many people are looking it up on TMDB and how many Trakt users are watching it right now. Newer titles get a boost.",
+        source: "What people are watching right now.",
         items: from(feed.rows.trending)
           .filter((t) => (t.imdb_votes || 0) >= trendMin)
           .map((t) => ({ t, s: (1 - trendRecency) * trendScore(t) + trendRecency * recency(t).score }))
@@ -212,17 +210,17 @@
           .map((x) => x.t),
       },
       {
-        key: "audience", title: "Top rated by audiences", source: "The titles IMDb viewers rate highest, with a boost for newer ones. Only well-known titles with plenty of ratings.",
+        key: "audience", title: "Top rated by audiences", source: "IMDb viewers' highest-rated titles.",
         items: tilted(feed.rows.audience, "audience", tilt.audience_recency),
       },
       {
-        key: "critics", title: "Critics' favorites", source: "The best-reviewed titles from professional critics on Rotten Tomatoes and Metacritic, with a boost for newer ones. Only well-known titles.",
+        key: "critics", title: "Critics' favorites", source: "Best reviewed on Rotten Tomatoes and Metacritic.",
         items: tilted(feed.rows.critics, "critic", tilt.critics_recency),
         // this row shows the score it's ranked by: Rotten Tomatoes, or Metacritic if there's no RT
         line: (t) => [latestYear(t), t.rt != null ? `RT ${t.rt}%` : t.mc != null ? `MC ${t.mc}` : null].filter(Boolean).join(" · "),
       },
       {
-        key: "new", title: "New on your services", source: "Arrived in the last 30 days: new movies, new seasons and titles just added to your services. Newest first.",
+        key: "new", title: "New on your services", source: "Added in the last 30 days, newest first.",
         items: from(feed.rows.new),
       },
     ];
@@ -232,7 +230,7 @@
       // right after Top picks: it's the only real viewing data, so it leads the popularity rows
       defs.splice(defs.findIndex((d) => d.key === "picks") + 1, 0, {
         key: "netflix", title: "Netflix Top 10",
-        source: "Netflix's own list of its most-watched shows and movies in the US" + (feed.netflix_week ? `, for the week ending ${fmtDate(feed.netflix_week)}.` : ", updated weekly."),
+        source: "Most watched in the US" + (feed.netflix_week ? `, week ending ${fmtDate(feed.netflix_week)}.` : ", updated weekly."),
         items: feed.rows.netflix.map((r) => T[r.id] && { ...T[r.id], _rank: r.rank, _kind: r.kind }).filter((t) => t && rightKind(t)),
         rank: true,
         forceService: "netflix",
