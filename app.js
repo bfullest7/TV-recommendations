@@ -8,7 +8,7 @@
   "use strict";
 
   const IMG = "https://image.tmdb.org/t/p/";
-  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", kind: "wtw.kind", watched: "wtw.watched", watchlist: "wtw.watchlist", lastBackup: "wtw.lastBackup" };
+  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", kind: "wtw.kind", watched: "wtw.watched", watchlist: "wtw.watchlist", refreshedTo: "wtw.refreshedTo", lastBackup: "wtw.lastBackup" };
   const BACKUP_APP = "what-to-watch";
   const RESET_AFTER_MS = 60 * 1000; // away this long -> reopen at the main screen
 
@@ -899,11 +899,15 @@
       const { version } = await res.json();
       if (version && version !== APP_VERSION) {
         latestVersion = version;
+        // Already refreshed for this version: this is just the phone's saved
+        // copy (kept up to 10 minutes), which updates itself, so don't ask again.
+        if (load(STORE.refreshedTo, null) === version) return;
         $("#update-banner").hidden = false;
       }
     } catch { /* offline: try again later */ }
   }
   function applyUpdate() {
+    save(STORE.refreshedTo, latestVersion);
     // A new address skips any cached copy of the old version.
     location.replace(`${location.pathname}?v=${encodeURIComponent(latestVersion || Date.now())}`);
   }
