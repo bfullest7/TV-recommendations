@@ -626,7 +626,7 @@
         <p>The IMDb rating is adjusted for vote count: titles with few votes are pulled toward the average, so a handful of 10/10 votes can't top the list.</p>`],
       ["Critics' favorites", `
         <p><b>${p(1 - t.critics_recency)} critic score + ${p(t.critics_recency)} "New &amp; recent"</b>, among titles with ${votes}+ IMDb votes.</p>
-        <p>The critic score is the average of Rotten Tomatoes (critics, not audience) and Metacritic, from OMDb. Titles with neither are left out.</p>`],
+        <p>The critic score is the average of Rotten Tomatoes (critics, not audience) and Metacritic, from OMDb, with MDBList filling in what OMDb lacks (most TV shows). Titles with neither are left out.</p>`],
       ["New on your services", `
         <p>Titles from the last 30 days, newest first: new movies, new seasons of shows, and titles that just arrived on one of your services. Streaming availability comes from TMDB, provided by JustWatch.</p>`],
       ["Netflix Top 10", `
@@ -641,7 +641,7 @@
       ["Watchlist & watched", `
         <p><b>＋ Watchlist</b> on any title adds it to the "Your watchlist" row at the top, newest first. <b>Mark watched</b> hides a title from every row (it stays in the Netflix Top 10 with a "Watched" badge) and takes it off your watchlist. Both are saved on this phone and included in backups. To undo either, open the title (search finds watched titles too) and tap the button again.</p>`],
       ["When data updates", `
-        <p>Trending numbers refresh every 2 hours. Everything else (what's on each service, ratings, Netflix Top 10) refreshes about once a day. Critic scores fill in gradually because of OMDb's daily limit. The time at the top of the app shows the last update.</p>`],
+        <p>Trending numbers refresh every 2 hours. Everything else (what's on each service, ratings, Netflix Top 10) refreshes about once a day. Critic scores fill in gradually because of OMDb's and MDBList's daily limits. The time at the top of the app shows the last update.</p>`],
     ];
     $("#how").innerHTML = items.map(([title, body]) => `<details><summary>${esc(title)}</summary><div class="how-body">${body}</div></details>`).join("");
   }

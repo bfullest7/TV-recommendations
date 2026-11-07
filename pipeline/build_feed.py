@@ -13,6 +13,7 @@ API keys come from environment variables (GitHub Secrets):
   TMDB_API_KEY      TMDB "API Key" or "API Read Access Token"
   TRAKT_CLIENT_ID   Trakt app "Client ID"
   OMDB_API_KEY      OMDb key (optional: without it there are no critic scores)
+  MDBLIST_API_KEY   MDBList key (optional: fills critic scores OMDb lacks, mostly TV)
 
 Uses only the Python standard library.
 """
@@ -43,6 +44,7 @@ CACHE = DATA / "cache"
 TMDB = "https://api.themoviedb.org/3"
 TRAKT = "https://api.trakt.tv"
 OMDB = "https://www.omdbapi.com/"
+MDBLIST = "https://api.mdblist.com"
 IMDB_RATINGS = "https://datasets.imdbws.com/title.ratings.tsv.gz"
 NETFLIX_TOP10 = "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv"
 
@@ -360,6 +362,32 @@ def netflix_top10(region: str) -> tuple[str | None, list[dict]]:
     return week, out
 
 
+class RateLimited(Exception):
+    pass
+
+
+def mdblist_lookup(api_key: str, imdb_id: str, kind: str) -> dict:
+    """Critic scores from MDBList: Rotten Tomatoes (critics) and Metacritic (critics).
+    MDBList covers TV shows, which OMDb almost never has."""
+    url = f"{MDBLIST}/imdb/{'show' if kind == 'tv' else 'movie'}/{imdb_id}?{urllib.parse.urlencode({'apikey': api_key})}"
+    try:
+        d = http.get_json(url)
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+            raise RateLimited("MDBList daily limit reached")
+        if e.code == 404:
+            return {"rt": None, "mc": None}
+        raise
+    scores = {r.get("source"): r.get("value") for r in (d or {}).get("ratings") or []}
+
+    def num(v):
+        try:
+            return int(round(float(v))) if v is not None else None
+        except (TypeError, ValueError):
+            return None
+    return {"rt": num(scores.get("tomatoes")), "mc": num(scores.get("metacritic"))}
+
+
 def omdb_lookup(api_key: str, imdb_id: str) -> dict | None:
     d = http.get_json(f"{OMDB}?{urllib.parse.urlencode({'apikey': api_key, 'i': imdb_id})}")
     if d.get("Response") != "True":
@@ -519,6 +547,7 @@ def run(mode: str = "auto") -> dict:
     tmdb_key = os.environ.get("TMDB_API_KEY", "").strip()
     trakt_key = os.environ.get("TRAKT_CLIENT_ID", "").strip()
     omdb_key = os.environ.get("OMDB_API_KEY", "").strip()
+    mdb_key = os.environ.get("MDBLIST_API_KEY", "").strip()
     if not tmdb_key or not trakt_key:
         raise SystemExit("Missing TMDB_API_KEY or TRAKT_CLIENT_ID. Add them under Settings > Secrets and variables > Actions.")
 
@@ -526,6 +555,7 @@ def run(mode: str = "auto") -> dict:
     old = load_json(feed_path, {})
     details_cache = load_json(CACHE / "details.json", {})
     omdb_cache = load_json(CACHE / "omdb.json", {"usage": {}, "titles": {}})
+    mdb_cache = load_json(CACHE / "mdblist.json", {"usage": {}, "titles": {}})
     seen_cache = load_json(CACHE / "first_seen.json", {"baseline": None, "seen": {}})
     nf_map = load_json(CACHE / "netflix_map.json", {})
 
@@ -685,6 +715,38 @@ def run(mode: str = "auto") -> dict:
         if d.get("imdb") is None and o.get("imdb") is not None:  # fallback when not in the IMDb dataset yet
             d["imdb"], d["imdb_votes"] = o["imdb"], o.get("imdb_votes")
 
+    # 6b. MDBList fills critic scores OMDb lacks (OMDb has almost none for TV)
+    mu = mdb_cache.setdefault("usage", {})
+    if mu.get("date") != today().isoformat():
+        mu.update(date=today().isoformat(), count=0)
+    mc_cache = mdb_cache.setdefault("titles", {})
+    if mdb_key:
+        cutoff = (today() - dt.timedelta(days=rf["omdb_recheck_days"])).isoformat()
+        todo = sorted(
+            (d for d in details.values()
+             if d.get("imdb_id") and d["services"] and (d["rt"] is None or d["mc"] is None)
+             and mc_cache.get(d["imdb_id"], {}).get("checked", "") < cutoff),
+            key=lambda d: (d["imdb_id"] in mc_cache, -(d.get("imdb_votes") or 0)),
+        )
+        for d in todo[:max(0, rf.get("mdblist_daily_limit", 900) - mu["count"])]:
+            try:
+                r = mdblist_lookup(mdb_key, d["imdb_id"], d["type"])
+            except RateLimited as e:
+                log(f"warning: {e}")
+                break
+            except Exception as e:
+                log(f"warning: MDBList {d['imdb_id']}: {e}")
+                continue
+            mu["count"] += 1
+            mc_cache[d["imdb_id"]] = {**r, "checked": today().isoformat()}
+        log(f"mdblist calls today: {mu['count']}")
+    for d in details.values():
+        m = mc_cache.get(d.get("imdb_id") or "", {})
+        if d["rt"] is None:
+            d["rt"] = m.get("rt")
+        if d["mc"] is None:
+            d["mc"] = m.get("mc")
+
     # 7. Keep titles that are on at least one service (or in the Netflix Top 10)
     nf_ids = {r["id"] for r in netflix_rows}
     titles = {k: d for k, d in details.items() if d["services"] or k in nf_ids}
@@ -713,6 +775,7 @@ def run(mode: str = "auto") -> dict:
         save_json(CACHE / "first_seen.json", seen_cache, compact=True)
         save_json(CACHE / "netflix_map.json", nf_map)
     save_json(CACHE / "omdb.json", omdb_cache, compact=True)
+    save_json(CACHE / "mdblist.json", mdb_cache, compact=True)
     log(f"wrote {feed_path} with {len(titles)} titles")
     return feed
 

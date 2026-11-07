@@ -28,11 +28,11 @@ U = {
     "m3": dict(title="Fresh Release", prov=[1796], imdb=("tt003", 7.1, 40000), rt=70, mc=65, release="2026-10-30", genres=["Comedy"]),
     "m4": dict(title="Channel Only", prov=[582], imdb=("tt004", 8.0, 50000), rt=90, mc=80, release="2023-05-05", genres=["Action"]),
     "m5": dict(title="Theater Hit", prov=[], imdb=("tt005", 7.9, 200000), rt=88, mc=75, release="2026-10-01", genres=["Action"]),
-    "t1": dict(title="Big Show", prov=[8, 1899], imdb=("tt101", 8.9, 500000), rt=None, mc=None, release="2020-01-01",
+    "t1": dict(title="Big Show", prov=[8, 1899], imdb=("tt101", 8.9, 500000), rt=None, mc=None, mdb_rt=91, mdb_mc=80, release="2020-01-01",
                seasons=["2020-01-01", "2026-10-20"], genres=["Sci-Fi & Fantasy"]),
     "t2": dict(title="Cozy Show", prov=[15], imdb=("tt102", 7.4, 15000), rt=82, mc=70, release="2022-02-02",
                seasons=["2022-02-02"], genres=["Comedy"], keywords=["sitcom", "passport", "transport"]),
-    "t3": dict(title="Wednesdayish", prov=[8], imdb=("tt103", 8.1, 300000), rt=None, mc=72, release="2022-11-23",
+    "t3": dict(title="Wednesdayish", prov=[8], imdb=("tt103", 8.1, 300000), rt=None, mc=72, mdb_rt=85, mdb_mc=60, release="2022-11-23",
                seasons=["2022-11-23"], genres=["Comedy"]),
 }
 WATCHERS = {"t1": 1500, "m1": 40, "m5": 300, "t2": 5}
@@ -72,6 +72,12 @@ class FakeHttp:
             pre = "m" if kind == "movie" else "t"
             return [{"watchers": w, kind: {"title": U[k]["title"], "ids": {"tmdb": int(k[1:])}}}
                     for k, w in sorted(WATCHERS.items(), key=lambda x: -x[1]) if k.startswith(pre)]
+        if host == "api.mdblist.com":
+            self.mdb_calls = getattr(self, "mdb_calls", 0) + 1
+            imdb_id = path.rsplit("/", 1)[-1]
+            f = next(f for f in U.values() if f["imdb"][0] == imdb_id)
+            return {"ratings": [{"source": "tomatoes", "value": f.get("mdb_rt")}, {"source": "metacritic", "value": f.get("mdb_mc")},
+                                {"source": "imdb", "value": f["imdb"][1]}]}
         if host == "www.omdbapi.com":
             self.omdb_calls += 1
             f = next(f for f in U.values() if f["imdb"][0] == q["i"])
@@ -128,7 +134,7 @@ class PipelineTest(unittest.TestCase):
         bf.ROOT, bf.DATA, bf.CACHE = self.tmp, self.tmp / "data", self.tmp / "data" / "cache"
         self.fake = FakeHttp()
         bf.http = self.fake
-        os.environ.update(TMDB_API_KEY="k", TRAKT_CLIENT_ID="c", OMDB_API_KEY="o",
+        os.environ.update(TMDB_API_KEY="k", TRAKT_CLIENT_ID="c", OMDB_API_KEY="o", MDBLIST_API_KEY="m",
                           FEED_TODAY=TODAY, FEED_NOW=f"{TODAY}T12:00:00Z")
 
     def tearDown(self):
@@ -168,7 +174,10 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(T["t2"]["tmdb_trend_rank"], 1)
         # critics: averages RT and Metacritic; titles with neither are absent
         self.assertEqual(T["m1"]["scores"]["critic"], 91.5)
-        self.assertNotIn("t1", rows["critics"])
+        # TV critic scores come from MDBList when OMDb has none; OMDb wins when it has one
+        self.assertEqual((T["t1"]["rt"], T["t1"]["mc"]), (91, 80))
+        self.assertEqual((T["t3"]["rt"], T["t3"]["mc"]), (85, 72))
+        self.assertIn("t1", rows["critics"])
         # new: recent movie release and a new TV season, newest first
         self.assertEqual(rows["new"], ["m3", "t1"])
         self.assertEqual(T["t1"]["new_date"], "2026-10-20")

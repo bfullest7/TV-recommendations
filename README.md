@@ -9,7 +9,7 @@ A phone web app that shows the best things to stream right now on the services y
 | Top picks for you | All the signals below, plus your 👍 / 👎 |
 | Trending now | Trakt watchers averaged with TMDB daily trending: titles hot on both rank highest (5K+ IMDb votes) |
 | Top rated by audiences | IMDb ratings (adjusted for vote count), 65% rating + 35% "New & recent", titles with 20K+ IMDb votes |
-| Critics' favorites | Rotten Tomatoes and Metacritic (via OMDb), 75% critics + 25% "New & recent", titles with 20K+ IMDb votes |
+| Critics' favorites | Rotten Tomatoes and Metacritic (via OMDb and MDBList), 75% critics + 25% "New & recent", titles with 20K+ IMDb votes |
 | New on your services | TMDB, with streaming availability from JustWatch |
 | Netflix Top 10 | Netflix's official weekly list (shown only, never used in rankings) |
 
@@ -47,6 +47,7 @@ If a title is missing a signal (no critic score, or you haven't rated anything o
 - **TMDB**: create an account at themoviedb.org, then go to Settings → API and request a key (choose "Developer", personal use). Copy the **API Key** (or the API Read Access Token; either works).
 - **Trakt**: create an account at trakt.tv, then go to Settings → Your API Apps → New Application. Any name is fine; use `urn:ietf:wg:oauth:2.0:oob` as the redirect URI. Copy the **Client ID**.
 - **OMDb**: request a free key at omdbapi.com/apikey.aspx and click the activation link in the email.
+- **MDBList** (optional, adds critic scores for TV): sign up at mdblist.com, then Preferences → API Access → generate a key.
 
 ### 2. Add them to GitHub
 
@@ -55,6 +56,7 @@ In this repository: **Settings → Secrets and variables → Actions → New rep
 - `TMDB_API_KEY`
 - `TRAKT_CLIENT_ID`
 - `OMDB_API_KEY`
+- `MDBLIST_API_KEY` (optional)
 
 ### 3. Turn on GitHub Pages
 
@@ -86,4 +88,4 @@ Ratings live only on the phone. To keep them safe, use **Settings → Back up yo
 
 ## Credits
 
-This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability data provided by JustWatch. Ratings from IMDb (non-commercial datasets), Rotten Tomatoes and Metacritic via OMDb, trending data from Trakt, and Netflix Top 10 data from Netflix.
+This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability data provided by JustWatch. Ratings from IMDb (non-commercial datasets), Rotten Tomatoes and Metacritic via OMDb and MDBList, trending data from Trakt, and Netflix Top 10 data from Netflix.

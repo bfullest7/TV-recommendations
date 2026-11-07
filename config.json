@@ -42,6 +42,7 @@
     "trakt_trending_limit": 100,
     "tmdb_trending_pages": 5,
     "omdb_daily_limit": 900,
-    "omdb_recheck_days": 30
+    "omdb_recheck_days": 30,
+    "mdblist_daily_limit": 900
   }
 }
