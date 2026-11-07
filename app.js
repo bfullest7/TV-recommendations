@@ -37,8 +37,17 @@
   const activeServices = () => (filter === "all" ? myServices : [filter]);
   const onMyServices = (t) => t && t.services.some((s) => activeServices().includes(s));
   const rightKind = (t) => kind === "all" || t.type === kind;
+  /* Watched, unless it's a series whose newest season premiered after it was marked watched:
+     then it counts as unwatched again, so the new season shows up in the rows. */
+  const isWatched = (t) => {
+    const w = watched[t.id];
+    if (!w) return false;
+    const newSeason = t.type === "tv" && t.latest_air;
+    const today = new Date().toISOString().slice(0, 10);
+    return !(newSeason && w.at && newSeason > w.at.slice(0, 10) && newSeason <= today);
+  };
   // Rows leave out watched titles and "Not for me" titles (Your watchlist, Netflix Top 10 and search keep them)
-  const visible = (t) => onMyServices(t) && rightKind(t) && !watched[t.id] && !(thumbs[t.id]?.v < 0);
+  const visible = (t) => onMyServices(t) && rightKind(t) && !isWatched(t) && !(thumbs[t.id]?.v < 0);
   const kindWord = () => (kind === "tv" ? "TV shows" : kind === "movie" ? "movies" : "titles");
   const fmtCount = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K" : String(n));
   const fmtDate = (iso) => new Date(iso + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -262,12 +271,12 @@
     const svcKey = def.forceService || t.services.find((s) => activeServices().includes(s));
     const svc = svcKey && svcInfo(svcKey);
     return `
-      <button class="card ${watched[t.id] ? "is-watched" : ""}" data-id="${esc(t.id)}" aria-label="${esc(t.title)}">
+      <button class="card ${isWatched(t) ? "is-watched" : ""}" data-id="${esc(t.id)}" aria-label="${esc(t.title)}">
         <div class="poster">
           ${t.poster ? `<img loading="lazy" src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}
           ${def.rank ? `<span class="rank">#${t._rank}</span>` : ""}
           <span class="marks">${watchlist[t.id] && def.key !== "watchlist" ? `<span class="mark" title="On your watchlist">${BOOKMARK}</span>` : ""}</span>
-          ${watched[t.id] ? `<span class="watched-badge">✓ Watched</span>` : ""}
+          ${isWatched(t) ? `<span class="watched-badge">✓ Watched</span>` : ""}
           ${svc ? `<span class="badge" style="background:${esc(svc.color)}">${esc(svc.name)}</span>` : ""}
         </div>
         <div class="name">${esc(t.title)}</div>
@@ -392,7 +401,7 @@
       ${t.overview ? `<p class="overview">${esc(t.overview)}</p>` : ""}
       <div class="list-btns">
         <button class="list-btn" data-watchlist aria-pressed="${!!watchlist[id]}">${watchlist[id] ? "✓ Added to list" : "＋ Add to list"}</button>
-        <button class="list-btn" data-watched aria-pressed="${!!watched[id]}">${watched[id] ? "✓ Watched" : "Mark watched"}</button>
+        <button class="list-btn" data-watched aria-pressed="${isWatched(t)}">${isWatched(t) ? "✓ Watched" : "Mark watched"}</button>
       </div>
       <div class="thumbs">
         <button class="thumb up" data-thumb="1" aria-pressed="${thumb > 0}">👍 Like</button>
@@ -456,7 +465,7 @@
     const has = parts.filter((p) => p.score !== null);
 
     let lead;
-    if (watched[t.id]) lead = `You've marked this as watched, so it's hidden from your rows. Its match score of ${match} comes`;
+    if (isWatched(t)) lead = `You've marked this as watched, so it's hidden from your rows. Its match score of ${match} comes`;
     else if (thumbs[t.id]) lead = `You've rated this, so it's left out of your Top picks. Its match score of ${match} comes`;
     else if (!onMyServices(t)) lead = `This isn't on ${filter === "all" ? "your services" : "the service you're viewing"}, so it's not in your Top picks. Its match score of ${match} comes`;
     else if ((t.imdb_votes || 0) < picksMinVotes()) lead = `Top picks only includes titles with ${fmtCount(picksMinVotes())}+ IMDb votes, and this has ${t.imdb_votes ? fmtCount(t.imdb_votes) : "no IMDb rating yet"}, so it's not in your Top picks. Its match score of ${match} comes`;
@@ -521,7 +530,7 @@
     if ($("#search").open) renderSearch();
   }
   function toggleWatched(id) {
-    if (watched[id]) delete watched[id];
+    if (isWatched(feed.titles[id])) delete watched[id];
     else watched[id] = entry(feed.titles[id]);
     save(STORE.watched, watched);
     redrawDetails(id);
@@ -581,7 +590,7 @@
             <span class="r-text"><span class="r-title">${esc(t.title)}</span>
               <span class="r-sub">${[t.year, t.type === "tv" ? "TV" : "Movie", t.imdb && `IMDb ${t.imdb.toFixed(1)}`].filter(Boolean).map(esc).join(" · ")}</span>
               <span class="r-where ${mine.length ? "" : "not-mine"}">${esc(where)}</span></span>
-            <span class="r-marks">${watchlist[t.id] ? BOOKMARK : ""}${watched[t.id] ? "✓" : ""}</span>
+            <span class="r-marks">${watchlist[t.id] ? BOOKMARK : ""}${isWatched(t) ? "✓" : ""}</span>
           </button></li>`;
         }).join("")
       : `<li class="none">No matches for "${esc(q)}". The app tracks popular, top-rated, new and trending titles, so less-known ones may be missing.</li>`;
@@ -703,7 +712,7 @@
       ["Signal: Audience, Critics, Trending", `
         <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the TMDB/Trakt blend from the Trending now row (without that row's recency share, since New &amp; recent is its own signal).</p>`],
       ["Watchlist & watched", `
-        <p><b>＋ Add to list</b> on any title adds it to the "Your watchlist" row at the top, newest first. <b>Mark watched</b> hides a title from every row except "Your watchlist" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. <b>👎 Not for me</b> hides a title from the same rows. Both are saved on this phone and included in backups. To undo either, open the title (search finds watched titles too) and tap the button again.</p>`],
+        <p><b>＋ Add to list</b> on any title adds it to the "Your watchlist" row at the top, newest first. <b>Mark watched</b> hides a title from every row except "Your watchlist" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. A watched series comes back if a new season premieres after you marked it. <b>👎 Not for me</b> hides a title from the same rows. Both are saved on this phone and included in backups. To undo either, open the title (search finds watched titles too) and tap the button again.</p>`],
       ["When data updates", `
         <p>Trending numbers refresh every 2 hours. Everything else (what's on each service, ratings, Netflix Top 10) refreshes about once a day. Critic scores fill in gradually because of OMDb's and MDBList's daily limits. The time at the top of the app shows the last update.</p>`],
     ];
