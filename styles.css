@@ -75,7 +75,7 @@ h1 { margin: 0; font-size: 22px; line-height: 1.1; letter-spacing: -0.01em; }
 
 /* Rows */
 .rows { padding: 8px 0 32px; }
-.row { margin-top: 32px; }
+.row { margin-top: 20px; }
 .row-head { padding: 0 16px; }
 .row h2 { margin: 0; font-size: 18px; }
 .row .source { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
