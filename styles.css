@@ -243,7 +243,12 @@ body:has(dialog[open]) { overflow: hidden; }
 .r-title { font-weight: 600; font-size: 15px; }
 .r-sub, .r-where { font-size: 12.5px; color: var(--muted); }
 .r-where:not(.not-mine) { color: var(--up); }
-.r-marks { flex: none; font-size: 14px; color: var(--accent); }
+.r-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.tag {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px;
+  background: var(--surface-2); border: 1px solid var(--line); color: var(--text); font-size: 12px; font-weight: 600;
+}
+.tag svg { width: 11px; height: 11px; }
 
 .weights { list-style: none; margin: 0; padding: 0; }
 .weights li { padding: 7px 0; }

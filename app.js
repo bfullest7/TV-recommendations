@@ -589,8 +589,8 @@
             <span class="r-poster">${t.poster ? `<img loading="lazy" src="${IMG}w92${esc(t.poster)}" alt="">` : ""}</span>
             <span class="r-text"><span class="r-title">${esc(t.title)}</span>
               <span class="r-sub">${[t.year, t.type === "tv" ? "TV" : "Movie", t.imdb && `IMDb ${t.imdb.toFixed(1)}`].filter(Boolean).map(esc).join(" · ")}</span>
-              <span class="r-where ${mine.length ? "" : "not-mine"}">${esc(where)}</span></span>
-            <span class="r-marks">${watchlist[t.id] ? BOOKMARK : ""}${isWatched(t) ? "✓" : ""}</span>
+              <span class="r-where ${mine.length ? "" : "not-mine"}">${esc(where)}</span>
+              ${watchlist[t.id] || isWatched(t) ? `<span class="r-tags">${watchlist[t.id] ? `<span class="tag">${BOOKMARK}On your list</span>` : ""}${isWatched(t) ? `<span class="tag">✓ Watched</span>` : ""}</span>` : ""}</span>
           </button></li>`;
         }).join("")
       : `<li class="none">No matches for "${esc(q)}". The app tracks popular, top-rated, new and trending titles, so less-known ones may be missing.</li>`;
