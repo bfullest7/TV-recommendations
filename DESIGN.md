@@ -8,15 +8,15 @@ The app uses one small scale. Each size has one job; avoid in-between sizes like
 
 | Size | Job | Where it's used |
 |---|---|---|
-| 22 | App title | "What to Watch" |
+| 22 | App title | "What to Watch", with the orange TV logo (28 wide) just before it |
 | 20 | Screen titles | "Settings"; show title on a detail screen |
 | 18 | Headings | Home row titles ("Trending now"), Settings section headings, detail-screen headings ("Why this pick"), welcome card title |
 | 17 | Score numbers | Big numbers in the detail-screen score boxes ("9.0", "90%") |
 | 16 | Form inputs | Search box and "TV & movies" picker (16 stops iPhone from zooming in) |
 | 15 | Buttons and tappable labels | Add to list, Mark watched, Like, Not for me, backup buttons, "Pick your services", "How it's calculated" item names, name in a detail screen's top bar, show names in search results |
 | 14 | Body text and subtitles | Home row subtitles, Settings descriptions, "How it's calculated" text, genre and service names, show description, "Why this pick" text, detail-screen year/type/genres line, welcome card text, filter buttons |
-| 13 | Show names under posters | Posters are narrow, so 13 keeps long names readable |
-| 12 | Fine print | Year and rating under posters, score labels, service badges on the detail screen, "✓ Watched" badge, the year/type/rating and service lines in search results, "In your list" and "✓ Watched" pills in search, "Data updated" note, table headers |
+| 13 | Title details in lists | Show names under posters (posters are narrow, so 13 keeps long names readable); the year/type/rating and service lines in search results |
+| 12 | Fine print | Year and rating under posters, score labels, service badges on the detail screen, "✓ Watched" badge, "In your list" and "✓ Watched" pills in search, "Data updated" note, table headers |
 | 10.5 | Badges on posters | Service badge on a poster ("Netflix") |
 
 Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1.5 line spacing.
