@@ -62,7 +62,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 ## Icons
 
 - Icons are simple drawn shapes in the style of the search and settings buttons, not emoji (emoji look different on each phone).
-- **On your list:** a white bookmark ribbon in a small dark circle in the poster's top-right corner, and a small grey "On your list" pill (with the bookmark) in search results. Search results show a "✓ Watched" pill the same way. It's hidden in "Your watchlist", where every title is on the list.
+- **In your list:** a white bookmark ribbon in a small dark circle in the poster's top-right corner, and a small grey "In your list" pill (with the bookmark) in search results. Search results show a "✓ Watched" pill the same way. It's hidden in "Your watchlist", where every title is on the list.
 - **Watched:** a dimmed poster with a "✓ Watched" label in the middle.
 - **Ratings:** 👍 and 👎 never show on posters. They appear only on the detail screen's Like and Not for me buttons.
 
