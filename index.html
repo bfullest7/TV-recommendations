@@ -22,9 +22,14 @@
         <h1>What to Watch</h1>
         <p id="updated" class="updated"></p>
       </div>
+      <div class="top-btns">
+      <button id="open-search" class="icon-btn" aria-label="Search">
+        <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg>
+      </button>
       <button id="open-settings" class="icon-btn" aria-label="Settings">
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
       </button>
+      </div>
     </div>
     <nav id="filters" class="filters" aria-label="Filter by service"></nav>
     <div id="kinds" class="kinds" role="group" aria-label="TV shows or movies"></div>
@@ -35,6 +40,17 @@
   <!-- Title details -->
   <dialog id="details" class="sheet" aria-labelledby="d-title">
     <div class="sheet-body" id="details-body"></div>
+  </dialog>
+
+  <!-- Search -->
+  <dialog id="search" class="sheet search-sheet" aria-label="Search">
+    <div class="sheet-body">
+      <div class="sheet-head">
+        <input id="search-input" class="search-input" type="search" placeholder="Search movies and shows" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+        <button class="icon-btn close" data-close aria-label="Close">✕</button>
+      </div>
+      <ul id="search-results" class="results"></ul>
+    </div>
   </dialog>
 
   <!-- Settings -->
@@ -55,6 +71,18 @@
         <h3>Genres you like</h3>
         <p class="hint">Optional. Tap 👍 or 👎 for genres you like or don't. They count toward "Your taste" in Top picks, along with your thumbs on titles. Tap again to clear.</p>
         <div id="genre-picker" class="genre-picker"></div>
+      </section>
+
+      <section>
+        <h3>Your watchlist</h3>
+        <p class="hint">Titles you saved to watch next. They appear in the "Your watchlist" row. Tap ✕ to remove one.</p>
+        <ul id="watchlist-list" class="ratings"></ul>
+      </section>
+
+      <section>
+        <h3>Watched</h3>
+        <p class="hint">Titles you've marked as watched are hidden from every row. Tap ✕ to bring one back.</p>
+        <ul id="watched-list" class="ratings"></ul>
       </section>
 
       <section>

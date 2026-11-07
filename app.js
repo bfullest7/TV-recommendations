@@ -8,7 +8,7 @@
   "use strict";
 
   const IMG = "https://image.tmdb.org/t/p/";
-  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", kind: "wtw.kind", lastBackup: "wtw.lastBackup" };
+  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", kind: "wtw.kind", watched: "wtw.watched", watchlist: "wtw.watchlist", lastBackup: "wtw.lastBackup" };
   const BACKUP_APP = "what-to-watch";
   const RESET_AFTER_MS = 60 * 1000; // away this long -> reopen at the main screen
 
@@ -16,6 +16,8 @@
   let myServices = [];
   let thumbs = {};
   let genrePrefs = {}; // genre -> 1 (like) or -1 (dislike), set in Settings
+  let watched = {}; // id -> { title, type, at }: hidden from every row
+  let watchlist = {}; // id -> { title, type, at }: shown in "Your watchlist"
   let filter = "all";
   let kind = "all"; // "all", "tv" or "movie"
 
@@ -35,7 +37,7 @@
   const activeServices = () => (filter === "all" ? myServices : [filter]);
   const onMyServices = (t) => t && t.services.some((s) => activeServices().includes(s));
   const rightKind = (t) => kind === "all" || t.type === kind;
-  const visible = (t) => onMyServices(t) && rightKind(t);
+  const visible = (t) => onMyServices(t) && rightKind(t) && !watched[t.id];
   const KINDS = [{ key: "all", name: "All" }, { key: "tv", name: "TV shows" }, { key: "movie", name: "Movies" }];
   const kindWord = () => (kind === "tv" ? "TV shows" : kind === "movie" ? "movies" : "titles");
   const fmtCount = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K" : String(n));
@@ -170,7 +172,13 @@
       .map((x) => x.t);
     const trendMin = tilt.trending_min_imdb_votes ?? 5000;
     const tiltNote = (w) => `tilted ${Math.round(w * 100)}% toward recent releases (${fmtCount(tilt.min_imdb_votes)}+ IMDb votes)`;
+    const listed = Object.entries(watchlist).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || "")).map(([id]) => T[id]).filter(visible);
     const defs = [
+      ...(listed.length ? [{
+        key: "watchlist", title: "Your watchlist", source: "Titles you saved to watch next, newest first",
+        items: listed,
+        meta: (t) => metaBest(t),
+      }] : []),
       {
         key: "picks", title: "Top picks for you",
         source: hasTaste()
@@ -225,11 +233,12 @@
     const svc = svcKey && svcInfo(svcKey);
     const thumb = thumbs[t.id];
     return `
-      <button class="card" data-id="${esc(t.id)}" aria-label="${esc(t.title)}">
+      <button class="card ${watched[t.id] ? "is-watched" : ""}" data-id="${esc(t.id)}" aria-label="${esc(t.title)}">
         <div class="poster">
           ${t.poster ? `<img loading="lazy" src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}
           ${def.rank ? `<span class="rank">#${t._rank}</span>` : ""}
-          ${thumb ? `<span class="my-thumb">${thumb.v > 0 ? "👍" : "👎"}</span>` : ""}
+          <span class="marks">${watchlist[t.id] ? `<span class="mark" title="On your watchlist">🔖</span>` : ""}${thumb ? `<span class="mark">${thumb.v > 0 ? "👍" : "👎"}</span>` : ""}</span>
+          ${watched[t.id] ? `<span class="watched-badge">✓ Watched</span>` : ""}
           ${svc ? `<span class="badge" style="background:${esc(svc.color)}">${esc(svc.name)}</span>` : ""}
         </div>
         <div class="name">${esc(t.title)}</div>
@@ -335,6 +344,10 @@
       </div>
       ${scores.length ? `<div class="scores">${scores.map((s) => `<div class="score"><div class="v">${esc(s.v)}</div><div class="l">${esc(s.l)}</div></div>`).join("")}</div>` : ""}
       ${t.overview ? `<p class="overview">${esc(t.overview)}</p>` : ""}
+      <div class="list-btns">
+        <button class="list-btn" data-watchlist aria-pressed="${!!watchlist[id]}">${watchlist[id] ? "🔖 On your watchlist" : "＋ Watchlist"}</button>
+        <button class="list-btn" data-watched aria-pressed="${!!watched[id]}">${watched[id] ? "✓ Watched" : "Mark watched"}</button>
+      </div>
       <div class="thumbs">
         <button class="thumb up" data-thumb="1" aria-pressed="${thumb > 0}">👍 Like</button>
         <button class="thumb down" data-thumb="-1" aria-pressed="${thumb < 0}">👎 Not for me</button>
@@ -398,7 +411,8 @@
     const has = parts.filter((p) => p.score !== null);
 
     let lead;
-    if (thumbs[t.id]) lead = `You've rated this, so it's left out of your Top picks. Its match score of ${match} comes`;
+    if (watched[t.id]) lead = `You've marked this as watched, so it's hidden from your rows. Its match score of ${match} comes`;
+    else if (thumbs[t.id]) lead = `You've rated this, so it's left out of your Top picks. Its match score of ${match} comes`;
     else if (!onMyServices(t)) lead = `This isn't on ${filter === "all" ? "your services" : "the service you're viewing"}, so it's not in your Top picks. Its match score of ${match} comes`;
     else if (!rightKind(t)) lead = `This is a ${t.type === "tv" ? "TV show" : "movie"}, and you're viewing ${kindWord()} only, so it's not in your Top picks right now. Its match score of ${match} comes`;
     else {
@@ -446,6 +460,32 @@
       </section>`;
   }
 
+  const entry = (t) => ({ title: t.title, type: t.type, at: new Date().toISOString() });
+  function redrawDetails(id) {
+    const d = $("#details"), y = d.scrollTop;
+    openDetails(id);
+    d.scrollTop = y;
+  }
+  function toggleWatchlist(id) {
+    if (watchlist[id]) delete watchlist[id];
+    else watchlist[id] = entry(feed.titles[id]);
+    save(STORE.watchlist, watchlist);
+    redrawDetails(id);
+    renderRows(true);
+    if ($("#search").open) renderSearch();
+  }
+  function toggleWatched(id) {
+    if (watched[id]) delete watched[id];
+    else {
+      watched[id] = entry(feed.titles[id]);
+      if (watchlist[id]) { delete watchlist[id]; save(STORE.watchlist, watchlist); } // watched it, so it's off the list
+    }
+    save(STORE.watched, watched);
+    redrawDetails(id);
+    renderRows(true);
+    if ($("#search").open) renderSearch();
+  }
+
   function setThumb(id, v) {
     const t = feed.titles[id];
     if (thumbs[id]?.v === v) delete thumbs[id];
@@ -457,16 +497,81 @@
     renderRows(true);
   }
 
+  // ---------------------------------------------------------------- search
+  const norm = (x) => String(x || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  let searchIndex = null;
+
+  /* Searches every title the app tracks (on any service). Titles starting with
+   * the search come first, then a word starting with it, then anywhere. */
+  function searchTitles(q) {
+    const nq = norm(q);
+    if (!nq) return [];
+    if (!searchIndex || searchIndex.feed !== feed) {
+      searchIndex = { feed, items: Object.values(feed.titles).map((t) => ({ t, n: norm(t.title) })) };
+    }
+    const scored = [];
+    for (const { t, n } of searchIndex.items) {
+      let rank = -1;
+      if (n === nq) rank = 0;
+      else if (n.startsWith(nq)) rank = 1;
+      else if ((" " + n).includes(" " + nq)) rank = 2;
+      else if (n.includes(nq)) rank = 3;
+      if (rank >= 0) scored.push({ t, rank, mine: t.services.some((k) => myServices.includes(k)) ? 0 : 1 });
+    }
+    // best match first; among equal matches, titles on your services first, then the best known
+    return scored
+      .sort((a, b) => a.rank - b.rank || a.mine - b.mine || (b.t.imdb_votes || 0) - (a.t.imdb_votes || 0))
+      .slice(0, 40).map((x) => x.t);
+  }
+
+  function renderSearch() {
+    const q = $("#search-input").value;
+    const res = searchTitles(q);
+    $("#search-results").innerHTML = !norm(q)
+      ? `<li class="none">Search the ${fmtCount(Object.keys(feed.titles).length)} movies and shows the app tracks across all services.</li>`
+      : res.length ? res.map((t) => {
+          const mine = t.services.filter((k) => myServices.includes(k)).map(svcInfo).filter(Boolean);
+          const where = mine.length ? mine.map((s) => s.name).join(", ")
+            : t.services.length ? `Not on your services (${t.services.map((k) => svcInfo(k)?.name).filter(Boolean).join(", ")})` : "Not on a tracked service";
+          return `<li><button class="result" data-id="${esc(t.id)}">
+            <span class="r-poster">${t.poster ? `<img loading="lazy" src="${IMG}w92${esc(t.poster)}" alt="">` : ""}</span>
+            <span class="r-text"><span class="r-title">${esc(t.title)}</span>
+              <span class="r-sub">${[t.year, t.type === "tv" ? "TV" : "Movie", t.imdb && `IMDb ${t.imdb.toFixed(1)}`].filter(Boolean).map(esc).join(" · ")}</span>
+              <span class="r-where ${mine.length ? "" : "not-mine"}">${esc(where)}</span></span>
+            <span class="r-marks">${watchlist[t.id] ? "🔖" : ""}${watched[t.id] ? "✓" : ""}</span>
+          </button></li>`;
+        }).join("")
+      : `<li class="none">No matches for "${esc(q)}". The app tracks popular, top-rated, new and trending titles, so less-known ones may be missing.</li>`;
+  }
+
+  function openSearch() {
+    showSheet($("#search"));
+    renderSearch();
+    setTimeout(() => $("#search-input").focus(), 50);
+  }
+
   // ---------------------------------------------------------------- settings
   function openSettings() {
     $("#service-picker").innerHTML = feed.services.map((s) => `
       <label><input type="checkbox" value="${esc(s.key)}" ${myServices.includes(s.key) ? "checked" : ""}>
         <span class="dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${esc(s.color)}"></span>${esc(s.name)}</label>`).join("");
     renderGenres();
+    renderLists();
     renderRatings();
     renderHow();
     showLastBackup();
     if (!$("#settings").open) showSheet($("#settings"));
+  }
+
+  function renderLists() {
+    const li = (store, key, label) => {
+      const items = Object.entries(store).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || ""));
+      return items.length
+        ? items.map(([id, r]) => `<li><span class="t">${esc(r.title)}</span><button data-remove="${key}" data-id="${esc(id)}" aria-label="Remove ${esc(r.title)} from ${label}">✕</button></li>`).join("")
+        : `<li class="none">Nothing here yet. Open any title and tap ${key === "watchlist" ? "＋ Watchlist" : "Mark watched"}.</li>`;
+    };
+    $("#watchlist-list").innerHTML = li(watchlist, "watchlist", "your watchlist");
+    $("#watched-list").innerHTML = li(watched, "watched", "watched");
   }
 
   function renderRatings() {
@@ -541,6 +646,8 @@
         <p>Full credit (100) for titles released or premiered in the last year, fading to 0 at 5 years old. A new season of an older show counts half. Arriving on a service in the last 30 days counts fully.</p>`],
       ["Signal: Audience, Critics, Trending", `
         <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the same blended score as the Trending now row.</p>`],
+      ["Watchlist & watched", `
+        <p><b>＋ Watchlist</b> on any title adds it to the "Your watchlist" row at the top, newest first. <b>Mark watched</b> hides a title from every row (it stays in the Netflix Top 10 with a "Watched" badge) and takes it off your watchlist. Both are saved on this phone and included in backups; manage them in Settings.</p>`],
       ["When data updates", `
         <p>Trending numbers refresh every 2 hours. Everything else (what's on each service, ratings, Netflix Top 10) refreshes about once a day. Critic scores fill in gradually because of OMDb's daily limit. The time at the top of the app shows the last update.</p>`],
     ];
@@ -588,14 +695,14 @@
 
   function showLastBackup() {
     const last = load(STORE.lastBackup, null);
-    const n = Object.keys(thumbs).length;
+    const n = Object.keys(thumbs).length + Object.keys(watchlist).length + Object.keys(watched).length;
     backupStatus(last
       ? `Last backup: ${new Date(last).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}.`
-      : n ? `No backup yet. You have ${n} rating${n === 1 ? "" : "s"} saved only on this phone.` : "");
+      : n ? `No backup yet. Your ratings and lists are saved only on this phone.` : "");
   }
 
   async function saveBackup() {
-    const data = { app: BACKUP_APP, version: 2, saved_at: new Date().toISOString(), services: myServices, thumbs, genres: genrePrefs };
+    const data = { app: BACKUP_APP, version: 3, saved_at: new Date().toISOString(), services: myServices, thumbs, genres: genrePrefs, watchlist, watched };
     const name = `what-to-watch-backup-${new Date().toISOString().slice(0, 10)}.json`;
     const file = new File([JSON.stringify(data, null, 1)], name, { type: "application/json" });
     try {
@@ -628,13 +735,20 @@
       myServices = [...new Set([...myServices, ...known])];
       const genres = Object.entries(data.genres || {}).filter(([, v]) => v === 1 || v === -1);
       for (const [g, v] of genres) genrePrefs[g] = v;
+      const okEntry = ([, r]) => r && typeof r.title === "string";
+      const wl = Object.entries(data.watchlist || {}).filter(okEntry);
+      const wd = Object.entries(data.watched || {}).filter(okEntry);
+      for (const [id, r] of wl) watchlist[id] = r;
+      for (const [id, r] of wd) { watched[id] = r; delete watchlist[id]; }
+      save(STORE.watchlist, watchlist);
+      save(STORE.watched, watched);
       save(STORE.thumbs, thumbs);
       save(STORE.genres, genrePrefs);
       save(STORE.services, myServices);
       openSettings();
       render();
       const nG = genres.length;
-      backupStatus(`Restored ${valid.length} rating${valid.length === 1 ? "" : "s"}, ${nG} genre${nG === 1 ? "" : "s"} and ${known.length} service${known.length === 1 ? "" : "s"}.`, "ok");
+      backupStatus(`Restored ${valid.length} rating${valid.length === 1 ? "" : "s"}, ${nG} genre${nG === 1 ? "" : "s"}, ${wl.length} watchlist title${wl.length === 1 ? "" : "s"}, ${wd.length} watched title${wd.length === 1 ? "" : "s"} and ${known.length} service${known.length === 1 ? "" : "s"}.`, "ok");
     } catch {
       backupStatus("That file isn't a What to Watch backup.", "err");
     }
@@ -681,15 +795,36 @@
       if (c) openDetails(c.dataset.id);
     });
     $("#details").addEventListener("click", (e) => {
+      const id = $("#details").dataset.id;
       const b = e.target.closest("[data-thumb]");
-      if (b) setThumb($("#details").dataset.id, Number(b.dataset.thumb));
+      if (b) return setThumb(id, Number(b.dataset.thumb));
+      if (e.target.closest("[data-watchlist]")) return toggleWatchlist(id);
+      if (e.target.closest("[data-watched]")) return toggleWatched(id);
     });
     $("#open-settings").addEventListener("click", () => feed && openSettings());
+    $("#open-search").addEventListener("click", () => feed && openSearch());
+    $("#search-input").addEventListener("input", renderSearch);
+    $("#search-input").addEventListener("keydown", (e) => { if (e.key === "Enter") e.target.blur(); });
+    $("#search-results").addEventListener("click", (e) => {
+      const r = e.target.closest(".result");
+      if (r) openDetails(r.dataset.id);
+    });
     $("#service-picker").addEventListener("change", () => {
       myServices = [...$("#service-picker").querySelectorAll("input:checked")].map((i) => i.value);
       save(STORE.services, myServices);
       render();
     });
+    for (const sel of ["#watchlist-list", "#watched-list"]) {
+      $(sel).addEventListener("click", (e) => {
+        const b = e.target.closest("[data-remove]");
+        if (!b) return;
+        const store = b.dataset.remove === "watchlist" ? watchlist : watched;
+        delete store[b.dataset.id];
+        save(b.dataset.remove === "watchlist" ? STORE.watchlist : STORE.watched, store);
+        renderLists();
+        renderRows(true);
+      });
+    }
     $("#ratings").addEventListener("click", (e) => {
       const b = e.target.closest("[data-unrate]");
       if (!b) return;
@@ -761,6 +896,8 @@
     myServices = load(STORE.services, []);
     thumbs = load(STORE.thumbs, {});
     genrePrefs = load(STORE.genres, {});
+    watched = load(STORE.watched, {});
+    watchlist = load(STORE.watchlist, {});
     filter = load(STORE.filter, "all");
     kind = ["all", "tv", "movie"].includes(load(STORE.kind, "all")) ? load(STORE.kind, "all") : "all";
     wire();

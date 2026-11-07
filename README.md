@@ -15,6 +15,11 @@ A phone web app that shows the best things to stream right now on the services y
 
 A filter at the top limits every row to one service. Your services and thumbs are saved only on your phone.
 
+**Your lists and search:**
+- **＋ Watchlist** on any title adds it to a "Your watchlist" row at the top, newest first.
+- **Mark watched** hides a title from every row (it stays in the Netflix Top 10 with a "Watched" badge) and takes it off your watchlist. Manage both lists in Settings.
+- **Search** (magnifying glass) finds any title the app tracks, across all services; titles on your services come first.
+
 ## How it works
 
 - `pipeline/build_feed.py` runs on GitHub Actions every 2 hours. It refreshes the trending numbers (Trakt and TMDB) each time and everything else (what's on each service, IMDb ratings, critic scores, Netflix Top 10) about once a day. It writes `data/feed.json`.
