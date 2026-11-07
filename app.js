@@ -996,5 +996,10 @@
   window.addEventListener("load", settleSoon);
   window.addEventListener("pageshow", (e) => { if (e.persisted) settleSoon(); });
 
+  // background helper (sw.js): always open the newest version of the app
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(() => {});
+  }
+
   start();
 })();

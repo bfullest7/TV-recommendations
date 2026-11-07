@@ -62,7 +62,7 @@ jobs:
       - name: Collect site files
         run: |
           mkdir -p _site
-          cp -r index.html app.js styles.css manifest.webmanifest icons config.json _site/
+          cp -r index.html app.js styles.css sw.js manifest.webmanifest icons config.json _site/
           # Version = fingerprint of the app's own files, so it changes only when
           # the app changes (not on every data refresh). Used for the file links
           # and for the "Update available" banner (version.json).
