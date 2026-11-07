@@ -1,7 +1,8 @@
 # Notes for Claude
 
 ## How Beth likes to work
-- **Don't push until Beth says so.** Commit changes locally and bundle them; push only when asked.
+- **Push each change right away** so Beth can test it on her phone. If she says "hold", commit locally and wait until she says to push.
+- After pushing, don't schedule a follow-up check that the publish went live (it costs usage, and publishing is reliable). Beth taps Refresh when the "Update available" banner appears.
 - When Beth asks for options or "what do you think", explain the options and a recommendation **before** building anything.
 - Keep explanations plain and non-technical.
 - Never ask for API keys in chat. Keys live only in GitHub Secrets: `TMDB_API_KEY`, `TRAKT_CLIENT_ID`, `OMDB_API_KEY`, `MDBLIST_API_KEY`.
