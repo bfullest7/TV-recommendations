@@ -98,20 +98,27 @@
   }
 
   /* "New & recent" (0-100): full credit for titles released or premiered in
-   * the last year, fading to 0 at 5 years. A new season of an older show
-   * counts half. Arriving on a service in the last 30 days counts fully. */
-  const RECENT_FULL_DAYS = 365, RECENT_ZERO_DAYS = 5 * 365;
+   * the last 3 months, fading steadily to 0 at 3 years (config.json). A new
+   * season of an older show counts a quarter. Arriving on a service in the
+   * last 30 days counts fully. */
+  // Curve from config.json (row_tilt): full credit for recency_full_days, then a
+  // steady fade to 0 at recency_zero_days. Defaults: 3 months and 3 years.
+  const recentFullDays = () => (feed.row_tilt || {}).recency_full_days ?? 90;
+  const recentZeroDays = () => (feed.row_tilt || {}).recency_zero_days ?? 3 * 365;
+  // a new season of an older show counts this fraction of a brand-new title
+  const seasonCredit = () => (feed.row_tilt || {}).recency_season_credit ?? 0.25;
   function ageScore(iso) {
     if (!iso) return 0;
     const days = (Date.now() - new Date(iso + "T12:00:00").getTime()) / 86400000;
     if (days < 0) return 0;
-    if (days <= RECENT_FULL_DAYS) return 100;
-    return Math.max(0, 100 * (1 - (days - RECENT_FULL_DAYS) / (RECENT_ZERO_DAYS - RECENT_FULL_DAYS)));
+    const full = recentFullDays(), zero = recentZeroDays();
+    if (days <= full) return 100;
+    return Math.max(0, 100 * (1 - (days - full) / (zero - full)));
   }
   function recency(t) {
     const parts = {
       release: ageScore(t.release),
-      season: t.type === "tv" && t.latest_air !== t.release ? 0.5 * ageScore(t.latest_air) : 0,
+      season: t.type === "tv" && t.latest_air !== t.release ? seasonCredit() * ageScore(t.latest_air) : 0,
       arrival: t.scores.fresh || 0,
     };
     const top = Object.keys(parts).reduce((a, b) => (parts[b] > parts[a] ? b : a));
@@ -612,6 +619,7 @@
 
   // ---------------------------------------------------------------- how it's calculated
   /* Plain-language explanations, built from the live settings in config.json. */
+  const ageText = (days) => (days % 365 === 0 ? `${days / 365} year${days === 365 ? "" : "s"}` : `${Math.round(days / 30)} months`);
   function renderHow() {
     const w = feed.weights;
     const t = feed.row_tilt || { min_imdb_votes: 20000, audience_recency: 0.35, critics_recency: 0.35 };
@@ -642,7 +650,7 @@
         <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres you like</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres and each 👎 lowers them. A genre you set in <b>Genres you like</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you disliked a drop.</p>
         <p>Not counted until you rate something or pick a genre.</p>`],
       ["Signal: New & recent", `
-        <p>Full credit (100) for titles released or premiered in the last year, fading to 0 at 5 years old. A new season of an older show counts half. Arriving on a service in the last 30 days counts fully.</p>`],
+        <p>Full credit (100) for titles released or premiered in the last ${ageText(recentFullDays())}, then fading steadily to 0 at ${ageText(recentZeroDays())} old (for example, a 1-year-old title scores ${Math.round(100 * (1 - (365 - recentFullDays()) / (recentZeroDays() - recentFullDays())))}). A new season of an older show counts ${seasonCredit() === 0.25 ? "a quarter" : seasonCredit() === 0.5 ? "half" : Math.round(seasonCredit() * 100) + "%"}, so long-running shows don't look brand new every season. Arriving on a service in the last 30 days counts fully.</p>`],
       ["Signal: Audience, Critics, Trending", `
         <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the TMDB/Trakt blend from the Trending now row (without that row's recency share, since New &amp; recent is its own signal).</p>`],
       ["Watchlist & watched", `

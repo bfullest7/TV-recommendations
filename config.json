@@ -27,6 +27,9 @@
     "trending_min_imdb_votes": 5000,
     "trending_tmdb_share": 0.7,
     "trending_recency": 0.25,
+    "recency_full_days": 90,
+    "recency_zero_days": 1095,
+    "recency_season_credit": 0.25,
     "top_picks_min_imdb_votes": 5000
   },
 
