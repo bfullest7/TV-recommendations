@@ -45,8 +45,8 @@ h1 .logo { width: 28px; height: 24px; margin-right: 10px; vertical-align: -6px; 
   background: var(--surface); border: 1px solid var(--line);
 }
 /* Close buttons: filled and bolder so they stand out in sheet headers */
-.icon-btn.close { background: #3a404d; border-color: #4a5160; color: #fff; }
-.icon-btn.close:active { background: #4a5160; }
+.icon-btn.close, .icon-btn.back { flex: none; background: #3a404d; border-color: #4a5160; color: #fff; }
+.icon-btn.close:active, .icon-btn.back:active { background: #4a5160; }
 
 /* One row: TV/Movies dropdown, then the service chips (which scroll sideways) */
 /* One row that scrolls sideways as a whole: TV/Movies dropdown, then the service chips */
@@ -235,10 +235,11 @@ body:has(dialog[open]) { overflow: hidden; }
 .search-sheet .sheet-head, .full-sheet .sheet-head { padding-top: calc(env(safe-area-inset-top) + 24px); background: var(--bg); }
 
 /* "See all" on the Your watchlist row */
-.row-title-line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.row-title-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .see-all { flex: none; padding: 4px 0 4px 8px; border: 0; background: none; color: var(--muted); font-size: 14px; }
 
-/* Your list page: two tabs, sort and filters, then posters three across */
+/* Your list page: back arrow and title, two tabs, sort and filters, then posters three across */
+.head-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .ml-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 16px; padding: 4px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
 .ml-tab { padding: 8px 4px; border: 0; border-radius: 9px; background: none; color: var(--muted); font-size: 15px; font-weight: 600; }
 .ml-tab[aria-selected="true"] { background: var(--surface-2); color: var(--text); }

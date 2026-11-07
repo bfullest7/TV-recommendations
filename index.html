@@ -79,8 +79,10 @@
   <dialog id="mylist" class="sheet full-sheet" aria-labelledby="ml-title">
     <div class="sheet-body">
       <div class="sheet-head">
-        <h2 id="ml-title">Your list</h2>
-        <button class="icon-btn close" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <div class="head-left">
+          <button class="icon-btn back" data-close aria-label="Back"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <h2 id="ml-title">Your list</h2>
+        </div>
       </div>
       <div class="ml-tabs" role="tablist">
         <button class="ml-tab" role="tab" data-tab="list" aria-selected="true">In your list</button>
