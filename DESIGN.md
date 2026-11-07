@@ -56,8 +56,8 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - **Row subtitles:** one short line that says what the row is. Full explanations live in Settings under "How it's calculated". Subtitles may wrap to two lines on small phones; never cut them off with "…".
 - **Periods:** leave the period off a subtitle or description that is a single sentence. Keep periods when there are two or more sentences.
 - The Top picks subtitle stays the same before and after the user rates titles.
-- Use "list" in buttons ("＋ Add to list", "✓ Added to list") and "Your watchlist" for the row.
-- Use "＋" for an action that adds and "✓" for a state that's on ("✓ Added to list", "✓ Watched").
+- Use "list" in buttons ("＋ Add to list", then a bookmark icon + "Added to list") and "Your watchlist" for the row.
+- Use "＋" for an action that adds and "✓" for a state that's on (bookmark + "Added to list", "✓ Watched").
 
 ## Icons
 
