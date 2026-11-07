@@ -149,7 +149,6 @@
     return wsum ? sum / wsum : 0;
   }
 
-  let pickScores = new Map(); // id -> match score from the last Top picks ranking
   // Top picks only includes titles with this many IMDb votes (none = no rating yet)
   const picksMinVotes = () => (feed.row_tilt || {}).top_picks_min_imdb_votes ?? 5000;
   function topPicks() {
@@ -159,7 +158,6 @@
       .filter((t) => visible(t) && !thumbs[t.id] && (t.imdb_votes || 0) >= min)
       .map((t) => ({ t, s: pickScore(t, taste) }))
       .sort((a, b) => b.s - a.s);
-    pickScores = new Map(ranked.map((x) => [x.t.id, x.s]));
     return ranked.map((x) => x.t);
   }
 
@@ -182,7 +180,6 @@
       ...(listed.length ? [{
         key: "watchlist", title: "Your watchlist", source: "Titles you saved to watch next, newest first",
         items: listed,
-        meta: () => "",
       }] : []),
       {
         key: "picks", title: "Top picks for you",
@@ -190,27 +187,22 @@
           ? "Combines IMDb, Rotten Tomatoes and Metacritic, Trakt trending, what's new, and your taste (thumbs and genre likes)"
           : "Combines IMDb, Rotten Tomatoes and Metacritic, Trakt trending, and what's new. Rate titles to make it yours.",
         items: topPicks(),
-        meta: (t) => `Match ${Math.round(pickScores.get(t.id) || 0)}`,
       },
       {
         key: "trending", title: "Trending now", source: `Trakt watchers + TMDB trending: hot on both ranks highest (${fmtCount(trendMin)}+ IMDb votes)`,
         items: from(feed.rows.trending).filter((t) => (t.imdb_votes || 0) >= trendMin),
-        meta: (t) => (t.watchers > 0 ? `${fmtCount(t.watchers)} watching` : t.tmdb_trend_rank ? `TMDB #${t.tmdb_trend_rank} today` : ""),
       },
       {
         key: "audience", title: "Top rated by audiences", source: `IMDb ratings, ${tiltNote(tilt.audience_recency)}`,
         items: tilted(feed.rows.audience, "audience", tilt.audience_recency),
-        meta: (t) => `${fmtCount(t.imdb_votes)} votes`,
       },
       {
         key: "critics", title: "Critics' favorites", source: `Rotten Tomatoes and Metacritic, ${tiltNote(tilt.critics_recency)}`,
         items: tilted(feed.rows.critics, "critic", tilt.critics_recency),
-        meta: (t) => [t.rt != null && `RT ${t.rt}%`, t.mc != null && `MC ${t.mc}`].filter(Boolean).join(" · "),
       },
       {
         key: "new", title: "New on your services", source: "Streaming availability from TMDB / JustWatch",
         items: from(feed.rows.new),
-        meta: (t) => (t.type === "tv" && t.latest_air === t.new_date && t.release !== t.new_date ? "New season " : "New ") + fmtDate(t.new_date),
       },
     ];
     const hasNetflix = myServices.includes("netflix") && (filter === "all" || filter === "netflix");
@@ -219,7 +211,6 @@
         key: "netflix", title: "Netflix Top 10",
         source: "Netflix official Top 10" + (feed.netflix_week ? `, week ending ${fmtDate(feed.netflix_week)}` : ", updated weekly"),
         items: feed.rows.netflix.map((r) => T[r.id] && { ...T[r.id], _rank: r.rank, _kind: r.kind }).filter((t) => t && rightKind(t)),
-        meta: (t) => `#${t._rank} ${t._kind === "tv" ? "TV" : "Film"}`,
         rank: true,
         forceService: "netflix",
       });
@@ -251,7 +242,6 @@
         </div>
         <div class="name">${esc(t.title)}</div>
         <div class="meta">${esc(metaLine1(t)) || "&nbsp;"}</div>
-        <div class="meta">${esc(def.meta(t)) || "&nbsp;"}</div>
       </button>`;
   }
 
