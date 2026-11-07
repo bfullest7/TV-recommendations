@@ -183,10 +183,6 @@ body:has(dialog[open]) { overflow: hidden; }
 }
 .thumb[aria-pressed="true"].up { background: var(--up); border-color: var(--up); color: #062b1b; }
 .thumb[aria-pressed="true"].down { background: var(--down); border-color: var(--down); color: #3a0909; }
-.watch-link {
-  display: block; margin-top: 10px; padding: 12px; border-radius: 10px; text-align: center;
-  background: var(--accent); color: #2b1a00; font-weight: 700; text-decoration: none;
-}
 
 .service-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .service-picker label {

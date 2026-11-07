@@ -247,6 +247,12 @@
     const d = (t.type === "tv" && t.latest_air) || t.release;
     return d ? d.slice(0, 4) : t.year ? String(t.year) : "";
   };
+  /* Details screen: TV shows show premiere to latest season ("2024–2026"). */
+  const yearRange = (t) => {
+    const first = t.year ? String(t.year) : (t.release || "").slice(0, 4);
+    const last = latestYear(t);
+    return t.type === "tv" && first && last && last !== first ? `${first}–${last}` : last || first;
+  };
   /* Line 1 of every card's subtitle: latest year and IMDb rating. */
   const metaLine1 = (t) => [latestYear(t), t.imdb != null && `IMDb ${t.imdb.toFixed(1)}`].filter(Boolean).join(" · ");
 
@@ -361,7 +367,7 @@
         <div class="poster">${t.poster ? `<img src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}</div>
         <div class="d-info">
           <h2 id="d-title">${esc(t.title)}</h2>
-          <div class="d-sub">${[t.year, t.type === "tv" ? "TV series" : "Movie", t.genres.slice(0, 3).join(", ")].filter(Boolean).map(esc).join(" · ")}</div>
+          <div class="d-sub">${[yearRange(t), t.type === "tv" ? "TV series" : "Movie", t.genres.slice(0, 3).join(", ")].filter(Boolean).map(esc).join(" · ")}</div>
           <div class="d-services">${services.map((s) => `<span class="svc ${myServices.includes(s.key) ? "" : "not-mine"}" style="background:${esc(s.color)}">${esc(s.name)}</span>`).join("")}</div>
         </div>
       </div>
@@ -375,7 +381,6 @@
         <button class="thumb up" data-thumb="1" aria-pressed="${thumb > 0}">👍 Like</button>
         <button class="thumb down" data-thumb="-1" aria-pressed="${thumb < 0}">👎 Not for me</button>
       </div>
-      <a class="watch-link" href="${esc(t.link)}" target="_blank" rel="noopener">Where to watch</a>
       ${whyThisPick(t)}`;
     $("#details").dataset.id = id;
     showSheet($("#details"));
