@@ -13,6 +13,7 @@
 - Files: `index.html`, `app.js`, `styles.css`, `sw.js` (helper that always loads the newest page), `manifest.webmanifest`, `icons/`, `config.json` (services, score weights, row settings; read live by the app).
 - Data: `pipeline/build_feed.py` (Python standard library only) builds `data/feed.json` from TMDB, Trakt, IMDb, OMDb, MDBList and Netflix Top 10. Tests: `python3 -m unittest discover -s tests`.
 - `README.md` explains the rows, scoring and setup.
+- `DESIGN.md` is the design system: text sizes, colors, buttons, spacing and wording rules. Follow it for visual or wording changes, and update it when Beth approves a new rule.
 
 ## Publishing
 - `.github/workflows/refresh.yml` refreshes the data every 2 hours and publishes the site on every push (data-only commits are skipped).
