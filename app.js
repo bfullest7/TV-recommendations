@@ -268,15 +268,16 @@
   const BOOKMARK = `<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4.2L6 21V4a1 1 0 0 1 1-1z"/></svg>`;
 
   function cardHtml(t, def) {
-    const svcKey = def.forceService || t.services.find((s) => activeServices().includes(s));
+    const svcKey = def.forceService || t.services.find((s) => activeServices().includes(s)) || t.services.find((s) => myServices.includes(s));
+    const showSeen = isWatched(t) && !def.plain; // the Watched tab doesn't badge every poster
     const svc = svcKey && svcInfo(svcKey);
     return `
-      <button class="card ${isWatched(t) ? "is-watched" : ""}" data-id="${esc(t.id)}" aria-label="${esc(t.title)}">
+      <button class="card ${showSeen ? "is-watched" : ""}" data-id="${esc(t.id)}" aria-label="${esc(t.title)}">
         <div class="poster">
           ${t.poster ? `<img loading="lazy" src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}
           ${def.rank ? `<span class="rank">#${t._rank}</span>` : ""}
-          <span class="marks">${watchlist[t.id] && def.key !== "watchlist" ? `<span class="mark" title="On your watchlist">${BOOKMARK}</span>` : ""}</span>
-          ${isWatched(t) ? `<span class="watched-badge">✓ Watched</span>` : ""}
+          <span class="marks">${watchlist[t.id] && !["watchlist", "mylist"].includes(def.key) ? `<span class="mark" title="On your watchlist">${BOOKMARK}</span>` : ""}</span>
+          ${showSeen ? `<span class="watched-badge">✓ Watched</span>` : ""}
           ${svc ? `<span class="badge" style="background:${esc(svc.color)}">${esc(svc.name)}</span>` : ""}
         </div>
         <div class="name">${esc(t.title)}</div>
@@ -323,7 +324,7 @@
     return `
       <section class="row" data-row="${def.key}" aria-labelledby="row-${def.key}">
         <div class="row-head">
-          <h2 id="row-${def.key}">${esc(def.title)}</h2>
+          <div class="row-title-line"><h2 id="row-${def.key}">${esc(def.title)}</h2>${def.key === "watchlist" ? `<button class="see-all" data-open-mylist>See all ›</button>` : ""}</div>
           <p class="source">${esc(def.source)}</p>
         </div>
         ${def.items.length
@@ -532,18 +533,23 @@
   const KEEPS = ["watchlist", "netflix"]; // rows that keep watched and Not for me titles
   function patchCards(id) {
     const t = feed.titles[id];
-    for (const card of document.querySelectorAll(`#rows .card[data-id="${CSS.escape(id)}"]`)) {
-      const row = card.closest(".row").dataset.row;
+    for (const card of document.querySelectorAll(`#rows .card[data-id="${CSS.escape(id)}"], #ml-grid .card[data-id="${CSS.escape(id)}"]`)) {
+      const row = card.closest("[data-row]").dataset.row;
+      if (row === "mywatched") { // Watched tab: a title you un-mark dims until the page updates
+        card.classList.toggle("is-passed", !isWatched(t));
+        continue;
+      }
       const seen = isWatched(t);
+      const leaving = row === "mylist" ? !watchlist[id] : !KEEPS.includes(row) && thumbs[id]?.v < 0;
       card.classList.toggle("is-watched", seen);
-      card.classList.toggle("is-passed", !KEEPS.includes(row) && thumbs[id]?.v < 0);
+      card.classList.toggle("is-passed", leaving);
       const poster = card.querySelector(".poster");
       const badge = poster.querySelector(".watched-badge");
       if (seen && !badge) poster.insertAdjacentHTML("beforeend", `<span class="watched-badge">✓ Watched</span>`);
       if (!seen && badge) badge.remove();
       const marks = poster.querySelector(".marks");
       const mark = marks.querySelector(".mark");
-      const wantMark = watchlist[id] && row !== "watchlist";
+      const wantMark = watchlist[id] && !["watchlist", "mylist"].includes(row);
       if (wantMark && !mark) marks.insertAdjacentHTML("beforeend", `<span class="mark" title="On your watchlist">${BOOKMARK}</span>`);
       if (!wantMark && mark) mark.remove();
     }
@@ -597,6 +603,64 @@
     d.scrollTop = y;
     patchCards(id);
     homeStale = true;
+  }
+
+  // ---------------------------------------------------------------- your list page
+  /* "See all" on Your watchlist. Two tabs: titles in your list you haven't watched,
+     and everything you've marked watched. Like the home screen, nothing moves while
+     you're on it: it updates when you switch tabs, sort or filter, or reopen it. */
+  const ML_SORTS = {
+    list: [["added", "Recently added"], ["match", "Best match for you"], ["imdb", "IMDb rating"], ["newest", "Newest release"], ["az", "A–Z"]],
+    watched: [["added", "Recently watched"], ["imdb", "IMDb rating"], ["az", "A–Z"]],
+  };
+  const ml = { tab: "list", sort: { list: "added", watched: "added" }, kind: "all", service: "all" };
+  const latestDate = (t) => (t.type === "tv" ? t.latest_air : t.release) || "";
+  function mlTitles(tab) {
+    const T = feed.titles;
+    return tab === "list"
+      ? Object.keys(watchlist).map((id) => T[id]).filter((t) => t && !isWatched(t))
+      : Object.keys(watched).map((id) => T[id]).filter((t) => t && isWatched(t));
+  }
+  function renderMyList() {
+    for (const b of document.querySelectorAll(".ml-tab")) {
+      const tab = b.dataset.tab;
+      b.setAttribute("aria-selected", tab === ml.tab);
+      b.innerHTML = `${tab === "list" ? "In your list" : "Watched"} <span class="n">${mlTitles(tab).length}</span>`;
+    }
+    const sorts = ML_SORTS[ml.tab];
+    $("#ml-sort").innerHTML = sorts.map(([k, l]) => `<option value="${k}" ${ml.sort[ml.tab] === k ? "selected" : ""}>${l}</option>`).join("");
+    $("#ml-kind").value = ml.kind;
+    $("#ml-kind").classList.toggle("active", ml.kind !== "all");
+    if (ml.service !== "all" && !myServices.includes(ml.service)) ml.service = "all";
+    $("#ml-services").innerHTML = [{ key: "all", name: "All" }, ...myServices.map(svcInfo).filter(Boolean)].map((s) => `
+      <button class="chip" data-ml-service="${esc(s.key)}" aria-pressed="${ml.service === s.key}">
+        ${s.color ? `<span class="dot" style="background:${esc(s.color)}"></span>` : ""}${esc(s.name)}
+      </button>`).join("");
+
+    const stamp = ml.tab === "list" ? watchlist : watched;
+    let items = mlTitles(ml.tab)
+      .filter((t) => ml.kind === "all" || t.type === ml.kind)
+      .filter((t) => ml.service === "all" || t.services.includes(ml.service));
+    const by = ml.sort[ml.tab];
+    if (by === "added") items.sort((a, b) => (stamp[b.id].at || "").localeCompare(stamp[a.id].at || ""));
+    if (by === "match") { const taste = tasteModel(); items = items.map((t) => ({ t, s: pickScore(t, taste) })).sort((a, b) => b.s - a.s).map((x) => x.t); }
+    if (by === "imdb") items.sort((a, b) => (b.imdb ?? -1) - (a.imdb ?? -1));
+    if (by === "newest") items.sort((a, b) => latestDate(b).localeCompare(latestDate(a)));
+    if (by === "az") items.sort((a, b) => a.title.localeCompare(b.title));
+
+    const grid = $("#ml-grid");
+    grid.dataset.row = ml.tab === "list" ? "mylist" : "mywatched";
+    const def = { key: grid.dataset.row, plain: ml.tab === "watched", forceService: ml.service !== "all" ? ml.service : null };
+    const none = mlTitles(ml.tab).length
+      ? "Nothing matches these filters"
+      : ml.tab === "list" ? "Nothing in your list yet. Tap ＋ Add to list on any title to save it here" : "Nothing marked watched yet";
+    grid.innerHTML = items.length ? items.map((t) => cardHtml(t, def)).join("") : `<p class="ml-empty">${none}</p>`;
+  }
+  function openMyList() {
+    ml.tab = "list";
+    renderMyList();
+    showSheet($("#mylist"));
+    $("#mylist").scrollTop = 0;
   }
 
   // ---------------------------------------------------------------- search
@@ -914,6 +978,7 @@
     });
     $("#rows").addEventListener("click", (e) => {
       if (e.target.closest("[data-open-settings]")) return openSettings();
+      if (e.target.closest("[data-open-mylist]")) return openMyList();
       const c = e.target.closest(".card");
       if (c) openDetails(c.dataset.id);
     });
@@ -928,6 +993,16 @@
     $("#open-search").addEventListener("click", () => feed && openSearch());
     $("#search-input").addEventListener("input", renderSearch);
     $("#search-input").addEventListener("keydown", (e) => { if (e.key === "Enter") e.target.blur(); });
+    $("#mylist").addEventListener("click", (e) => {
+      const tab = e.target.closest("[data-tab]");
+      if (tab) { ml.tab = tab.dataset.tab; renderMyList(); return; }
+      const svc = e.target.closest("[data-ml-service]");
+      if (svc) { ml.service = svc.dataset.mlService; renderMyList(); return; }
+      const c = e.target.closest(".card");
+      if (c) openDetails(c.dataset.id);
+    });
+    $("#ml-sort").addEventListener("change", (e) => { ml.sort[ml.tab] = e.target.value; renderMyList(); });
+    $("#ml-kind").addEventListener("change", (e) => { ml.kind = e.target.value; renderMyList(); });
     $("#search-results").addEventListener("click", (e) => {
       const r = e.target.closest(".result");
       if (r) openDetails(r.dataset.id);

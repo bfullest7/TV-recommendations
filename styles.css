@@ -228,11 +228,25 @@ body:has(dialog[open]) { overflow: hidden; }
 
 .top-btns { display: flex; gap: 8px; }
 /* Search takes over the whole screen, with its search box where the app title sits */
-.sheet.search-sheet {
+.sheet.search-sheet, .sheet.full-sheet {
   inset: 0; max-width: none; height: 100vh; height: 100dvh; max-height: none; margin: 0;
   border-radius: 0; background: var(--bg);
 }
-.search-sheet .sheet-head { padding-top: calc(env(safe-area-inset-top) + 24px); background: var(--bg); }
+.search-sheet .sheet-head, .full-sheet .sheet-head { padding-top: calc(env(safe-area-inset-top) + 24px); background: var(--bg); }
+
+/* "See all" on the Your watchlist row */
+.row-title-line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.see-all { flex: none; padding: 4px 0 4px 8px; border: 0; background: none; color: var(--muted); font-size: 14px; }
+
+/* Your list page: two tabs, sort and filters, then posters three across */
+.ml-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 16px; padding: 4px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.ml-tab { padding: 8px 4px; border: 0; border-radius: 9px; background: none; color: var(--muted); font-size: 15px; font-weight: 600; }
+.ml-tab[aria-selected="true"] { background: var(--surface-2); color: var(--text); }
+.ml-tab .n { font-weight: 400; color: var(--muted); }
+.ml-filters { margin-top: 12px; }
+.ml-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; margin-top: 16px; }
+.ml-grid .card { width: auto; }
+.ml-empty { grid-column: 1 / -1; padding: 24px 0; color: var(--muted); font-size: 14px; text-align: center; }
 .search-input {
   flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
   background: var(--surface-2); color: var(--text); font: inherit; font-size: 16px;

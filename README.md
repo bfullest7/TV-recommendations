@@ -21,6 +21,7 @@ A filter at the top limits every row to one service. Your services and thumbs ar
 - **👎 Not for me** hides a title from the same rows. 👍 and 👎 show only on a title's detail screen, never on posters.
 - Nothing moves while you browse: a title you like, mark Not for me or mark watched stays where it is (dimmed if it's going to leave the row), and the rows update the next time you open the app, change a filter or close Settings. Adding to your list updates "Your watchlist" right away without moving what's on screen.
 - To undo any of these, open the title (search finds every title) and tap the button again.
+- **See all ›** on "Your watchlist" opens the **Your list** page: posters three across, with two tabs. **In your list** shows titles you've added and haven't watched; **Watched** shows everything you've marked watched. Sort (recently added or watched, best match, IMDb rating, newest release, A–Z) and filter by service or TV & movies.
 - **Search** (magnifying glass) opens full screen and starts empty each time. It finds any title the app tracks, across all services; titles on your services come first, with "In your list" and "✓ Watched" labels.
 
 ## How it works
