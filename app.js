@@ -606,7 +606,11 @@
     renderWeights();
     showLastBackup();
     renderUpdated();
-    if (!$("#settings").open) showSheet($("#settings"));
+    const s = $("#settings");
+    if (!s.open) {
+      showSheet(s);
+      s.scrollTop = 0; // always start at the top when Settings is opened
+    }
   }
 
 
