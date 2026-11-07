@@ -189,25 +189,23 @@
       .sort((a, b) => b.s - a.s)
       .map((x) => x.t);
     const trendMin = tilt.trending_min_imdb_votes ?? 5000;
-    const trendShare = tilt.trending_tmdb_share ?? 0.7;
     const trendRecency = tilt.trending_recency ?? 0.25;
-    const tiltNote = (w) => `tilted ${Math.round(w * 100)}% toward recent releases (${fmtCount(tilt.min_imdb_votes)}+ IMDb votes)`;
     const listed = Object.entries(watchlist).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || "")).map(([id]) => T[id]).filter(visible);
     const defs = [
       ...(listed.length ? [{
-        key: "watchlist", title: "Your watchlist", source: "Titles you saved to watch next, newest first",
+        key: "watchlist", title: "Your watchlist", source: "Titles you saved to watch next, most recently added first.",
         items: listed,
       }] : []),
       {
         key: "picks", title: "Top picks for you",
         source: hasTaste()
-          ? "Combines IMDb, Rotten Tomatoes and Metacritic, Trakt trending, what's new, and your taste (thumbs and genre likes)"
-          : "Combines IMDb, Rotten Tomatoes and Metacritic, Trakt trending, and what's new. Rate titles to make it yours.",
+          ? "Picked for you by blending how well viewers and critics rate each title, how popular it is right now and how new it is, plus your thumbs and genre likes."
+          : "Picked for you by blending how well viewers and critics rate each title, how popular it is right now and how new it is. Rate titles to make it yours.",
         items: topPicks(),
       },
       {
         key: "trending", title: "Trending now",
-        source: `TMDB trending ${Math.round(trendShare * 100)}% + Trakt watchers ${Math.round((1 - trendShare) * 100)}%, ${tiltNote(trendRecency).replace(/ \(.*\)$/, "")} (${fmtCount(trendMin)}+ IMDb votes)`,
+        source: "Most popular today, based on how many people are looking it up on TMDB and how many Trakt users are watching it right now. Newer titles get a boost.",
         items: from(feed.rows.trending)
           .filter((t) => (t.imdb_votes || 0) >= trendMin)
           .map((t) => ({ t, s: (1 - trendRecency) * trendScore(t) + trendRecency * recency(t).score }))
@@ -215,17 +213,17 @@
           .map((x) => x.t),
       },
       {
-        key: "audience", title: "Top rated by audiences", source: `IMDb ratings, ${tiltNote(tilt.audience_recency)}`,
+        key: "audience", title: "Top rated by audiences", source: "The titles IMDb viewers rate highest, with a boost for newer ones. Only well-known titles with plenty of ratings.",
         items: tilted(feed.rows.audience, "audience", tilt.audience_recency),
       },
       {
-        key: "critics", title: "Critics' favorites", source: `Rotten Tomatoes and Metacritic, ${tiltNote(tilt.critics_recency)}`,
+        key: "critics", title: "Critics' favorites", source: "The best-reviewed titles from professional critics on Rotten Tomatoes and Metacritic, with a boost for newer ones. Only well-known titles.",
         items: tilted(feed.rows.critics, "critic", tilt.critics_recency),
         // this row shows the score it's ranked by: Rotten Tomatoes, or Metacritic if there's no RT
         line: (t) => [latestYear(t), t.rt != null ? `RT ${t.rt}%` : t.mc != null ? `MC ${t.mc}` : null].filter(Boolean).join(" · "),
       },
       {
-        key: "new", title: "New on your services", source: "Streaming availability from TMDB / JustWatch",
+        key: "new", title: "New on your services", source: "Arrived in the last 30 days: new movies, new seasons and titles just added to your services. Newest first.",
         items: from(feed.rows.new),
       },
     ];
@@ -233,7 +231,7 @@
     if (hasNetflix && feed.rows.netflix.length) {
       defs.push({
         key: "netflix", title: "Netflix Top 10",
-        source: "Netflix official Top 10" + (feed.netflix_week ? `, week ending ${fmtDate(feed.netflix_week)}` : ", updated weekly"),
+        source: "Netflix's own list of its most-watched shows and movies in the US" + (feed.netflix_week ? `, for the week ending ${fmtDate(feed.netflix_week)}.` : ", updated weekly."),
         items: feed.rows.netflix.map((r) => T[r.id] && { ...T[r.id], _rank: r.rank, _kind: r.kind }).filter((t) => t && rightKind(t)),
         rank: true,
         forceService: "netflix",
