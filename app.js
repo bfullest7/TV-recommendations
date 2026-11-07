@@ -973,7 +973,13 @@
       if (h) { h.style.transform = "translateZ(0)"; void h.offsetHeight; h.style.transform = ""; }
     });
   }
-  function settleSoon() { [50, 300, 900].forEach((ms) => setTimeout(settleLayout, ms)); }
+  function settleSoon() {
+    [50, 300, 900].forEach((ms) => setTimeout(settleLayout, ms));
+    // reveal once the layout has settled, so the correction isn't visible
+    setTimeout(() => document.documentElement.classList.remove("settling"), 350);
+  }
+  // safety net: never stay hidden, even if "load" doesn't fire as expected
+  setTimeout(() => document.documentElement.classList.remove("settling"), 1500);
   window.addEventListener("load", settleSoon);
   window.addEventListener("pageshow", (e) => { if (e.persisted) settleSoon(); });
 
