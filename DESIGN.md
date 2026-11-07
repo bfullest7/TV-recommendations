@@ -48,6 +48,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - Screen side margin: 16.
 - Space between home screen rows: 20 above each row title.
 - Gap between side-by-side buttons: 10; between tiles in a grid: 6 to 8.
+- Paragraphs in "How it's calculated" (Settings and the Top picks page): 14 between paragraphs; 16 above and below charts.
 - Welcome card: 44 top and bottom, 24 sides, 28 above its button, everything centered.
 
 ## Writing

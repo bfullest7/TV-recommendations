@@ -290,7 +290,7 @@ body:has(dialog[open]) { overflow: hidden; }
 .weights .w-bar { height: 6px; margin-top: 5px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
 .weights .w-bar span { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
 .weights li.off .w-pct, .weights li.off .w-name { color: var(--muted); }
-.weights-note { margin: 6px 0 10px; }
+.weights-note { margin: 6px 0 14px; }
 .weights-note:empty { display: none; }
 .how-body .weights { margin: 16px 0; padding: 0; }
 .how-body .weights:first-child { margin-top: 0; } /* no extra gap right under an item name */
@@ -311,7 +311,7 @@ body:has(dialog[open]) { overflow: hidden; }
 .how summary::after { content: "+"; color: var(--muted); font-weight: 400; font-size: 18px; line-height: 1; }
 .how details[open] summary::after { content: "–"; }
 .how-body { padding: 0 0 12px; font-size: 14px; line-height: 1.5; color: var(--muted); }
-.how-body p { margin: 0 0 8px; }
+.how-body p { margin: 0 0 14px; }
 .how-body ul { margin: 0 0 8px; padding-left: 18px; }
 .how-body b { color: var(--text); font-weight: 600; }
 .sources { margin: 0; padding-left: 18px; font-size: 14px; color: var(--muted); }
