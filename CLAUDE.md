@@ -1,7 +1,7 @@
 # Notes for Claude
 
 ## How Beth likes to work
-- **Push each change right away** so Beth can test it on her phone. If she says "hold", commit locally and wait until she says to push.
+- **Push each change right away** so Beth can test it on the phone. If Beth says "hold", commit locally and wait until told to push.
 - After pushing, don't schedule a follow-up check that the publish went live (it costs usage, and publishing is reliable). Beth taps Refresh when the "Update available" banner appears.
 - When Beth asks for options or "what do you think", explain the options and a recommendation **before** building anything.
 - Keep explanations plain and non-technical.
