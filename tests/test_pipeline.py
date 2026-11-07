@@ -226,9 +226,10 @@ class PipelineTest(unittest.TestCase):
         # one specific sport needs company; "football (soccer)" splits into its parts
         self.assertTrue(bf.is_sports(["football (soccer)", "coach"]))
         self.assertTrue(bf.is_sports(["boxing", "boxer"]))
+        self.assertTrue(bf.is_sports(["wrestling", "sports entertainment"]))
         # incidental tags don't count
         for no in [["swimming"], ["wrestling"], ["baseball bat"], ["sports car"], ["passport", "transport"],
-                   ["coach", "team"], ["life coach"], ["swimming pool", "summer"]]:
+                   ["coach", "team"], ["life coach"], ["swimming pool", "summer"], ["training", "cricket"]]:
             self.assertFalse(bf.is_sports(no), no)
         import datetime as dt
         self.assertEqual(bf.fresh_score("2026-11-06", 30, dt.date(2026, 11, 6)), 100.0)

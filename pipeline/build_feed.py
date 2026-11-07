@@ -66,14 +66,14 @@ SPORTS_GENERAL = {
     "professional sports", "sports coach", "athlete", "olympics", "olympic games", "paralympics",
     "formula 1", "formula one", "nascar", "motorsport", "nba", "nfl", "mlb", "nhl", "ufc", "wwe",
     "professional wrestling", "college football", "college basketball", "high school football",
-    "world cup", "fifa world cup", "super bowl", "premier league", "esports", "sports anime",
+    "world cup", "fifa world cup", "super bowl", "premier league", "esports", "sports anime", "sports entertainment",
 }
 SPORTS_SPECIFIC = {
     "football", "american football", "soccer", "basketball", "baseball", "ice hockey", "hockey", "tennis",
-    "golf", "boxing", "boxer", "boxing match", "mixed martial arts", "mma", "wrestling", "wrestler", "car racing",
+    "golf", "golfer", "boxing", "boxer", "boxing match", "mixed martial arts", "mma", "wrestling", "wrestler", "car racing",
     "auto racing", "racing", "race car driver", "horse racing", "cycling", "marathon", "track and field",
     "gymnastics", "figure skating", "skateboarding", "surfing", "snowboarding", "skiing", "swimming", "rugby",
-    "cricket", "volleyball", "quarterback", "pitcher", "rodeo", "bowling", "darts", "rock climbing",
+    "volleyball", "quarterback", "pitcher", "rodeo", "bowling", "darts", "rock climbing",
     "climbing", "coach", "team", "championship", "tournament", "underdog", "training", "competition",
 }
 # generic words that only count alongside a real sport keyword
