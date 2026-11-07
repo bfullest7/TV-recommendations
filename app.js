@@ -580,7 +580,7 @@
     const q = $("#search-input").value;
     const res = searchTitles(q);
     $("#search-results").innerHTML = !norm(q)
-      ? `<li class="none">Search the ${fmtCount(Object.keys(feed.titles).length)} movies and shows the app tracks across all services.</li>`
+      ? `<li class="none">Search the ${fmtCount(Object.keys(feed.titles).length)} movies and shows the app tracks across all services</li>`
       : res.length ? res.map((t) => {
           const mine = t.services.filter((k) => myServices.includes(k)).map(svcInfo).filter(Boolean);
           const where = mine.length ? mine.map((s) => s.name).join(", ")
