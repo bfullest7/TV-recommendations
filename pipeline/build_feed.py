@@ -56,22 +56,48 @@ GENRE_SPLIT = {
 }
 
 # TMDB has no Sports genre, so titles get one from their TMDB keywords.
-# A keyword counts if it is (or contains, as a whole word) one of these.
-SPORT_WORDS = [
-    "sport", "sports", "athlete", "olympics", "olympic games", "paralympics",
-    "football", "american football", "soccer", "basketball", "baseball", "ice hockey", "hockey",
-    "tennis", "golf", "boxing", "boxer", "mixed martial arts", "mma", "ufc", "wrestling", "professional wrestling",
-    "formula 1", "formula one", "nascar", "motorsport", "car racing", "auto racing", "horse racing",
-    "cycling", "tour de france", "marathon", "track and field", "gymnastics", "figure skating",
-    "skateboarding", "surfing", "snowboarding", "skiing", "swimming", "rugby", "cricket", "volleyball",
-    "nba", "nfl", "mlb", "nhl", "super bowl", "world cup", "premier league", "sports team", "sports documentary",
-    "sports coach", "quarterback", "pitcher", "rodeo", "bowling", "darts", "chess tournament", "esports",
-]
-_SPORT_RE = re.compile(r"\b(" + "|".join(re.escape(w) for w in sorted(SPORT_WORDS, key=len, reverse=True)) + r")\b")
+# Keywords are matched whole (after splitting "football (soccer)" into its
+# parts), so incidental tags like "baseball bat" or "sports car" don't count.
+# A general sports keyword is enough on its own; a single specific sport is
+# not (films tag one-off scenes such as "swimming" or "wrestling"), so it takes
+# two or more of those.
+SPORTS_GENERAL = {
+    "sport", "sports", "sports drama", "sports comedy", "sports documentary", "sports film", "sports team",
+    "professional sports", "sports coach", "athlete", "olympics", "olympic games", "paralympics",
+    "formula 1", "formula one", "nascar", "motorsport", "nba", "nfl", "mlb", "nhl", "ufc", "wwe",
+    "professional wrestling", "college football", "college basketball", "high school football",
+    "world cup", "fifa world cup", "super bowl", "premier league", "esports", "sports anime",
+}
+SPORTS_SPECIFIC = {
+    "football", "american football", "soccer", "basketball", "baseball", "ice hockey", "hockey", "tennis",
+    "golf", "boxing", "boxer", "boxing match", "mixed martial arts", "mma", "wrestling", "wrestler", "car racing",
+    "auto racing", "racing", "race car driver", "horse racing", "cycling", "marathon", "track and field",
+    "gymnastics", "figure skating", "skateboarding", "surfing", "snowboarding", "skiing", "swimming", "rugby",
+    "cricket", "volleyball", "quarterback", "pitcher", "rodeo", "bowling", "darts", "rock climbing",
+    "climbing", "coach", "team", "championship", "tournament", "underdog", "training", "competition",
+}
+# generic words that only count alongside a real sport keyword
+_WEAK = {"coach", "team", "championship", "tournament", "underdog", "training", "competition"}
+
+
+def sports_keywords(keywords: list[str]) -> list[str]:
+    """The keywords that make a title count as Sports (empty if it doesn't)."""
+    general, specific = [], []
+    for k in keywords:
+        k = k.lower().strip()
+        parts = [k] + [p.strip() for p in re.split(r"[()]", k) if p.strip()]
+        if any(p in SPORTS_GENERAL for p in parts):
+            general.append(k)
+        elif any(p in SPORTS_SPECIFIC for p in parts):
+            specific.append(k)
+    real = [k for k in specific if k not in _WEAK]
+    if general or (real and len(specific) >= 2):
+        return general + specific
+    return []
 
 
 def is_sports(keywords: list[str]) -> bool:
-    return any(_SPORT_RE.search(k.lower()) for k in keywords)
+    return bool(sports_keywords(keywords))
 
 
 def log(*args):
@@ -234,7 +260,8 @@ class Tmdb:
                     genres.append(name)
         kw = d.get("keywords") or {}
         keywords = [k.get("name", "") for k in (kw.get("keywords") or kw.get("results") or [])]
-        if is_sports(keywords) and "Sports" not in genres:
+        sport_kw = sports_keywords(keywords)
+        if sport_kw and "Sports" not in genres:
             genres.append("Sports")
         if kind == "movie":
             title, date = d.get("title"), d.get("release_date")
@@ -261,6 +288,7 @@ class Tmdb:
             "imdb_id": (d.get("external_ids") or {}).get("imdb_id") or d.get("imdb_id"),
             "popularity": round(d.get("popularity") or 0, 2),
             "recs": recs,
+            "sports_keywords": sport_kw[:4] or None,  # why it was tagged Sports, for checking
             "link": wp.get("link") or f"https://www.themoviedb.org/{kind}/{tmdb_id}/watch?locale={self.region}",
         }
 

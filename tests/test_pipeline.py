@@ -23,7 +23,7 @@ TODAY = "2026-11-06"
 # services use TMDB provider ids: 8 Netflix, 1796 Netflix w/ ads, 15 Hulu, 1899 Max, 582 Paramount+ Amazon Channel
 U = {
     "m1": dict(title="Great Movie", prov=[8], imdb=("tt001", 8.6, 900000), rt=95, mc=88, release="2024-03-01", genres=["Drama"],
-               keywords=["based on true story", "boxing", "underdog"]),
+               keywords=["based on true story", "boxing", "underdog"]),  # sport + underdog -> Sports
     "m2": dict(title="Tiny Indie", prov=[15], imdb=("tt002", 9.6, 120), rt=100, mc=None, release="2025-01-10", genres=["Drama"]),
     "m3": dict(title="Fresh Release", prov=[1796], imdb=("tt003", 7.1, 40000), rt=70, mc=65, release="2026-10-30", genres=["Comedy"]),
     "m4": dict(title="Channel Only", prov=[582], imdb=("tt004", 8.0, 50000), rt=90, mc=80, release="2023-05-05", genres=["Action"]),
@@ -220,10 +220,16 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(bf.tmdb_trend_score(1, 100), 100.0)
         self.assertEqual(bf.tmdb_trend_score(None, 100), 0.0)
         self.assertEqual(bf.buzz_score(100, 0), 50.0)
-        for yes in ["formula 1", "basketball", "Sports Documentary", "professional wrestling", "college football"]:
+        # a general sports keyword is enough on its own
+        for yes in ["formula 1", "sports", "Sports Documentary", "professional wrestling", "college football", "nba"]:
             self.assertTrue(bf.is_sports([yes]), yes)
-        for no in ["passport", "transport", "running away", "spaceship", "sportscar", "life coach"]:
-            self.assertFalse(bf.is_sports([no]), no)
+        # one specific sport needs company; "football (soccer)" splits into its parts
+        self.assertTrue(bf.is_sports(["football (soccer)", "coach"]))
+        self.assertTrue(bf.is_sports(["boxing", "boxer"]))
+        # incidental tags don't count
+        for no in [["swimming"], ["wrestling"], ["baseball bat"], ["sports car"], ["passport", "transport"],
+                   ["coach", "team"], ["life coach"], ["swimming pool", "summer"]]:
+            self.assertFalse(bf.is_sports(no), no)
         import datetime as dt
         self.assertEqual(bf.fresh_score("2026-11-06", 30, dt.date(2026, 11, 6)), 100.0)
         self.assertEqual(bf.fresh_score("2026-09-01", 30, dt.date(2026, 11, 6)), 0.0)
