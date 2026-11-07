@@ -11,7 +11,7 @@ A phone web app that shows the best things to stream right now on the services y
 | Top rated by audiences | IMDb ratings (adjusted for vote count), 65% rating + 35% "New & recent", titles with 20K+ IMDb votes |
 | Critics' favorites | Rotten Tomatoes and Metacritic (via OMDb and MDBList), 65% critics + 35% "New & recent", titles with 20K+ IMDb votes |
 | New on your services | TMDB, with streaming availability from JustWatch |
-| Netflix Top 10 | Netflix's official weekly list (shown only, never used in rankings) |
+| Netflix Top 10 | Netflix's official weekly list; shown only when the Netflix filter is selected, and never used in rankings |
 
 A filter at the top limits every row to one service. Your services and thumbs are saved only on your phone.
 

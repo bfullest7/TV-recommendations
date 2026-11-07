@@ -227,7 +227,8 @@
         items: from(feed.rows.new),
       },
     ];
-    const hasNetflix = myServices.includes("netflix") && (filter === "all" || filter === "netflix");
+    // Only Netflix publishes official viewing numbers, so its Top 10 shows only when the Netflix filter is selected
+    const hasNetflix = myServices.includes("netflix") && filter === "netflix";
     if (hasNetflix && feed.rows.netflix.length) {
       defs.push({
         key: "netflix", title: "Netflix Top 10",
@@ -643,7 +644,7 @@
       ["New on your services", `
         <p>Titles from the last 30 days, newest first: new movies, new seasons of shows, and titles that just arrived on one of your services. Streaming availability comes from TMDB, provided by JustWatch.</p>`],
       ["Netflix Top 10", `
-        <p>Netflix's own official list of its most-watched shows and films in the US, published weekly. Shown as-is and not used in any ranking, since other services don't publish equivalent numbers.</p>`],
+        <p>Netflix's own official list of its most-watched shows and films in the US, published weekly. Shown only when the <b>Netflix</b> filter is selected, and not used in any ranking, since other services don't publish equivalent numbers.</p>`],
       ["Signal: Your taste", `
         <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres you like</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres and each 👎 lowers them. A genre you set in <b>Genres you like</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you disliked a drop.</p>
         <p>Not counted until you rate something or pick a genre.</p>`],
