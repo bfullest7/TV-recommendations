@@ -64,10 +64,12 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - Icons are simple drawn shapes in the style of the search and settings buttons, not emoji (emoji look different on each phone).
 - **On your list:** a white bookmark ribbon in a small dark circle in the poster's top-right corner, and an orange bookmark in search results. It's hidden in "Your watchlist", where every title is on the list.
 - **Watched:** a dimmed poster with a "✓ Watched" label in the middle.
+- **Ratings:** 👍 and 👎 never show on posters. They appear only on the detail screen's Like and Not for me buttons.
 
 ## Behavior rules tied to the design
 
 - Marking a title watched doesn't change any other button. A watched title stays on the list and keeps showing in "Your watchlist" (dimmed, with a "✓ Watched" badge), but leaves every other row except the Netflix Top 10.
+- "Not for me" (👎) titles are hidden from every row except "Your watchlist" and the Netflix Top 10. Search still finds them so the rating can be undone.
 - Changing services in Settings updates the home screen when Settings closes, so nothing flashes behind the sheet.
 
 ## Checking a visual change

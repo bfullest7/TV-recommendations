@@ -37,7 +37,8 @@
   const activeServices = () => (filter === "all" ? myServices : [filter]);
   const onMyServices = (t) => t && t.services.some((s) => activeServices().includes(s));
   const rightKind = (t) => kind === "all" || t.type === kind;
-  const visible = (t) => onMyServices(t) && rightKind(t) && !watched[t.id];
+  // Rows leave out watched titles and "Not for me" titles (Your watchlist, Netflix Top 10 and search keep them)
+  const visible = (t) => onMyServices(t) && rightKind(t) && !watched[t.id] && !(thumbs[t.id]?.v < 0);
   const kindWord = () => (kind === "tv" ? "TV shows" : kind === "movie" ? "movies" : "titles");
   const fmtCount = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K" : String(n));
   const fmtDate = (iso) => new Date(iso + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -260,13 +261,12 @@
   function cardHtml(t, def) {
     const svcKey = def.forceService || t.services.find((s) => activeServices().includes(s));
     const svc = svcKey && svcInfo(svcKey);
-    const thumb = thumbs[t.id];
     return `
       <button class="card ${watched[t.id] ? "is-watched" : ""}" data-id="${esc(t.id)}" aria-label="${esc(t.title)}">
         <div class="poster">
           ${t.poster ? `<img loading="lazy" src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}
           ${def.rank ? `<span class="rank">#${t._rank}</span>` : ""}
-          <span class="marks">${watchlist[t.id] && def.key !== "watchlist" ? `<span class="mark" title="On your watchlist">${BOOKMARK}</span>` : ""}${thumb ? `<span class="mark">${thumb.v > 0 ? "👍" : "👎"}</span>` : ""}</span>
+          <span class="marks">${watchlist[t.id] && def.key !== "watchlist" ? `<span class="mark" title="On your watchlist">${BOOKMARK}</span>` : ""}</span>
           ${watched[t.id] ? `<span class="watched-badge">✓ Watched</span>` : ""}
           ${svc ? `<span class="badge" style="background:${esc(svc.color)}">${esc(svc.name)}</span>` : ""}
         </div>
@@ -703,7 +703,7 @@
       ["Signal: Audience, Critics, Trending", `
         <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the TMDB/Trakt blend from the Trending now row (without that row's recency share, since New &amp; recent is its own signal).</p>`],
       ["Watchlist & watched", `
-        <p><b>＋ Add to list</b> on any title adds it to the "Your watchlist" row at the top, newest first. <b>Mark watched</b> hides a title from every row except "Your watchlist" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. Both are saved on this phone and included in backups. To undo either, open the title (search finds watched titles too) and tap the button again.</p>`],
+        <p><b>＋ Add to list</b> on any title adds it to the "Your watchlist" row at the top, newest first. <b>Mark watched</b> hides a title from every row except "Your watchlist" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. <b>👎 Not for me</b> hides a title from the same rows. Both are saved on this phone and included in backups. To undo either, open the title (search finds watched titles too) and tap the button again.</p>`],
       ["When data updates", `
         <p>Trending numbers refresh every 2 hours. Everything else (what's on each service, ratings, Netflix Top 10) refreshes about once a day. Critic scores fill in gradually because of OMDb's and MDBList's daily limits. The time at the top of the app shows the last update.</p>`],
     ];
