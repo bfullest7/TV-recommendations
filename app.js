@@ -987,7 +987,7 @@
     const splash = document.getElementById("splash");
     if (splash) {
       splash.classList.add("leaving");
-      setTimeout(() => splash.remove(), 400);
+      setTimeout(() => splash.remove(), 600);
     }
     root.classList.remove("settling");
   }
