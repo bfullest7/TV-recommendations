@@ -301,7 +301,7 @@
       $("#rows").innerHTML = `
         <div class="notice welcome">
           <b>Welcome to What to Watch!</b>
-          <p>See the best things to stream right now on the services you have: what's trending, top rated, critics' favorites, what's new, and picks just for you.</p>
+          <p>Find the best things to watch on the services you have.</p>
           <p>To get started, choose your streaming services.</p>
           <button class="done-btn" data-open-settings>Pick your services</button>
         </div>`;

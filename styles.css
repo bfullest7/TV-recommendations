@@ -118,9 +118,10 @@ h1 { margin: 0; font-size: 22px; line-height: 1.1; letter-spacing: -0.01em; }
 
 .notice { margin: 32px 16px; padding: 16px; border-radius: var(--radius); background: var(--surface); color: var(--muted); }
 .notice b { color: var(--text); }
+.welcome { text-align: center; }
 .welcome b { font-size: 18px; }
 .welcome p { margin: 10px 0 0; line-height: 1.5; }
-.welcome .done-btn { margin-top: 16px; }
+.welcome .done-btn { width: auto; margin-top: 16px; padding: 12px 24px; }
 
 /* Sheets (details, settings) */
 /* The sheet is its own scroll area and never taller than the visible screen,
