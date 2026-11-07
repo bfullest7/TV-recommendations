@@ -833,11 +833,36 @@
       if (hiddenAt && Date.now() - hiddenAt >= RESET_AFTER_MS) goHome();
       hiddenAt = null;
       refresh();
+      checkForUpdate();
     });
     window.addEventListener("pageshow", (e) => {
       if (e.persisted) goHome(); // restored from the browser's back/forward cache
     });
     setInterval(renderUpdated, 60000);
+    setInterval(checkForUpdate, 30 * 60000);
+    $("#update-refresh").addEventListener("click", applyUpdate);
+  }
+
+  // ---------------------------------------------------------------- updates
+  /* Each publish stamps index.html with a version and writes version.json.
+   * If the published version is newer than the one running, offer a refresh. */
+  const APP_VERSION = document.querySelector('meta[name="app-version"]')?.content || "dev";
+  let latestVersion = null;
+  async function checkForUpdate() {
+    if (APP_VERSION === "dev") return;
+    try {
+      const res = await fetch(`version.json?t=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) return;
+      const { version } = await res.json();
+      if (version && version !== APP_VERSION) {
+        latestVersion = version;
+        $("#update-banner").hidden = false;
+      }
+    } catch { /* offline: try again later */ }
+  }
+  function applyUpdate() {
+    // A new address skips any cached copy of the old version.
+    location.replace(`${location.pathname}?v=${encodeURIComponent(latestVersion || Date.now())}`);
   }
 
   // ---------------------------------------------------------------- start
@@ -866,6 +891,9 @@
   }
 
   async function start() {
+    // Tidy the address after an update refresh (drop ?v=...)
+    if (location.search.includes("v=")) history.replaceState(null, "", location.pathname);
+    checkForUpdate();
     myServices = load(STORE.services, []);
     thumbs = load(STORE.thumbs, {});
     genrePrefs = load(STORE.genres, {});

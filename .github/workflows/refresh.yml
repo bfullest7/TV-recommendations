@@ -62,9 +62,13 @@ jobs:
         run: |
           mkdir -p _site
           cp -r index.html app.js styles.css manifest.webmanifest icons config.json _site/
-          # Stamp file links with the version so phones load updates right away
-          v=$(git rev-parse --short HEAD)
+          # Version = fingerprint of the app's own files, so it changes only when
+          # the app changes (not on every data refresh). Used for the file links
+          # and for the "Update available" banner (version.json).
+          v=$(cat index.html app.js styles.css | sha256sum | cut -c1-10)
           sed -i "s#app.js\"#app.js?v=$v\"#; s#styles.css\"#styles.css?v=$v\"#" _site/index.html
+          sed -i "s#<meta name=\"app-version\" content=\"dev\">#<meta name=\"app-version\" content=\"$v\">#" _site/index.html
+          echo "{\"version\": \"$v\"}" > _site/version.json
           grep -n "?v=" _site/index.html
           mkdir -p _site/data && cp data/feed.json _site/data/ 2>/dev/null || true
 

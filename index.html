@@ -6,6 +6,7 @@
   <title>What to Watch</title>
   <meta name="description" content="Top things to stream right now on your services.">
   <meta name="theme-color" content="#0f1115">
+  <meta name="app-version" content="dev">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -101,6 +102,11 @@
       <button class="done-btn" data-close>Done</button>
     </div>
   </dialog>
+
+  <div id="update-banner" class="update-banner" role="status" hidden>
+    <span>Update available</span>
+    <button id="update-refresh" class="update-btn">Refresh</button>
+  </div>
 
   <script src="app.js"></script>
 </body>
