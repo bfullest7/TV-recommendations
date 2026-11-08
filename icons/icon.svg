@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- "Glowing TV": charcoal fade, with the TV fading from gold at the antennas to deep orange -->
-  <defs><linearGradient id="glow-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#262b36"/><stop offset="1" stop-color="#0f1115"/></linearGradient><linearGradient id="glow-tv" gradientUnits="userSpaceOnUse" x1="0" y1="90" x2="0" y2="400"><stop offset="0" stop-color="#ffd27a"/><stop offset="1" stop-color="#f2801f"/></linearGradient></defs>
-  <rect width="512" height="512" rx="112" fill="url(#glow-bg)"/>
-  <g transform="translate(0 -18)" fill="none" stroke="url(#glow-tv)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"><path d="M196 108 L256 164 L316 108"/><rect x="96" y="182" width="320" height="226" rx="44"/></g><path d="M230 232 L308 277 L230 322 Z" fill="url(#glow-tv)" stroke="url(#glow-tv)" stroke-width="8" stroke-linejoin="round"/>
+  <!-- "Cream": soft cream background with an orange TV -->
+  <rect width="512" height="512" rx="112" fill="#fff7ea"/>
+  <g transform="translate(0 -18)" fill="none" stroke="#f28a1e" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"><path d="M196 108 L256 164 L316 108"/><rect x="96" y="182" width="320" height="226" rx="44"/></g><path d="M230 232 L308 277 L230 322 Z" fill="#f28a1e" stroke="#f28a1e" stroke-width="8" stroke-linejoin="round"/>
 </svg>
