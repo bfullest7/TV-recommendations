@@ -218,7 +218,7 @@ body:has(dialog[open]) { overflow: hidden; }
 .s-intro { margin: 18px 0 0; font-size: 15px; line-height: 1.5; color: var(--text); } /* Profile opened from the welcome card */
 .s-intro[hidden] { display: none; }
 
-.d-top { display: flex; gap: 14px; }
+.d-top { display: flex; align-items: flex-start; gap: 14px; } /* the poster keeps its 2:3 shape however tall the title column gets */
 .d-top .poster { width: 110px; flex: none; }
 .d-info { min-width: 0; flex: 1; }
 .d-info h2 { }
