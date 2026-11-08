@@ -203,7 +203,7 @@
     return wsum ? sum / wsum : 0;
   }
 
-  // Top picks only includes titles with this many IMDb votes (none = no rating yet)
+  // Top Picks only includes titles with this many IMDb votes (none = no rating yet)
   const picksMinVotes = () => (feed.row_tilt || {}).top_picks_min_imdb_votes ?? 5000;
   function topPicks() {
     const taste = tasteModel();
@@ -235,7 +235,7 @@
         source: "Highly rated, popular and new",
         items: topPicks(),
       },
-      { // always shown, right below Top picks; its pills switch between Watchlist, Liked and Watched
+      { // always shown, right below Top Picks; its pills switch between Watchlist, Liked and Watched
         key: "watchlist", title: "Your library", library: true,
         items: libTitles(libTab),
       },
@@ -263,11 +263,11 @@
         items: from(feed.rows.new),
       },
     ];
-    for (const d of defs) if (["trending", "audience", "critics", "new"].includes(d.key)) d.items = sinkDisliked(d.items); // Top picks does this itself
+    for (const d of defs) if (["trending", "audience", "critics", "new"].includes(d.key)) d.items = sinkDisliked(d.items); // Top Picks does this itself
     // Only Netflix publishes official viewing numbers, so its Top 10 shows only when the Netflix filter is selected
     const hasNetflix = myServices.includes("netflix") && filter === "netflix";
     if (hasNetflix && feed.rows.netflix.length) {
-      // right after Top picks: it's the only real viewing data, so it leads the popularity rows
+      // right after Top Picks: it's the only real viewing data, so it leads the popularity rows
       defs.splice(defs.findIndex((d) => d.key === "picks") + 1, 0, {
         key: "netflix", title: "Netflix Top 10",
         source: "Most watched in the US" + (feed.netflix_week ? `, week ending ${fmtDate(feed.netflix_week)}` : ", updated weekly"),
@@ -331,7 +331,7 @@
   }
 
   /* keepPlace: after a rating, genre change or data refresh, every row keeps
-   * its scroll position except Top picks, which re-ranks and starts over at
+   * its scroll position except Top Picks, which re-ranks and starts over at
    * its first title. Without keepPlace (filter changes), all rows start over. */
   function renderRows(keepPlace = false) {
     const saved = {};
@@ -353,7 +353,7 @@
     showGenreTip();
   }
 
-  /* One-time genre tip on the home screen: a yellow bubble just below the Top picks row,
+  /* One-time genre tip on the home screen: a yellow bubble just below the Top Picks row,
      pointing up at its first title. Fades in half a second after the rows first show.
      Goes away for good on "Pick genres" (which opens Settings at Genres),
      "Not now", or liking/disliking any genre. Rating titles doesn't affect it. */
@@ -367,7 +367,7 @@
     if (!tip) {
       $("#rows").insertAdjacentHTML("beforeend", `
         <div id="genre-tip" class="genre-tip ${genreTipShown ? "no-anim" : ""}" role="status">
-          <p class="tip-title">Make Top picks yours</p><p>Tell us the genres you love and we'll tailor your picks to match</p>
+          <p class="tip-title">Make Top Picks yours</p><p>Tell us the genres you love and we'll tailor your picks to match</p>
           <div class="tip-actions"><button data-genre-tip="pick">Pick genres</button><button data-genre-tip="later">Not now</button></div>
         </div>`);
       tip = $("#genre-tip");
@@ -600,7 +600,7 @@
     if (Object.keys(thumbs).length || load(TIP_KEY, false) || $("#rate-tip") || $("#genre-tip")) return;
     $("#details").insertAdjacentHTML("beforeend", `
       <div id="rate-tip" class="rate-tip" role="status">
-        <span>Tap <b>Like</b> or <b>Not for me</b> on any title. Each tap helps tune your Top picks.</span>
+        <span>Tap <b>Like</b> or <b>Not for me</b> on any title. Each tap helps tune your Top Picks.</span>
         <button class="got" data-tip-ok>Got it</button>
       </div>`);
     placeRateTip();
@@ -677,14 +677,14 @@
     let lead;
     if (isWatched(t)) lead = `You've marked this as watched, so it's hidden from your rows. Its match score of ${match} comes`;
     else if (thumbs[t.id]?.v < 0) lead = `You marked this Not for me, so it's hidden from your rows. Its match score of ${match} comes`;
-    else if (!onMyServices(t)) lead = `This isn't on ${filter === "all" ? "your services" : "the service you're viewing"}, so it's not in your Top picks. Its match score of ${match} comes`;
-    else if ((t.imdb_votes || 0) < picksMinVotes()) lead = `Top picks only includes titles with ${fmtCount(picksMinVotes())}+ IMDb votes, and this has ${t.imdb_votes ? fmtCount(t.imdb_votes) : "no IMDb rating yet"}, so it's not in your Top picks. Its match score of ${match} comes`;
-    else if (!rightKind(t)) lead = `This is a ${t.type === "tv" ? "TV show" : "movie"}, and you're viewing ${kindWord()} only, so it's not in your Top picks right now. Its match score of ${match} comes`;
+    else if (!onMyServices(t)) lead = `This isn't on ${filter === "all" ? "your services" : "the service you're viewing"}, so it's not in your Top Picks. Its match score of ${match} comes`;
+    else if ((t.imdb_votes || 0) < picksMinVotes()) lead = `Top Picks only includes titles with ${fmtCount(picksMinVotes())}+ IMDb votes, and this has ${t.imdb_votes ? fmtCount(t.imdb_votes) : "no IMDb rating yet"}, so it's not in your Top Picks. Its match score of ${match} comes`;
+    else if (!rightKind(t)) lead = `This is a ${t.type === "tv" ? "TV show" : "movie"}, and you're viewing ${kindWord()} only, so it's not in your Top Picks right now. Its match score of ${match} comes`;
     else {
       const picks = topPicks();
       const rank = picks.findIndex((x) => x.id === t.id) + 1;
       const shown = feed.row_length || 20;
-      lead = rank <= shown ? `#${rank} in your Top picks` : `#${rank} of ${picks.length} in your Top picks (below the ${shown} shown)`;
+      lead = rank <= shown ? `#${rank} in your Top Picks` : `#${rank} of ${picks.length} in your Top Picks (below the ${shown} shown)`;
     }
 
     // Helped: signals scoring 60+, biggest contribution first. Held back: a weak
@@ -724,7 +724,7 @@
           <tbody>${rows}</tbody>
           <tfoot><tr><td>Match score</td><td></td><td></td><td>${match}</td></tr></tfoot>
         </table>
-        <p class="hint">Scores are out of 100. Points = score × weight; the points add up to the match score that ranks Top picks.</p>
+        <p class="hint">Scores are out of 100. Points = score × weight; the points add up to the match score that ranks Top Picks.</p>
       </section>`;
   }
 
@@ -1136,7 +1136,7 @@
 
   // ---------------------------------------------------------------- how it's calculated
   /* Plain-language explanations, built from the live settings in config.json. */
-  /* Bar chart in the same style as the Top picks weights. Each item:
+  /* Bar chart in the same style as the Top Picks weights. Each item:
    * { name, src, value (0-1 for bar length), label (text on the right) } */
   const barsHtml = (items) => `<ul class="weights">${items.map((it) => `
     <li><div class="w-top"><span><span class="w-name">${esc(it.name)}</span>${it.src ? `<br><span class="w-src">${esc(it.src)}</span>` : ""}</span>
@@ -1149,7 +1149,7 @@
     return days <= full ? 100 : Math.max(0, 100 * (1 - (days - full) / (zero - full)));
   };
   const ageText = (days) => (days % 365 === 0 ? `${days / 365} year${days === 365 ? "" : "s"}` : `${Math.round(days / 30)} months`);
-  /* How Top picks works: shown in Settings and on the full-screen page behind the
+  /* How Top Picks works: shown in Settings and on the full-screen page behind the
      "How it works ›" link next to "Top picks for you". The chart is filled in by renderWeights(). */
   function picksHowHtml() {
     return `
@@ -1208,7 +1208,7 @@
       ["Signal: Audience, Critics, Trending", `
         <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the TMDB/Trakt blend from the Trending now row (without that row's recency share, since New &amp; recent is its own signal).</p>`],
       ["Watchlist & watched", `
-        <p><b>＋ Add to list</b> on any title adds it to your watchlist, shown in the "Your library" row right below Top picks, newest first. <b>Mark watched</b> hides a title from every row except "Your library" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. A watched series comes back if a new season premieres after you marked it. <b>👎 Not for me</b> hides a title from the same rows. Titles you like stay in Top picks. Nothing moves while you're browsing: the rows update the next time you open the app, change a filter or close Settings. All are saved on this phone and included in backups. To undo any of them, open the title (search finds watched titles too) and tap the button again.</p>`],
+        <p><b>＋ Add to list</b> on any title adds it to your watchlist, shown in the "Your library" row right below Top Picks, newest first. <b>Mark watched</b> hides a title from every row except "Your library" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. A watched series comes back if a new season premieres after you marked it. <b>👎 Not for me</b> hides a title from the same rows. Titles you like stay in Top Picks. Nothing moves while you're browsing: the rows update the next time you open the app, change a filter or close Settings. All are saved on this phone and included in backups. To undo any of them, open the title (search finds watched titles too) and tap the button again.</p>`],
     ];
     $("#how").innerHTML = items.map(([title, body]) => `<details><summary>${esc(title)}</summary><div class="how-body">${body}</div></details>`).join("");
   }
@@ -1242,7 +1242,7 @@
     }).join("");
     const note = rated ? ""
       : `Your taste will count for ${pct(w.taste / Object.values(w).reduce((a, b) => a + b, 0))} once you rate a title or like a genre; until then the other signals are scaled up to fill the gap.`;
-    for (const ul of document.querySelectorAll(".js-weights")) ul.innerHTML = html; // Settings and the Top picks page
+    for (const ul of document.querySelectorAll(".js-weights")) ul.innerHTML = html; // Settings and the Top Picks page
     for (const p of document.querySelectorAll(".js-weights-note")) p.textContent = note;
   }
 

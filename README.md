@@ -18,7 +18,7 @@ A filter at the top limits every row to one service. Your services and thumbs ar
 Each home row shows its best 20 titles; when there are more, a **See all ›** tile at the end opens the row in full (three across, 100 at a time, with more added as you near the end) with its own sort and filters.
 
 **Your lists and search:**
-- **＋ Add to list** on any title adds it to a "Your library" row right below Top picks, newest first. Posters show small status icons in the corner: a thumb for titles you liked, a bookmark for titles in your list and a ✓ (on a dimmed poster) for titles you watched.
+- **＋ Add to list** on any title adds it to a "Your library" row right below Top Picks, newest first. Posters show small status icons in the corner: a thumb for titles you liked, a bookmark for titles in your list and a ✓ (on a dimmed poster) for titles you watched.
 - **Mark watched** hides a title from every row except "Your library" and the Netflix Top 10, where it shows the ✓. It doesn't take the title off your list. A watched series comes back to the rows when a new season premieres after you marked it.
 - **👎 Not for me** hides a title from the same rows. Titles you like get a thumb on their poster; Not for me titles aren't marked.
 - Nothing moves while you browse: a title you like, mark Not for me or mark watched stays where it is (dimmed if it's going to leave the row), and the rows update the next time you open the app, change a filter or close Settings. Adding to your list updates "Your library" right away without moving what's on screen.
@@ -31,9 +31,9 @@ Each home row shows its best 20 titles; when there are more, a **See all ›** t
 - `pipeline/build_feed.py` runs on GitHub Actions every 2 hours. It refreshes the trending numbers (Trakt and TMDB) each time and everything else (what's on each service, IMDb ratings, critic scores, Netflix Top 10) about once a day. It writes `data/feed.json`.
 - Which titles the app tracks: for each service, movies and TV separately, TMDB's top 40 highest rated, top 40 popular right now, top 40 new in the last 30 days (`discover_pages_per_list`, 20 per page) and top 100 most well known, meaning the most-rated titles such as Squid Game (`well_known_pages`), plus everything trending and the Netflix Top 10.
 - The app (`index.html`, `app.js`, `styles.css`) is published with GitHub Pages and reads that file. API keys never reach the app; they stay in GitHub Secrets.
-- The Top picks ranking happens on the phone, so each person's thumbs only affect their own picks.
+- The Top Picks ranking happens on the phone, so each person's thumbs only affect their own picks.
 
-### Top picks ranking
+### Top Picks ranking
 
 Each signal is scored 0–100 and combined with these weights (edit them in `config.json`):
 
@@ -45,7 +45,7 @@ Each signal is scored 0–100 and combined with these weights (edit them in `con
 | Critics | 15% | Average of Rotten Tomatoes and Metacritic |
 | Trending | 10% | Average of Trakt watchers right now (log-scaled) and position on TMDB's daily trending list, each scaled separately for movies and TV |
 
-If a title is missing a signal (no critic score, or you haven't rated anything or picked any genres yet), that signal is skipped and the other weights scale up to fill the gap. Titles you've marked watched or Not for me are left out of Top picks (titles you like stay in and are re-ranked), as are titles with fewer than 5,000 IMDb votes (`row_tilt.top_picks_min_imdb_votes` in `config.json`).
+If a title is missing a signal (no critic score, or you haven't rated anything or picked any genres yet), that signal is skipped and the other weights scale up to fill the gap. Titles you've marked watched or Not for me are left out of Top Picks (titles you like stay in and are re-ranked), as are titles with fewer than 5,000 IMDb votes (`row_tilt.top_picks_min_imdb_votes` in `config.json`).
 
 ## Setup
 

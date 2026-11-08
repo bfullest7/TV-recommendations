@@ -429,7 +429,7 @@ header.top[hidden] { display: none; }
 .rate-tip.leaving { opacity: 0; transition: opacity .25s ease; }
 @keyframes tip-in { from { opacity: 0; visibility: hidden; } to { opacity: 1; visibility: visible; } } /* can't be tapped before it shows */
 
-/* One-time genre tip on the home screen, below the Top picks row, pointing up at its first title */
+/* One-time genre tip on the home screen, below the Top Picks row, pointing up at its first title */
 .genre-tip {
   position: absolute; left: 16px; right: 56px; top: 0; z-index: 4; /* lined up with the posters on the left, shorter on the right */
   padding: 18px 20px 12px; border-radius: 14px;
