@@ -142,7 +142,7 @@ h1 .logo { width: 28px; height: 24px; margin-right: 10px; vertical-align: -6px; 
 }
 .wall-grid img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: var(--surface-2); display: block; }
 .rows.is-welcome .welcome {
-  position: relative; width: max(calc(100% - 96px), 304px); margin: 22vh auto 0; padding: 36px 20px; box-shadow: 0 10px 40px rgba(0,0,0,.4); /* a bit smaller than full width */
+  position: relative; width: max(calc(100% - 84px), 316px); margin: 22vh auto 0; padding: 42px 26px; box-shadow: 0 10px 40px rgba(0,0,0,.4); /* a bit smaller than full width */
   background: rgba(24,27,34,.86); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); /* posters faintly show through */
 }
 .welcome b { font-size: 18px; }
