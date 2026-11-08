@@ -751,7 +751,7 @@
     const def = { key: grid.dataset.row, plain: ml.tab === "watched", forceService: ml.service !== "all" ? ml.service : null };
     const none = mlTitles(ml.tab).length
       ? "Nothing matches these filters"
-      : { list: "Nothing in your list yet. Tap ＋ Add to list on any title to save it here", liked: "Nothing liked yet. Tap Like on any title to see it here", watched: "Nothing marked watched yet" }[ml.tab];
+      : { list: "Nothing in your list yet. Tap ＋ Add to list on any title to save it here.", liked: "Nothing liked yet. Tap Like on any title to see it here.", watched: "Nothing marked watched yet" }[ml.tab];
     grid.innerHTML = items.length ? items.map((t) => cardHtml(t, def)).join("") : `<p class="ml-empty">${none}</p>`;
   }
   function openMyList() {
