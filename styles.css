@@ -165,7 +165,7 @@ h1 .logo { width: 28px; height: 27px; margin-right: 10px; vertical-align: -5px; 
   background: rgba(24,27,34,.86); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); /* posters faintly show through */
 }
 .welcome-logo { display: block; width: 52px; height: 51px; margin: 0 auto 22px; } /* the orange retro TV, like the header logo */
-.welcome b { font-size: 20px; }
+.welcome b { font-size: 22px; }
 .welcome p { margin: 12px 0 0; font-size: 15px; line-height: 1.5; }
 .welcome .done-btn { width: auto; margin-top: 28px; padding: 13px 26px; font-size: 16px; }
 
