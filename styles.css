@@ -132,15 +132,17 @@ h1 .logo { width: 28px; height: 24px; margin-right: 10px; vertical-align: -6px; 
 }
 .welcome-wall::after { /* dark gradient rising from the bottom of the screen */
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(to top, var(--bg) 0%, rgba(15,17,21,.85) 22%, rgba(15,17,21,0) 55%);
+  background:
+    linear-gradient(to bottom, rgba(15,17,21,.75) 0%, rgba(15,17,21,0) 30%), /* softens the top rows under the header */
+    linear-gradient(to top, var(--bg) 0%, rgba(15,17,21,.85) 22%, rgba(15,17,21,0) 55%);
 }
 .wall-grid {
   display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 125%; margin: -40px 0 0 -12%;
-  transform: rotate(-8deg); opacity: .45;
+  transform: rotate(-8deg); opacity: .38;
 }
 .wall-grid img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: var(--surface-2); display: block; }
 .rows.is-welcome .welcome {
-  position: relative; margin-top: 22vh; box-shadow: 0 10px 40px rgba(0,0,0,.4);
+  position: relative; width: calc(100% - 64px); margin: 22vh auto 0; padding: 36px 20px; box-shadow: 0 10px 40px rgba(0,0,0,.4); /* a bit smaller than full width */
   background: rgba(24,27,34,.86); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); /* posters faintly show through */
 }
 .welcome b { font-size: 18px; }
