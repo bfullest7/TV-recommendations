@@ -322,7 +322,7 @@
 
   /* One-time genre tip on the home screen: a yellow bubble just below the Top picks row,
      pointing up at its first title. Fades in half a second after the rows first show.
-     Goes away for good on "Pick genres" (which opens Settings at Genres you like),
+     Goes away for good on "Pick genres" (which opens Settings at Genres),
      "Not now", or liking/disliking any genre. Rating titles doesn't affect it. */
   const GENRE_TIP_KEY = "wtw.tipGenres";
   let genreTipShown = false; // fade in only the first time this visit; later redraws just place it
@@ -928,7 +928,7 @@
       ["Netflix Top 10", `
         <p>Netflix's own official list of its most-watched shows and films in the US, published weekly. Shown only when the <b>Netflix</b> filter is selected, and not used in any ranking, since other services don't publish equivalent numbers.</p>`],
       ["Signal: Your taste", `
-        <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres you like</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres and each 👎 lowers them. A genre you set in <b>Genres you like</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you disliked a drop.</p>
+        <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres and each 👎 lowers them. A genre you set in <b>Genres</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you disliked a drop.</p>
         <p>Not counted until you rate something or pick a genre.</p>`],
       ["Signal: New & recent", `
         <p>Score by how long ago a title came out:</p>
