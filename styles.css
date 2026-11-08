@@ -116,10 +116,6 @@ h1 .logo { width: 28px; height: 24px; margin-right: 10px; vertical-align: -6px; 
 }
 .marks { position: absolute; right: 6px; top: 6px; display: flex; gap: 4px; }
 .mark { font-size: 13px; background: rgba(0,0,0,.7); border-radius: 50%; width: 24px; height: 24px; display: grid; place-items: center; }
-.watched-badge {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); white-space: nowrap;
-  padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: rgba(0,0,0,.8);
-}
 .card.is-watched .poster img, .card.is-watched .poster .no-img,
 .card.is-passed .poster img, .card.is-passed .poster .no-img { opacity: .35; }
 .card .name { margin-top: 6px; font-size: 13px; font-weight: 600; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

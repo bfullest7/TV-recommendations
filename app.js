@@ -267,6 +267,19 @@
   /* "In your list" icon: a simple bookmark ribbon, drawn like the header icons. */
   const BOOKMARK = `<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4.2L6 21V4a1 1 0 0 1 1-1z"/></svg>`;
 
+  const THUMB = `<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M2 10.5h3.5V21H2zM7.5 21h9.2a2 2 0 0 0 1.96-1.6l1.3-6.5A2 2 0 0 0 18 10.5h-4.6l.7-3.6a2 2 0 0 0-.55-1.8L12.6 4l-5.1 5.6z"/></svg>`;
+  const CHECK = `<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
+  /* Status circles in a poster's top-right corner, always in this order: liked, in your
+     list, watched. Each is left out where every poster in that row would have it. */
+  function marksHtml(t, rowKey, plain) {
+    const m = (svg, label) => `<span class="mark" title="${label}">${svg}</span>`;
+    return [
+      thumbs[t.id]?.v > 0 && rowKey !== "myliked" ? m(THUMB, "Liked") : "",
+      watchlist[t.id] && !["watchlist", "mylist"].includes(rowKey) ? m(BOOKMARK, "In your list") : "",
+      isWatched(t) && !plain ? m(CHECK, "Watched") : "",
+    ].join("");
+  }
+
   function cardHtml(t, def) {
     const svcKey = def.forceService || t.services.find((s) => activeServices().includes(s)) || t.services.find((s) => myServices.includes(s));
     const showSeen = isWatched(t) && !def.plain; // the Watched tab doesn't badge every poster
@@ -276,8 +289,7 @@
         <div class="poster">
           ${t.poster ? `<img loading="lazy" src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}
           ${def.rank ? `<span class="rank">#${t._rank}</span>` : ""}
-          <span class="marks">${watchlist[t.id] && !["watchlist", "mylist"].includes(def.key) ? `<span class="mark" title="On your watchlist">${BOOKMARK}</span>` : ""}</span>
-          ${showSeen ? `<span class="watched-badge">✓ Watched</span>` : ""}
+          <span class="marks">${marksHtml(t, def.key, def.plain)}</span>
           ${svc ? `<span class="badge" style="background:${esc(svc.color)}">${esc(svc.name)}</span>` : ""}
         </div>
         <div class="name">${esc(t.title)}</div>
@@ -613,23 +625,14 @@
     const t = feed.titles[id];
     for (const card of document.querySelectorAll(`#rows .card[data-id="${CSS.escape(id)}"], #ml-grid .card[data-id="${CSS.escape(id)}"]`)) {
       const row = card.closest("[data-row]").dataset.row;
-      if (row === "mywatched") { // Watched tab: a title you un-mark dims until the page updates
-        card.classList.toggle("is-passed", !isWatched(t));
-        continue;
-      }
-      const seen = isWatched(t);
-      const leaving = row === "mylist" ? !watchlist[id] : !KEEPS.includes(row) && thumbs[id]?.v < 0;
-      card.classList.toggle("is-watched", seen);
+      const plain = row === "mywatched"; // the Watched tab doesn't mark every poster watched
+      card.querySelector(".marks").innerHTML = marksHtml(t, row, plain);
+      const leaving = row === "mywatched" ? !isWatched(t)
+        : row === "mylist" ? !watchlist[id]
+        : row === "myliked" ? !(thumbs[id]?.v > 0)
+        : !KEEPS.includes(row) && thumbs[id]?.v < 0;
+      card.classList.toggle("is-watched", isWatched(t) && !plain);
       card.classList.toggle("is-passed", leaving);
-      const poster = card.querySelector(".poster");
-      const badge = poster.querySelector(".watched-badge");
-      if (seen && !badge) poster.insertAdjacentHTML("beforeend", `<span class="watched-badge">✓ Watched</span>`);
-      if (!seen && badge) badge.remove();
-      const marks = poster.querySelector(".marks");
-      const mark = marks.querySelector(".mark");
-      const wantMark = watchlist[id] && !["watchlist", "mylist"].includes(row);
-      if (wantMark && !mark) marks.insertAdjacentHTML("beforeend", `<span class="mark" title="On your watchlist">${BOOKMARK}</span>`);
-      if (!wantMark && mark) mark.remove();
     }
   }
   /* Adding to or removing from the list updates "Your watchlist" right away. If that
@@ -675,7 +678,7 @@
   function setThumb(id, v) {
     const t = feed.titles[id];
     if (thumbs[id]?.v === v) delete thumbs[id];
-    else thumbs[id] = { v, title: t.title, genres: t.genres, recs: t.recs, type: t.type };
+    else thumbs[id] = { v, title: t.title, genres: t.genres, recs: t.recs, type: t.type, at: new Date().toISOString() };
     save(STORE.thumbs, thumbs);
     const d = $("#details"), y = d.scrollTop;
     openDetails(id); // redraw so "Why this pick" reflects the new rating
@@ -691,15 +694,17 @@
      you're on it: it updates when you switch tabs, sort or filter, or reopen it. */
   const ML_SORTS = {
     list: [["added", "Recently added"], ["match", "Best match for you"], ["imdb", "IMDb rating"], ["newest", "Newest release"], ["az", "A–Z"]],
+    liked: [["added", "Recently liked"], ["match", "Best match for you"], ["imdb", "IMDb rating"], ["newest", "Newest release"], ["az", "A–Z"]],
     watched: [["added", "Recently watched"], ["imdb", "IMDb rating"], ["az", "A–Z"]],
   };
-  const ml = { tab: "list", sort: { list: "added", watched: "added" }, kind: "all", service: "all" };
+  const ml = { tab: "list", sort: { list: "added", liked: "added", watched: "added" }, kind: "all", service: "all" };
+  const ML_ROW = { list: "mylist", liked: "myliked", watched: "mywatched" };
   const latestDate = (t) => (t.type === "tv" ? t.latest_air : t.release) || "";
   function mlTitles(tab) {
     const T = feed.titles;
-    return tab === "list"
-      ? Object.keys(watchlist).map((id) => T[id]).filter((t) => t && !isWatched(t))
-      : Object.keys(watched).map((id) => T[id]).filter((t) => t && isWatched(t));
+    if (tab === "list") return Object.keys(watchlist).map((id) => T[id]).filter((t) => t && !isWatched(t));
+    if (tab === "liked") return Object.keys(thumbs).filter((id) => thumbs[id].v > 0).map((id) => T[id]).filter(Boolean);
+    return Object.keys(watched).map((id) => T[id]).filter((t) => t && isWatched(t));
   }
   function renderMyList() {
     for (const b of document.querySelectorAll(".ml-tab")) {
@@ -716,7 +721,7 @@
         ${s.color ? `<span class="dot" style="background:${esc(s.color)}"></span>` : ""}${esc(s.name)}
       </button>`).join("");
 
-    const stamp = ml.tab === "list" ? watchlist : watched;
+    const stamp = { list: watchlist, liked: thumbs, watched }[ml.tab]; // likes from before dates were saved sort last
     let items = mlTitles(ml.tab)
       .filter((t) => ml.kind === "all" || t.type === ml.kind)
       .filter((t) => ml.service === "all" || t.services.includes(ml.service));
@@ -728,11 +733,11 @@
     if (by === "az") items.sort((a, b) => a.title.localeCompare(b.title));
 
     const grid = $("#ml-grid");
-    grid.dataset.row = ml.tab === "list" ? "mylist" : "mywatched";
+    grid.dataset.row = ML_ROW[ml.tab];
     const def = { key: grid.dataset.row, plain: ml.tab === "watched", forceService: ml.service !== "all" ? ml.service : null };
     const none = mlTitles(ml.tab).length
       ? "Nothing matches these filters"
-      : ml.tab === "list" ? "Nothing in your list yet. Tap ＋ Add to list on any title to save it here" : "Nothing marked watched yet";
+      : { list: "Nothing in your list yet. Tap ＋ Add to list on any title to save it here", liked: "Nothing liked yet. Tap Like on any title to see it here", watched: "Nothing marked watched yet" }[ml.tab];
     grid.innerHTML = items.length ? items.map((t) => cardHtml(t, def)).join("") : `<p class="ml-empty">${none}</p>`;
   }
   function openMyList() {
@@ -783,7 +788,7 @@
             <span class="r-text"><span class="r-title">${esc(t.title)}</span>
               <span class="r-sub">${[t.year, t.type === "tv" ? "TV" : "Movie", t.imdb && `IMDb ${t.imdb.toFixed(1)}`].filter(Boolean).map(esc).join(" · ")}</span>
               <span class="r-where ${mine.length ? "" : "not-mine"}">${esc(where)}</span>
-              ${watchlist[t.id] || isWatched(t) ? `<span class="r-tags">${watchlist[t.id] ? `<span class="tag">${BOOKMARK}In your list</span>` : ""}${isWatched(t) ? `<span class="tag">✓ Watched</span>` : ""}</span>` : ""}</span>
+              ${thumbs[t.id]?.v > 0 || watchlist[t.id] || isWatched(t) ? `<span class="r-tags">${thumbs[t.id]?.v > 0 ? `<span class="tag">${THUMB}Liked</span>` : ""}${watchlist[t.id] ? `<span class="tag">${BOOKMARK}In your list</span>` : ""}${isWatched(t) ? `<span class="tag">${CHECK}Watched</span>` : ""}</span>` : ""}</span>
           </button></li>`;
         }).join("")
       : `<li class="none">No matches for "${esc(q)}". The app tracks popular, top-rated, new and trending titles, so less-known ones may be missing.</li>`;
