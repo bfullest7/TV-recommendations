@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- "Cream": soft cream background, the TV fading from the app orange to a deeper burnt orange -->
+  <!-- "White": white background, the TV fading from the app orange to a deeper burnt orange -->
   <defs><linearGradient id="icon-tv" gradientUnits="userSpaceOnUse" x1="0" y1="90" x2="0" y2="400"><stop offset="0" stop-color="#ffb547"/><stop offset="1" stop-color="#e8661a"/></linearGradient></defs>
-  <rect width="512" height="512" rx="112" fill="#fff7ea"/>
+  <rect width="512" height="512" rx="112" fill="#ffffff"/>
   <g transform="translate(0 -18)" fill="none" stroke="url(#icon-tv)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"><path d="M196 108 L256 164 L316 108"/><rect x="96" y="182" width="320" height="226" rx="44"/></g><path d="M230 232 L308 277 L230 322 Z" fill="url(#icon-tv)" stroke="url(#icon-tv)" stroke-width="8" stroke-linejoin="round"/>
 </svg>
