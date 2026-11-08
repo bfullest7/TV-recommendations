@@ -124,6 +124,9 @@ h1 .logo { width: 28px; height: 24px; margin-right: 10px; vertical-align: -6px; 
 .notice { margin: 32px 16px; padding: 16px; border-radius: var(--radius); background: var(--surface); color: var(--muted); }
 .notice b { color: var(--text); }
 .welcome { text-align: center; padding: 44px 24px; }
+.welcome p { text-wrap: balance; } /* even lines, no single word left alone */
+.rows.is-welcome { display: flex; flex-direction: column; justify-content: center; padding-bottom: 8px; }
+.rows.is-welcome .welcome { margin-top: 0; margin-bottom: 0; }
 .welcome b { font-size: 18px; }
 .welcome p { margin: 10px 0 0; font-size: 14px; line-height: 1.5; }
 .welcome .done-btn { width: auto; margin-top: 28px; padding: 12px 24px; }

@@ -362,11 +362,14 @@
   }
 
   function drawRows() {
+    // The welcome card sits in the middle of the screen below the header
+    $("#rows").classList.toggle("is-welcome", !myServices.length);
+    $("#rows").style.minHeight = myServices.length ? "" : `calc(100dvh - ${$(".top").offsetHeight}px)`;
     if (!myServices.length) {
       $("#rows").innerHTML = `
         <div class="notice welcome">
           <b>Welcome to What to Watch!</b>
-          <p>Find the best things to watch on the services you have. To get started, choose your streaming services.</p>
+          <p>Find the best things to watch on your services. Pick them to get started.</p>
           <button class="done-btn" data-open-settings>Pick your services</button>
         </div>`;
       return;
