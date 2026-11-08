@@ -597,7 +597,9 @@ def run(mode: str = "auto") -> dict:
     netflix_rows = (old.get("rows") or {}).get("netflix", [])
 
     if mode == "full":
-        # 2. What's on each service: top rated, popular, and new, per service and type
+        # 2. What's on each service: top rated, popular, new, and most well known (the
+        #    titles the most people have rated, e.g. Squid Game, that are neither new nor
+        #    trending nor at the very top by rating), per service and type
         pool: set[str] = set()
         p = rf["discover_pages_per_list"]
         start = (today() - dt.timedelta(days=cfg["ranking"]["new_window_days"])).isoformat()
@@ -610,9 +612,12 @@ def run(mode: str = "auto") -> dict:
                     {"sort_by": "popularity.desc"},
                     {"sort_by": "popularity.desc", ("primary_release_date.gte" if kind == "movie" else "air_date.gte"): start},
                 ]
+                lists.append({"sort_by": "vote_count.desc", "_pages": rf.get("well_known_pages", p)})
                 for params in lists:
+                    params = dict(params)
+                    pages = params.pop("_pages", p)
                     try:
-                        pool.update(key_for(kind, i) for i in tmdb.discover(kind, ids, p, **params))
+                        pool.update(key_for(kind, i) for i in tmdb.discover(kind, ids, pages, **params))
                     except Exception as e:
                         log(f"warning: discover {s['key']} {kind} {params}: {e}")
         pool.update(trending_keys)
