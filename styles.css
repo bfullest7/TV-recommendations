@@ -353,8 +353,10 @@ body:has(dialog[open]) { overflow: hidden; }
   content: ""; position: absolute; top: -9px; left: var(--caret-x, 50px); transform: translateX(-50%);
   border: 10px solid transparent; border-top: 0; border-bottom-color: var(--accent);
 }
-.genre-tip .tip-actions { display: flex; justify-content: flex-start; gap: 10px; margin-top: 14px; padding-bottom: 6px; }
-.genre-tip .tip-actions button { padding: 7px 16px; border: 1.5px solid #2b1a00; border-radius: 999px; background: none; color: #2b1a00; font-size: 14px; font-weight: 600; }
+.genre-tip .tip-actions { display: flex; align-items: center; justify-content: flex-start; gap: 18px; margin-top: 14px; padding-bottom: 6px; }
+.genre-tip .tip-actions button { border: 0; border-radius: 999px; font-size: 14px; font-weight: 600; }
+.genre-tip [data-genre-tip="pick"] { padding: 8px 18px; background: #2b1a00; color: var(--accent); } /* filled: the main choice */
+.genre-tip [data-genre-tip="later"] { padding: 8px 2px; background: none; color: #2b1a00; } /* text only */
 .genre-tip.leaving { opacity: 0; transition: opacity .25s ease; }
 
 /* Update available banner */
