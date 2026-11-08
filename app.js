@@ -402,7 +402,7 @@
       </section>`;
   }
 
-  /* "Your library" row. Three pills switch what the row shows (Watchlist first each time
+  /* "Your library" row. Once anything is saved, liked or watched, three pills switch what the row shows (Watchlist first each time
      the app opens). Up to LIB_MAX posters, then a "See all" tile that opens the Your
      library page at that tab. An empty pill shows outlined placeholder tiles, the first
      saying what to tap, so the row keeps its height. */
@@ -413,11 +413,17 @@
     return mlTitles(tab).filter((t) => onMyServices(t) && rightKind(t))
       .sort((a, b) => (stamp[b.id].at || "").localeCompare(stamp[a.id].at || ""));
   }
+  // Nothing saved, liked or watched yet: the row is just the pills, each opening its
+  // (empty) tab on the Your library page, which says how to fill it.
+  const libAllEmpty = () => !Object.keys(watchlist).length && !mlTitles("liked").length && !mlTitles("watched").length;
   function listPills() {
-    const pill = (tab, icon, label) => `<button class="list-pill" data-lib-tab="${tab}" aria-pressed="${libTab === tab}">${icon}${label}</button>`;
+    const pill = libAllEmpty()
+      ? (tab, icon, label) => `<button class="list-pill" data-open-mylist="${tab}">${icon}${label}</button>`
+      : (tab, icon, label) => `<button class="list-pill" data-lib-tab="${tab}" aria-pressed="${libTab === tab}">${icon}${label}</button>`;
     return `<div class="list-pills">${pill("list", BOOKMARK, "Watchlist")}${pill("liked", THUMB, "Liked")}${pill("watched", CHECK, "Watched")}</div>`;
   }
   function libraryBody(def) {
+    if (libAllEmpty()) return "";
     if (!def.items.length) {
       const ghost = (inner = "") => `<div class="ghost-tile"><div class="ghost-poster">${inner}</div></div>`;
       const hint = libTab === "list" && Object.keys(watchlist).length ? "Nothing here for these filters" : LIB_HINT[libTab];
