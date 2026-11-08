@@ -404,10 +404,10 @@
   }
 
   /* "Your library" row. Once anything is saved, liked or watched, three pills switch what the row shows (Watchlist first each time
-     the app opens). Up to LIB_MAX posters, then a "See all" tile that opens the Your
+     the app opens). Up to 20 posters (like every home row), then a "See all" tile that opens the Your
      library page at that tab. An empty pill shows outlined placeholder tiles, the first
      saying what to tap, so the row keeps its height. */
-  const LIB_MAX = 10;
+  const libMax = () => feed.row_length || 20; // same as the other home rows
   const LIB_HINT = { list: "Tap <b>＋ Add to list</b> on any title to save it here", liked: "Tap <b>Like</b> on any title to see it here", watched: "Tap <b>Mark watched</b> on any title to see it here" };
   function libTitles(tab) { // titles for a pill, on your services, most recent first
     if (tab === "list") return Object.entries(watchlist).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || ""))
@@ -426,7 +426,7 @@
     setTimeout(() => {
       for (const tab of ["list", "liked", "watched"]) {
         if (tab === libTab) continue;
-        for (const t of libTitles(tab).slice(0, LIB_MAX)) {
+        for (const t of libTitles(tab).slice(0, libMax())) {
           const src = t.poster && `${IMG}w342${t.poster}`;
           if (src && !preloaded.has(src)) { preloaded.add(src); new Image().src = src; }
         }
@@ -448,7 +448,7 @@
     }
     const key = { list: "watchlist", liked: "myliked", watched: "mywatched" }[libTab];
     const cardDef = { key, plain: libTab === "watched" };
-    return `<div class="scroller lib-scroller" data-row="${key}">${def.items.slice(0, LIB_MAX).map((t) => cardHtml(t, cardDef)).join("")}
+    return `<div class="scroller lib-scroller" data-row="${key}">${def.items.slice(0, libMax()).map((t) => cardHtml(t, cardDef)).join("")}
       <button class="see-all-tile" data-open-mylist="${libTab}"><span class="ghost-poster">See all ›</span></button></div>`;
   }
 
