@@ -333,8 +333,11 @@
   function placeGenreTip() {
     const tip = $("#genre-tip"), row = $('#rows [data-row="picks"] .scroller');
     if (!tip || !row) return;
-    const box = $("#rows").getBoundingClientRect(), r = row.getBoundingClientRect();
-    tip.style.top = `${r.bottom - box.top + 10}px`;
+    // just below the lowest title text among the posters on screen (not the row's extra padding)
+    const box = $("#rows").getBoundingClientRect();
+    const onScreen = [...row.querySelectorAll(".card")].filter((c) => c.getBoundingClientRect().left < window.innerWidth);
+    const bottom = Math.max(...onScreen.map((c) => c.getBoundingClientRect().bottom));
+    tip.style.top = `${bottom - box.top + 14}px`;
     const first = row.querySelector(".card");
     if (first) { const c = first.getBoundingClientRect(); tip.style.setProperty("--caret-x", `${c.left + c.width / 2 - box.left - 16}px`); }
   }
