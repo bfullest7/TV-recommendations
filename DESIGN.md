@@ -60,7 +60,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - **"Top Picks" is a name,** so both words are capitalized wherever it's mentioned ("tune your Top Picks", "How Top Picks work"). The one exception is the home row title itself, "Top picks for you", which stays in sentence case like every row title (and so does the "Top picks for you" item in "How your picks work", which names that row).
 - **Row subtitles:** one short line that says what the row is. Full explanations live in Settings under "How your picks work". Subtitles may wrap to two lines on small phones; never cut them off with "…".
 - **Periods:** leave the period off a subtitle or description that is a single sentence. Keep periods when there are two or more sentences.
-- The Top Picks subtitle stays the same before and after the user rates titles.
+- The Top Picks subtitle, "Highly rated and new, tuned to your likes", stays the same before and after the user rates titles. "Likes" hints at what makes the row personal (👍 on titles and genres) without explaining it; the tips and "How it works" do that.
 - Use "list" in buttons ("＋ Add to list", then a bookmark icon + "Added to list") "Watchlist" for the saved titles, and "Your library" for the home row and page that hold the watchlist, liked and watched titles.
 - Use "＋" for an action that adds ("＋ Add to list"). Show a state that's on with its icon: the bookmark for the list ("Added to list", "In your list"), "✓" for watched ("✓ Watched").
 

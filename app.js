@@ -232,7 +232,7 @@
     const defs = [
       {
         key: "picks", title: "Top picks for you",
-        source: "Highly rated, popular and new",
+        source: "Highly rated and new, tuned to your likes",
         items: topPicks(),
       },
       { // always shown, right below Top Picks; its pills switch between Watchlist, Liked and Watched
