@@ -88,7 +88,7 @@ h1 .logo { width: 28px; height: 24px; margin-right: 10px; vertical-align: -6px; 
 .row h2 { margin: 0; font-size: 18px; }
 .row .source { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
 .scroller {
-  display: flex; align-items: flex-start; gap: 10px; overflow-x: auto; padding: 10px 16px 4px;
+  display: flex; align-items: flex-start; gap: 10px; overflow-x: auto; padding: 14px 16px 4px;
   scroll-snap-type: x proximity; scroll-padding-inline: 16px; scrollbar-width: none;
 }
 .scroller::-webkit-scrollbar { display: none; }
