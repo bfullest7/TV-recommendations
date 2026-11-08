@@ -430,6 +430,16 @@
         <span>Tap <b>Like</b> or <b>Not for me</b> on titles you know. Each one helps tune your Top picks.</span>
         <button class="got" data-tip-ok>Got it</button>
       </div>`);
+    placeRateTip();
+  }
+  // Sits just above the Like / Not for me row, with its pointer over the middle of Like
+  function placeRateTip() {
+    const tip = $("#rate-tip"), row = $("#details .thumbs");
+    if (!tip || !row) return;
+    const d = $("#details"), box = d.getBoundingClientRect(), r = row.getBoundingClientRect();
+    tip.style.top = `${r.top - box.top + d.scrollTop - tip.offsetHeight - 14}px`;
+    const like = row.querySelector(".thumb.up").getBoundingClientRect();
+    tip.style.setProperty("--caret-x", `${like.left + like.width / 2 - (box.left + 16)}px`);
   }
   function dismissRateTip() {
     const tip = $("#rate-tip");
@@ -550,6 +560,7 @@
     const d = $("#details"), y = d.scrollTop;
     openDetails(id);
     d.scrollTop = y;
+    placeRateTip(); // buttons can shift when the screen is redrawn
   }
   /* Like, Not for me and Mark watched never move titles while browsing. The poster
      changes in place (dimmed, "✓ Watched", bookmark) and the rows update at the next
