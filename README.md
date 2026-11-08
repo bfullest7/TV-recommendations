@@ -1,4 +1,4 @@
-# Cue
+# Sofari
 
 A phone web app that shows the best things to stream right now on the services you have.
 

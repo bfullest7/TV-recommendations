@@ -1,6 +1,6 @@
 {
-  "name": "Cue",
-  "short_name": "Cue",
+  "name": "Sofari",
+  "short_name": "Sofari",
   "description": "Top things to stream right now on your services.",
   "start_url": "./",
   "scope": "./",
