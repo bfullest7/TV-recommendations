@@ -83,7 +83,7 @@ h1 .logo { width: 28px; height: 24px; margin-right: 10px; vertical-align: -6px; 
 
 /* Rows */
 .rows { position: relative; padding: 8px 0 32px; } /* the genre tip floats over it */
-.row { margin-top: 24px; }
+.row { margin-top: 28px; }
 .row-head { padding: 0 16px; }
 .row h2 { margin: 0; font-size: 18px; }
 .row .source { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
