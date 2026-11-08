@@ -198,6 +198,8 @@ body:has(dialog[open]) { overflow: hidden; }
 #settings .sheet-body > section { padding-top: 6px; }
 #settings .sheet-body > section + section { margin-top: 22px; border-top: 1px solid var(--line); }
 .hint { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+.s-intro { margin: 18px 0 0; font-size: 15px; line-height: 1.5; color: var(--text); } /* Profile opened from the welcome card */
+.s-intro[hidden] { display: none; }
 
 .d-top { display: flex; gap: 14px; }
 .d-top .poster { width: 110px; flex: none; }

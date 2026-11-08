@@ -383,7 +383,7 @@
           <svg class="welcome-logo" viewBox="70 64 372 362" aria-hidden="true"><g transform="translate(0 -18)" fill="none" stroke="#ffb547" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"><path d="M196 108 L256 164 L316 108"/><rect x="96" y="182" width="320" height="226" rx="44"/></g><path d="M230 232 L308 277 L230 322 Z" fill="#ffb547" stroke="#ffb547" stroke-width="8" stroke-linejoin="round"/></svg>
           <b>Welcome to Tivvy</b>
           <p>Discover what to watch. The best shows and movies, picked just for you.</p>
-          <button class="done-btn" data-open-settings>Select your services</button>
+          <button class="done-btn" data-open-settings="welcome">Get started</button>
         </div>`;
       return;
     }
@@ -1020,7 +1020,8 @@
   }
 
   // ---------------------------------------------------------------- settings
-  function openSettings() {
+  function openSettings(fromWelcome = false) {
+    $("#s-intro").hidden = !fromWelcome; // first visit: one line saying services and genres are one step
     $("#service-picker").innerHTML = feed.services.map((s) => `
       <label><input type="checkbox" value="${esc(s.key)}" ${myServices.includes(s.key) ? "checked" : ""}>
         <span class="dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${esc(s.color)}"></span>${esc(s.name)}</label>`).join("");
@@ -1291,7 +1292,8 @@
       window.scrollTo({ top: 0 });
     });
     $("#rows").addEventListener("click", (e) => {
-      if (e.target.closest("[data-open-settings]")) return openSettings();
+      const setBtn = e.target.closest("[data-open-settings]");
+      if (setBtn) return openSettings(setBtn.dataset.openSettings === "welcome");
       const rowBtn = e.target.closest("[data-open-row]");
       if (rowBtn) return openRowPage(rowBtn.dataset.openRow);
       const libBtn = e.target.closest("[data-lib-tab]");
