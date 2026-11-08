@@ -501,8 +501,9 @@
 
   // ---------------------------------------------------------------- details
   /* "Watch on …": opens the service's own search for the title (its app opens if the
-     link is one it handles), since services don't share their title IDs. "More" lists
-     your other services with the title and TMDB's "where to watch" page for every option. */
+     link is one it handles), since services don't share their title IDs. "More" (only
+     when there is more) lists your other services with the title. Nothing shows for a
+     title that isn't on any of your services. */
   const WATCH_SEARCH = {
     netflix: "https://www.netflix.com/search?q=",
     prime: "https://www.amazon.com/gp/video/search?phrase=",
@@ -519,16 +520,15 @@
     if (filter !== "all" && mine.includes(filter)) mine.unshift(...mine.splice(mine.indexOf(filter), 1)); // the service you're viewing first
     const link = (k) => `${WATCH_SEARCH[k]}${encodeURIComponent(t.title)}`;
     const ext = `target="_blank" rel="noopener"`;
-    if (!mine.length) return t.link ? `<div class="watch-btns"><a class="watch-btn" href="${esc(t.link)}" ${ext}>${PLAY}Where to watch</a></div>` : "";
+    if (!mine.length) return "";
     const [main, ...others] = mine;
     return `<div class="watch-btns">
         <a class="watch-btn" href="${esc(link(main))}" ${ext}>${PLAY}Watch on ${esc(svcInfo(main).name)}</a>
-        <button class="list-btn watch-more-btn" data-watch-more aria-expanded="false">More</button>
+        ${others.length ? `<button class="list-btn watch-more-btn" data-watch-more aria-expanded="false">More</button>` : ""}
       </div>
-      <div class="watch-more" hidden>
+      ${others.length ? `<div class="watch-more" hidden>
         ${others.map((k) => `<a class="watch-alt" href="${esc(link(k))}" ${ext}><span class="dot" style="background:${esc(svcInfo(k).color)}"></span>Watch on ${esc(svcInfo(k).name)}</a>`).join("")}
-        ${t.link ? `<a class="watch-alt" href="${esc(t.link)}" ${ext}>All places to watch ›</a>` : ""}
-      </div>`;
+      </div>` : ""}`;
   }
 
   function openDetails(id) {
