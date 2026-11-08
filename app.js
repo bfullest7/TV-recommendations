@@ -922,6 +922,7 @@
     swapGrid(grid, items.length ? items.map((t) => cardHtml(t, def)).join("") : none, instant, opening);
   }
   function openMyList(tab = "list") {
+    closeStale($("#mylist"));
     ml.tab = tab;
     $("#ml-grid").innerHTML = ""; // don't show the last visit's titles while the new ones load
     renderMyList(false, true);
@@ -979,6 +980,7 @@
     if (rp.shown >= rp.items.length) $("#rp-end").hidden = false;
   }
   function openRowPage(key) {
+    closeStale($("#rowpage"));
     Object.assign(rp, { key, sort: "row", kind, service: filter });
     $("#rp-grid").innerHTML = "";
     renderRowPage(true);
@@ -1324,6 +1326,12 @@
     for (const s of document.querySelectorAll(".scroller")) s.scrollLeft = 0;
   }
 
+  /* "See all" (and the Your library page) always opens fresh, on top of the home screen:
+     any title screen or other page left open from before is closed first, so closing
+     the page never reveals an old title underneath. */
+  function closeStale(keep) {
+    for (const d of document.querySelectorAll("dialog")) if (d.open && d !== keep) closeSheet(d);
+  }
   function showSheet(d) {
     if (d.open) return;
     if (typeof d.showModal === "function") d.showModal();
