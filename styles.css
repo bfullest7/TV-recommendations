@@ -295,6 +295,18 @@ header.top[hidden] { display: none; }
 .rp-sub + .ml-filters { margin-top: 16px; }
 .ml-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; margin-top: 20px; }
 .ml-grid .card { width: auto; }
+/* Grid pages: posters fade in as they arrive; while a new grid's first screen loads,
+   the old one dims under a small spinner */
+.ml-grid .poster img { opacity: 0; transition: opacity .2s ease; }
+.ml-grid .poster img.in { opacity: 1; }
+.ml-grid { position: relative; }
+.ml-grid.is-loading { min-height: 160px; }
+.ml-grid.is-loading > * { opacity: .4; transition: opacity .15s ease; }
+.ml-grid.is-loading::after {
+  content: ""; position: absolute; left: 50%; top: 60px; width: 28px; height: 28px; margin-left: -14px;
+  border: 3px solid var(--line); border-top-color: var(--text); border-radius: 50%; animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 .ml-empty { grid-column: 1 / -1; padding: 100px 0 24px; color: var(--muted); font-size: 14px; text-align: center; text-wrap: balance; }
 .ml-empty b { color: var(--text); font-weight: 600; white-space: nowrap; }
 /* Empty tab: icon in a soft circle, heading 18, message 15 */

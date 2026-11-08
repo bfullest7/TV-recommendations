@@ -288,7 +288,7 @@
     return `
       <button class="card ${showSeen ? "is-watched" : ""}" data-id="${esc(t.id)}" aria-label="${esc(t.title)}">
         <div class="poster">
-          ${t.poster ? `<img loading="lazy" src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}
+          ${t.poster ? `<img loading="lazy" src="${IMG}w342${esc(t.poster)}" alt="" onload="this.classList.add('in')">` : `<div class="no-img">${esc(t.title)}</div>`}
           ${def.rank ? `<span class="rank">#${t._rank}</span>` : ""}
           <span class="marks">${marksHtml(t, def.key, def.plain)}</span>
           ${svc ? `<span class="badge" style="background:${esc(svc.color)}">${esc(svc.name)}</span>` : ""}
@@ -780,7 +780,33 @@
     if (tab === "liked") return Object.keys(thumbs).filter((id) => thumbs[id].v > 0).map((id) => T[id]).filter(Boolean);
     return Object.keys(watched).map((id) => T[id]).filter((t) => t && isWatched(t));
   }
-  function renderMyList() {
+  /* Showing a new grid (opening a page, or changing its tab, sort or filter): the old
+     grid stays, dimmed with a small spinner, while the posters for the first screen
+     load; then the new grid appears at once. Never waits more than 1.5 seconds; the
+     rest load as you scroll and fade in. `instant` skips the wait (used to refresh in
+     place after closing a title, when the posters are already on the phone). */
+  const FIRST_SCREEN = 12;
+  function swapGrid(grid, html, instant = false) {
+    const token = (grid._token || 0) + 1;
+    grid._token = token;
+    clearTimeout(grid._spin);
+    const tmp = document.createElement("template");
+    tmp.innerHTML = html;
+    const srcs = [...tmp.content.querySelectorAll("img")].slice(0, FIRST_SCREEN).map((i) => i.getAttribute("src"));
+    const show = () => {
+      if (grid._token !== token) return; // a newer change won
+      clearTimeout(grid._spin);
+      grid.classList.remove("is-loading");
+      grid.innerHTML = html;
+      for (const img of grid.querySelectorAll("img")) if (img.complete) img.classList.add("in"); // already loaded: show at once, no fade
+    };
+    if (instant || !srcs.length) return show();
+    grid._spin = setTimeout(() => grid.classList.add("is-loading"), 120); // no spinner flash when posters are already saved
+    const loads = srcs.map((src) => new Promise((done) => { const im = new Image(); im.onload = im.onerror = done; im.src = src; }));
+    Promise.race([Promise.all(loads), new Promise((done) => setTimeout(done, 1500))]).then(show);
+  }
+
+  function renderMyList(instant = false) {
     for (const b of document.querySelectorAll(".ml-tab")) {
       const tab = b.dataset.tab;
       b.setAttribute("aria-selected", tab === ml.tab);
@@ -820,10 +846,11 @@
     const none = mlTitles(ml.tab).length
       ? `<p class="ml-empty">Nothing matches these filters</p>`
       : `<div class="ml-empty is-blank"><span class="ml-empty-icon">${icon.replace(/width="13" height="13"/, 'width="28" height="28"')}</span><h3>${head}</h3><p>${msg}</p></div>`;
-    grid.innerHTML = items.length ? items.map((t) => cardHtml(t, def)).join("") : none;
+    swapGrid(grid, items.length ? items.map((t) => cardHtml(t, def)).join("") : none, instant);
   }
   function openMyList(tab = "list") {
     ml.tab = tab;
+    $("#ml-grid").innerHTML = ""; // don't show the last visit's titles while the new ones load
     renderMyList();
     showSheet($("#mylist"));
     $("#mylist").scrollTop = 0;
@@ -862,10 +889,11 @@
     const grid = $("#rp-grid");
     grid.dataset.row = rp.key;
     const cardDef = { ...def, forceService: rp.service !== "all" ? rp.service : null };
-    grid.innerHTML = items.length ? items.map((t) => cardHtml(t, cardDef)).join("") : `<p class="ml-empty">Nothing here for these filters</p>`;
+    swapGrid(grid, items.length ? items.map((t) => cardHtml(t, cardDef)).join("") : `<p class="ml-empty">Nothing here for these filters</p>`);
   }
   function openRowPage(key) {
     Object.assign(rp, { key, sort: "row", kind, service: filter });
+    $("#rp-grid").innerHTML = "";
     renderRowPage();
     showSheet($("#rowpage"));
     $("#rowpage").scrollTop = 0;
@@ -1243,7 +1271,7 @@
       const page = $("#mylist");
       if (!page.open) return;
       const y = page.scrollTop;
-      renderMyList();
+      renderMyList(true);
       page.scrollTop = y;
     });
     $("#ml-sort").addEventListener("change", (e) => { ml.sort[ml.tab] = e.target.value; renderMyList(); });
