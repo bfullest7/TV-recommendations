@@ -10,7 +10,7 @@
   const IMG = "https://image.tmdb.org/t/p/";
   const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", kind: "wtw.kind", watched: "wtw.watched", watchlist: "wtw.watchlist", refreshedTo: "wtw.refreshedTo", lastBackup: "wtw.lastBackup" };
   const BACKUP_APP = "what-to-watch";
-  const RESET_AFTER_MS = 60 * 1000; // away this long -> reopen at the main screen
+  const RESET_AFTER_MS = 2 * 60 * 1000; // away this long -> reopen at the main screen
 
   let feed = null;
   let myServices = [];
