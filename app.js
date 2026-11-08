@@ -8,7 +8,7 @@
   "use strict";
 
   const IMG = "https://image.tmdb.org/t/p/";
-  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", kind: "wtw.kind", watched: "wtw.watched", watchlist: "wtw.watchlist", refreshedTo: "wtw.refreshedTo", lastBackup: "wtw.lastBackup" };
+  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", kind: "wtw.kind", watched: "wtw.watched", seen: "wtw.seen", watchlist: "wtw.watchlist", refreshedTo: "wtw.refreshedTo", lastBackup: "wtw.lastBackup" };
   const BACKUP_APP = "what-to-watch";
   const RESET_AFTER_MS = 2 * 60 * 1000; // away this long -> reopen at the main screen
 
@@ -78,6 +78,64 @@
      A liked genre wins: a title with both stays put. Thumbs on single titles don't count here. */
   const genreSunk = (t) => (t.genres || []).some((g) => genrePrefs[g] === -1) && !(t.genres || []).some((g) => genrePrefs[g] === 1);
   const sinkDisliked = (items) => [...items.filter((t) => !genreSunk(t)), ...items.filter(genreSunk)];
+  /* Rotation: titles you keep passing over on the home rows slowly make room for others.
+     A poster counts as seen once per day when it's mostly on screen for about a second.
+     From the 3rd day seen (config.json rotation), a title you haven't opened, liked, saved or
+     marked watched moves down 4 places for each day after the 2nd. It only changes when the
+     rows are drawn (the count for today isn't used until tomorrow), and resets after 14 days
+     unseen. Your library and the Netflix Top 10 aren't affected. */
+  let seen = {}; // id -> { n: days seen, d: last day seen (YYYY-MM-DD), o: day last opened }
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+  const rot = () => ({ start_day: 3, places_per_day: 4, reset_days: 14, ...(feed?.rotation || {}) });
+  const daysSince = (day) => (new Date(today()) - new Date(day)) / 86400000;
+  function rotationPenalty(id) {
+    const r = seen[id];
+    if (!r || !r.n || watchlist[id] || thumbs[id] || watched[id]) return 0;
+    if (r.o && daysSince(r.o) < rot().reset_days) return 0; // opened recently
+    if (daysSince(r.d) >= rot().reset_days) return 0; // not seen for 2 weeks: back to normal
+    const before = r.d === today() ? r.n - 1 : r.n; // days seen before today
+    return Math.max(0, before - (rot().start_day - 2)) * rot().places_per_day;
+  }
+  function rotate(items) { // move each passed-over title down by its penalty, keeping everything else in order
+    // a title moved down goes behind the one already in that spot
+    return items.map((t, i) => { const p = rotationPenalty(t.id); return { t, k: i + p + (p ? 0.5 : 0) }; }).sort((a, b) => a.k - b.k).map((x) => x.t);
+  }
+  function markSeen(id) {
+    const r = seen[id] || { n: 0 };
+    if (r.d === today()) return;
+    if (r.d && daysSince(r.d) >= rot().reset_days) r.n = 0; // starting fresh after 2 weeks away
+    seen[id] = { ...r, n: r.n + 1, d: today() };
+    save(STORE.seen, seen);
+  }
+  function markOpened(id) {
+    seen[id] = { n: 0, d: today(), o: today() };
+    save(STORE.seen, seen);
+  }
+  // Watch the home rows' posters: one second mostly on screen, with nothing open on top, counts as seen today
+  let seenObserver = null;
+  const seenTimers = new Map();
+  function watchSeen() {
+    if (!("IntersectionObserver" in window)) return;
+    seenObserver?.disconnect();
+    seenTimers.forEach(clearTimeout); seenTimers.clear();
+    seenObserver = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        const id = e.target.dataset.id;
+        if (e.isIntersecting) {
+          if (!seenTimers.has(e.target)) seenTimers.set(e.target, setTimeout(() => {
+            seenTimers.delete(e.target);
+            if (!document.hidden && !document.querySelector("dialog[open]")) markSeen(id);
+          }, 1000));
+        } else { clearTimeout(seenTimers.get(e.target)); seenTimers.delete(e.target); }
+      }
+    }, { threshold: 0.6 });
+    for (const c of document.querySelectorAll('#rows section.row:not([data-row="watchlist"]):not([data-row="netflix"]) .scroller > .card')) seenObserver.observe(c);
+  }
+  function tidySeen() { // forget titles not seen for over 2 weeks
+    let changed = false;
+    for (const [id, r] of Object.entries(seen)) if (!r.d || daysSince(r.d) >= rot().reset_days) { delete seen[id]; changed = true; }
+    if (changed) save(STORE.seen, seen);
+  }
   const kindWord = () => (kind === "tv" ? "TV shows" : kind === "movie" ? "movies" : "titles");
   const fmtCount = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K" : String(n));
   const fmtDate = (iso) => new Date(iso + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -212,7 +270,7 @@
       .filter((t) => visible(t) && (t.imdb_votes || 0) >= min)
       .map((t) => ({ t, s: pickScore(t, taste) }))
       .sort((a, b) => b.s - a.s);
-    return sinkDisliked(ranked.map((x) => x.t));
+    return sinkDisliked(rotate(ranked.map((x) => x.t)));
   }
 
   // ---------------------------------------------------------------- rows
@@ -263,7 +321,7 @@
         items: from(feed.rows.new),
       },
     ];
-    for (const d of defs) if (["trending", "audience", "critics", "new"].includes(d.key)) d.items = sinkDisliked(d.items); // Top Picks does this itself
+    for (const d of defs) if (["trending", "audience", "critics", "new"].includes(d.key)) d.items = sinkDisliked(rotate(d.items)); // Top Picks does this itself
     // Only Netflix publishes official viewing numbers, so its Top 10 shows only when the Netflix filter is selected
     const hasNetflix = myServices.includes("netflix") && filter === "netflix";
     if (hasNetflix && feed.rows.netflix.length) {
@@ -421,6 +479,7 @@
     }
     $("#rows").innerHTML = rowDefs().map(rowHtml).join("");
     preloadLibrary();
+    watchSeen();
   }
   function rowHtml(def) {
     const n = feed.row_length || 20;
@@ -546,6 +605,7 @@
   // ---------------------------------------------------------------- details
   function openDetails(id) {
     const t = titleOf(id);
+    if (t && feed.titles[id]) markOpened(id); // you showed interest: it keeps its place
     if (!t) return;
     const thumb = thumbs[id]?.v || 0;
     const scores = [
@@ -1196,6 +1256,8 @@
         <p>Titles from the last 30 days, newest first: new movies, new seasons of shows, and titles that just arrived on one of your services. Streaming availability comes from TMDB, provided by JustWatch.</p>`],
       ["Netflix Top 10", `
         <p>Netflix's own official list of its most-watched shows and films in the US, published weekly. Shown only when the <b>Netflix</b> filter is selected, and not used in any ranking, since other services don't publish equivalent numbers.</p>`],
+      ["Keeping rows fresh", `
+        <p>Titles you keep scrolling past make room for others. From the 3rd day a title is on your screen without you opening it, it moves 4 places down its row each day. After 2 weeks out of sight, it's back in its usual spot. Titles you open, like, save or mark watched keep their place. Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: Your taste", `
         <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres and each 👎 lowers them. A genre you set in <b>Genres</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you disliked a drop.</p>
         <p>Not counted until you rate something or pick a genre.</p>
@@ -1531,6 +1593,7 @@
       if (cfg && cfg.weights) data.weights = cfg.weights;
       if (cfg && cfg.row_tilt) data.row_tilt = cfg.row_tilt;
       if (cfg?.ranking?.row_length) data.row_length = cfg.ranking.row_length;
+      if (cfg && cfg.rotation) data.rotation = cfg.rotation;
     } catch { /* keep the weights saved with the data */ }
     return data;
   }
@@ -1555,6 +1618,7 @@
     genrePrefs = load(STORE.genres, {});
     watched = load(STORE.watched, {});
     watchlist = load(STORE.watchlist, {});
+    seen = load(STORE.seen, {});
     filter = load(STORE.filter, "all");
     kind = ["all", "tv", "movie"].includes(load(STORE.kind, "all")) ? load(STORE.kind, "all") : "all";
     wire();
@@ -1566,6 +1630,7 @@
     }
     myServices = myServices.filter((k) => svcInfo(k));
     refreshSaved();
+    tidySeen();
     render();
   }
 

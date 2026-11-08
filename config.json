@@ -1,25 +1,111 @@
 {
   "region": "US",
-
   "services": [
-    { "key": "netflix",   "name": "Netflix",     "color": "#E50914", "provider_ids": [8, 1796],   "match": ["Netflix"] },
-    { "key": "prime",     "name": "Prime Video", "color": "#1A98FF", "provider_ids": [9, 119],    "match": ["Amazon Prime Video"] },
-    { "key": "disney",    "name": "Disney+",     "color": "#113CCF", "provider_ids": [337],       "match": ["Disney Plus", "Disney+"] },
-    { "key": "hulu",      "name": "Hulu",        "color": "#1CE783", "provider_ids": [15],        "match": ["Hulu"] },
-    { "key": "hbomax",    "name": "HBO Max",     "color": "#5822B4", "provider_ids": [1899, 384], "match": ["HBO Max", "Max"] },
-    { "key": "appletv",   "name": "Apple TV",    "color": "#A2AAAD", "provider_ids": [350],       "match": ["Apple TV Plus", "Apple TV+"] },
-    { "key": "peacock",   "name": "Peacock",     "color": "#F5B800", "provider_ids": [386, 387],  "match": ["Peacock"] },
-    { "key": "paramount", "name": "Paramount+",  "color": "#0064FF", "provider_ids": [531, 2303], "match": ["Paramount Plus", "Paramount+"] }
+    {
+      "key": "netflix",
+      "name": "Netflix",
+      "color": "#E50914",
+      "provider_ids": [
+        8,
+        1796
+      ],
+      "match": [
+        "Netflix"
+      ]
+    },
+    {
+      "key": "prime",
+      "name": "Prime Video",
+      "color": "#1A98FF",
+      "provider_ids": [
+        9,
+        119
+      ],
+      "match": [
+        "Amazon Prime Video"
+      ]
+    },
+    {
+      "key": "disney",
+      "name": "Disney+",
+      "color": "#113CCF",
+      "provider_ids": [
+        337
+      ],
+      "match": [
+        "Disney Plus",
+        "Disney+"
+      ]
+    },
+    {
+      "key": "hulu",
+      "name": "Hulu",
+      "color": "#1CE783",
+      "provider_ids": [
+        15
+      ],
+      "match": [
+        "Hulu"
+      ]
+    },
+    {
+      "key": "hbomax",
+      "name": "HBO Max",
+      "color": "#5822B4",
+      "provider_ids": [
+        1899,
+        384
+      ],
+      "match": [
+        "HBO Max",
+        "Max"
+      ]
+    },
+    {
+      "key": "appletv",
+      "name": "Apple TV",
+      "color": "#A2AAAD",
+      "provider_ids": [
+        350
+      ],
+      "match": [
+        "Apple TV Plus",
+        "Apple TV+"
+      ]
+    },
+    {
+      "key": "peacock",
+      "name": "Peacock",
+      "color": "#F5B800",
+      "provider_ids": [
+        386,
+        387
+      ],
+      "match": [
+        "Peacock"
+      ]
+    },
+    {
+      "key": "paramount",
+      "name": "Paramount+",
+      "color": "#0064FF",
+      "provider_ids": [
+        531,
+        2303
+      ],
+      "match": [
+        "Paramount Plus",
+        "Paramount+"
+      ]
+    }
   ],
-
   "weights": {
     "audience": 0.25,
-    "taste":    0.30,
-    "fresh":    0.20,
-    "critic":   0.15,
-    "buzz":     0.10
+    "taste": 0.3,
+    "fresh": 0.2,
+    "critic": 0.15,
+    "buzz": 0.1
   },
-
   "row_tilt": {
     "min_imdb_votes": 20000,
     "audience_recency": 0.35,
@@ -32,7 +118,6 @@
     "recency_season_credit": 0.25,
     "top_picks_min_imdb_votes": 5000
   },
-
   "ranking": {
     "imdb_min_votes_movie": 5000,
     "imdb_min_votes_tv": 2000,
@@ -40,7 +125,6 @@
     "new_window_days": 30,
     "row_length": 20
   },
-
   "refresh": {
     "full_refresh_every_hours": 20,
     "discover_pages_per_list": 2,
@@ -50,5 +134,11 @@
     "omdb_daily_limit": 900,
     "omdb_recheck_days": 30,
     "mdblist_daily_limit": 900
+  },
+  "rotation": {
+    "_note": "Titles passed over on the home rows make room for others. Counted in days (once per day seen). From the start_day-th day seen without opening, liking, saving or marking watched, a title moves down places_per_day places per day; it resets after reset_days days unseen.",
+    "start_day": 3,
+    "places_per_day": 4,
+    "reset_days": 14
   }
 }
