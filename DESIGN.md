@@ -32,7 +32,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 | `--text` | #f2f3f5 | Main text |
 | `--muted` | #9aa1ad | Subtitles, descriptions, fine print |
 | `--line` | #2b303b | Borders and dividers |
-| `--accent` | #ffb547 (orange) | Main call to action only ("Pick your services"), checked boxes, the underline under the active tab on the Your library page (the one place it marks a selection), and one-time tips (dark text on the app color) |
+| `--accent` | #ffb547 (orange) | Main call to action only ("Pick your services", "Watch trailer" on a title's screen), checked boxes, the underline under the active tab on the Your library page (the one place it marks a selection), and one-time tips (dark text on the app color) |
 | `--up` / `--down` | green / red | "Like" and "Not for me" when selected |
 
 **Orange is not a "selected" or "focused" color.** The search box shows a thin grey (`--muted`) outline while you type. Nothing else ever shows a focus outline or tap flash: dropdowns, buttons, pills, posters and tabs just respond. The list and watched buttons stay white with a plain outline when on; the icon and wording show the state.
@@ -42,6 +42,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - Rounded corners: 10 for buttons, 999 (pill) for filter buttons, 50% for round icon buttons.
 - Secondary buttons: `--surface-2` fill, 1px `--line` outline, white text, weight 600, size 15.
 - Main call to action: orange fill, dark text, weight 700. Sized to its label (not full width) on the welcome card.
+- **"Watch trailer"** on a title's screen: the one yellow (orange fill, dark text, bold 15, 10 corners, sized to its label) button there, with a drawn play triangle, 12 below the service badges. It opens the title's official trailer on YouTube (the YouTube app if installed). It shows only when TMDB lists a YouTube trailer (official trailers first, then any trailer, then a teaser); otherwise there's no button. Trailers are collected by the daily full refresh.
 - **No "Watch on" button on the detail screen.** It was tried and removed: services don't share title links, so the buttons were unreliable, and people go to their service's app (often on the TV) anyway. The service badges show where to watch.
 - Button labels stay on one line on every iPhone, including the smallest (iPhone SE). Trim side padding before shrinking text.
 

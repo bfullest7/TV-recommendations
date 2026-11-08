@@ -117,6 +117,13 @@ class FakeHttp:
             "watch/providers": {"results": {"US": {"link": f"https://tmdb.example/{k}", "flatrate": [{"provider_id": x} for x in f["prov"]]}}},
             "recommendations": {"results": [{"id": 1}]},
         }
+        if k == "m1":  # a teaser, a fan video and two official trailers: the newest official trailer wins
+            d["videos"] = {"results": [
+                {"site": "YouTube", "type": "Teaser", "official": True, "key": "teaser1", "iso_639_1": "en", "published_at": "2024-01-01"},
+                {"site": "YouTube", "type": "Trailer", "official": False, "key": "fan1", "iso_639_1": "en", "published_at": "2024-03-01"},
+                {"site": "YouTube", "type": "Trailer", "official": True, "key": "old1", "iso_639_1": "en", "published_at": "2024-01-15"},
+                {"site": "YouTube", "type": "Trailer", "official": True, "key": "main1", "iso_639_1": "en", "published_at": "2024-02-01"},
+                {"site": "Vimeo", "type": "Trailer", "official": True, "key": "vimeo1", "iso_639_1": "en", "published_at": "2024-02-02"}]}
         kws = [{"name": k} for k in f.get("keywords", [])]
         d["keywords"] = {"keywords": kws} if kind == "movie" else {"results": kws}
         if kind == "movie":
@@ -150,6 +157,8 @@ class PipelineTest(unittest.TestCase):
         self.assertIn(1796, feed["provider_ids"]["netflix"])
         self.assertNotIn(582, feed["provider_ids"]["paramount"])
         self.assertEqual(T["m3"]["services"], ["netflix"])
+        self.assertEqual(T["m1"]["trailer"], "main1")  # newest official YouTube trailer
+        self.assertIsNone(T["t2"]["trailer"])  # none listed: no button in the app
         self.assertNotIn("m4", T)  # only on an Amazon Channel
         self.assertNotIn("m5", T)  # trending but not on any service
         self.assertEqual(T["t1"]["services"], ["hbomax", "netflix"])

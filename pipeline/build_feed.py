@@ -248,7 +248,8 @@ class Tmdb:
 
     def details(self, kind: str, tmdb_id: int, provider_to_service: dict[int, str]) -> dict | None:
         try:
-            d = self.get(f"/{kind}/{tmdb_id}", append_to_response="external_ids,watch/providers,recommendations,keywords")
+            d = self.get(f"/{kind}/{tmdb_id}", append_to_response="external_ids,watch/providers,recommendations,keywords,videos",
+                         include_video_language="en,null")
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return None
@@ -290,6 +291,7 @@ class Tmdb:
             "imdb_id": (d.get("external_ids") or {}).get("imdb_id") or d.get("imdb_id"),
             "popularity": round(d.get("popularity") or 0, 2),
             "recs": recs,
+            "trailer": pick_trailer((d.get("videos") or {}).get("results", [])),  # YouTube video id, or None
             "sports_keywords": sport_kw[:4] or None,  # why it was tagged Sports, for checking
             "link": wp.get("link") or f"https://www.themoviedb.org/{kind}/{tmdb_id}/watch?locale={self.region}",
         }
@@ -430,6 +432,18 @@ def trakt_score(watchers: int, max_watchers: int) -> float:
     if watchers <= 0 or max_watchers <= 0:
         return 0.0
     return round(100 * math.log10(watchers + 1) / math.log10(max_watchers + 1), 1)
+
+
+def pick_trailer(videos: list[dict]) -> str | None:
+    """The best YouTube trailer TMDB lists for a title: official trailers first, then any
+    trailer, then a teaser; English first; newest first. Returns the YouTube video id."""
+    def rank(v: dict):
+        return ({"Trailer": 0, "Teaser": 1}.get(v.get("type"), 9), not v.get("official"),
+                v.get("iso_639_1") not in ("en", None), v.get("published_at") or "")
+    yt = [v for v in videos if v.get("site") == "YouTube" and v.get("key") and v.get("type") in ("Trailer", "Teaser")]
+    yt.sort(key=lambda v: rank(v)[:3])
+    best = [v for v in yt if rank(v)[:3] == rank(yt[0])[:3]] if yt else []
+    return max(best, key=lambda v: v.get("published_at") or "")["key"] if best else None
 
 
 def tmdb_trend_score(rank: int | None, list_size: int) -> float:
