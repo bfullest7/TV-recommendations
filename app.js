@@ -1075,11 +1075,7 @@
       const gt = e.target.closest("[data-genre-tip]");
       if (gt) {
         dismissGenreTip();
-        if (gt.dataset.genreTip === "pick") {
-          openSettings();
-          const s = $("#settings"), sec = $("#genre-picker").closest("section");
-          s.scrollTop = sec.offsetTop - $("#settings .sheet-head").offsetHeight - 8;
-        }
+        if (gt.dataset.genreTip === "pick") openSettings(); // opens at the top; genres are right below services
         return;
       }
       const c = e.target.closest(".card");
