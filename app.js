@@ -20,6 +20,7 @@
   let watchlist = {}; // id -> { title, type, at }: shown in "Your watchlist"
   let filter = "all";
   let kind = "all"; // "all", "tv" or "movie"
+  let libTab = "list"; // which pill the "Your library" row shows: "list" (Watchlist), "liked" or "watched"
 
   const $ = (sel) => document.querySelector(sel);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -206,11 +207,9 @@
         source: "Highly rated, popular and new",
         items: topPicks(),
       },
-      { // always shown (right below Top picks) so "See all ›" can reach Liked and Watched
-        key: "watchlist", title: "Your library",
-        ...(Object.keys(watchlist).length
-          ? { source: "Your watchlist, newest first", items: listed }
-          : { source: "", items: [], hintOnly: true }), // empty: just the title and the three pills
+      { // always shown, right below Top picks; its pills switch between Watchlist, Liked and Watched
+        key: "watchlist", title: "Your library", library: true,
+        items: libTab === "list" ? listed : libTitles(libTab),
       },
       {
         key: "trending", title: "Trending now",
@@ -395,20 +394,39 @@
       <section class="row" data-row="${def.key}" aria-labelledby="row-${def.key}">
         <div class="row-head">
           <div class="row-title-line"><h2 id="row-${def.key}">${esc(def.title)}</h2>${def.key === "picks" ? `<button class="see-all" data-how-picks>How it works ›</button>` : ""}</div>
-          ${def.key === "watchlist" ? listPills() : ""}
-          ${def.source ? `<p class="source">${esc(def.source)}</p>` : ""}
+          ${def.library ? listPills() : `<p class="source">${esc(def.source)}</p>`}
         </div>
-        ${def.hintOnly ? "" : def.items.length
+        ${def.library ? libraryBody(def) : def.items.length
           ? `<div class="scroller">${def.items.slice(0, n).map((t) => cardHtml(t, def)).join("")}</div>`
           : `<p class="empty">No ${kindWord() === "titles" ? "titles" : kindWord()} here for ${filter === "all" ? "your services" : esc(svcInfo(filter).name)} right now.</p>`}
       </section>`;
   }
 
-  /* "Your library" row: three pills that open the Your library page at that tab, so Liked and
-     Watched are always reachable (even before anything is saved). */
+  /* "Your library" row. Three pills switch what the row shows (Watchlist first each time
+     the app opens). Up to LIB_MAX posters, then a "See all" tile that opens the Your
+     library page at that tab. An empty pill shows outlined placeholder tiles, the first
+     saying what to tap, so the row keeps its height. */
+  const LIB_MAX = 10;
+  const LIB_HINT = { list: "Tap <b>＋ Add to list</b> on any title to save it here", liked: "Tap <b>Like</b> on any title to see it here", watched: "Tap <b>Mark watched</b> on any title to see it here" };
+  function libTitles(tab) { // liked or watched titles on your services, most recent first
+    const stamp = tab === "liked" ? thumbs : watched;
+    return mlTitles(tab).filter((t) => onMyServices(t) && rightKind(t))
+      .sort((a, b) => (stamp[b.id].at || "").localeCompare(stamp[a.id].at || ""));
+  }
   function listPills() {
-    const pill = (tab, icon, label) => `<button class="list-pill" data-open-mylist="${tab}">${icon}${label}</button>`;
+    const pill = (tab, icon, label) => `<button class="list-pill" data-lib-tab="${tab}" aria-pressed="${libTab === tab}">${icon}${label}</button>`;
     return `<div class="list-pills">${pill("list", BOOKMARK, "Watchlist")}${pill("liked", THUMB, "Liked")}${pill("watched", CHECK, "Watched")}</div>`;
+  }
+  function libraryBody(def) {
+    if (!def.items.length) {
+      const ghost = (inner = "") => `<div class="ghost-tile"><div class="ghost-poster">${inner}</div></div>`;
+      const hint = libTab === "list" && Object.keys(watchlist).length ? "Nothing here for these filters" : LIB_HINT[libTab];
+      return `<div class="scroller lib-scroller">${ghost(`<span>${hint}</span>`)}${ghost()}${ghost()}${ghost()}</div>`;
+    }
+    const key = { list: "watchlist", liked: "myliked", watched: "mywatched" }[libTab];
+    const cardDef = { key, plain: libTab === "watched" };
+    return `<div class="scroller lib-scroller" data-row="${key}">${def.items.slice(0, LIB_MAX).map((t) => cardHtml(t, cardDef)).join("")}
+      <button class="see-all-tile" data-open-mylist="${libTab}"><span class="ghost-poster">See all ›</span></button></div>`;
   }
 
   function renderFilters() {
@@ -662,12 +680,12 @@
   /* Adding to or removing from the list updates "Your watchlist" right away. If that
      changes the height above what you're looking at, the page scrolls by the same
      amount so nothing on screen moves. */
-  function updateWatchlistRow() {
+  function updateWatchlistRow(resetX = false) {
     const rows = $("#rows");
     const old = rows.querySelector('[data-row="watchlist"]');
     const anchor = [...rows.querySelectorAll('.row:not([data-row="watchlist"])')].find((r) => r.getBoundingClientRect().bottom > 0);
     const before = anchor && anchor.getBoundingClientRect().top;
-    const keepX = old && old.querySelector(".scroller")?.scrollLeft;
+    const keepX = !resetX && old && old.querySelector(".scroller")?.scrollLeft;
     const def = myServices.length && rowDefs().find((d) => d.key === "watchlist");
     if (def) {
       const tmp = document.createElement("div");
@@ -1100,6 +1118,8 @@
     });
     $("#rows").addEventListener("click", (e) => {
       if (e.target.closest("[data-open-settings]")) return openSettings();
+      const libBtn = e.target.closest("[data-lib-tab]");
+      if (libBtn) { if (libBtn.dataset.libTab !== libTab) { libTab = libBtn.dataset.libTab; updateWatchlistRow(true); } return; }
       const mlBtn = e.target.closest("[data-open-mylist]");
       if (mlBtn) return openMyList(mlBtn.dataset.openMylist || "list");
       if (e.target.closest("[data-how-picks]")) return openHowPicks();
