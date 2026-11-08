@@ -406,7 +406,7 @@
       $("#rows").innerHTML = `
         ${welcomeWall()}
         <div class="notice welcome">
-          <svg class="welcome-logo" viewBox="70 64 372 362" aria-hidden="true"><g transform="translate(0 -18)" fill="none" stroke="#ffb547" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"><path d="M196 108 L256 164 L316 108"/><rect x="96" y="182" width="320" height="226" rx="44"/></g><path d="M230 232 L308 277 L230 322 Z" fill="#ffb547" stroke="#ffb547" stroke-width="8" stroke-linejoin="round"/></svg>
+          <svg class="welcome-logo" viewBox="70 64 372 362" aria-hidden="true"><defs><linearGradient id="welcome-glow" gradientUnits="userSpaceOnUse" x1="0" y1="90" x2="0" y2="400"><stop offset="0" stop-color="#ffd27a"/><stop offset="1" stop-color="#f2801f"/></linearGradient></defs><g transform="translate(0 -18)" fill="none" stroke="url(#welcome-glow)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"><path d="M196 108 L256 164 L316 108"/><rect x="96" y="182" width="320" height="226" rx="44"/></g><path d="M230 232 L308 277 L230 322 Z" fill="url(#welcome-glow)" stroke="url(#welcome-glow)" stroke-width="8" stroke-linejoin="round"/></svg>
           <b>Welcome to Tivvy</b>
           <p>Discover what to watch. The best shows and movies, picked just for you.</p>
           <button class="done-btn" data-open-settings="welcome">Get started</button>
