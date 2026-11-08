@@ -469,7 +469,7 @@
     if (Object.keys(thumbs).length || load(TIP_KEY, false) || $("#rate-tip") || $("#genre-tip")) return;
     $("#details").insertAdjacentHTML("beforeend", `
       <div id="rate-tip" class="rate-tip" role="status">
-        <span>Tap <b>Like</b> or <b>Not for me</b> on titles you know. Each one helps tune your Top picks.</span>
+        <span>Tap <b>Like</b> or <b>Not for me</b> on any title. Each tap helps tune your Top picks.</span>
         <button class="got" data-tip-ok>Got it</button>
       </div>`);
     placeRateTip();
