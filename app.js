@@ -323,7 +323,7 @@
       $("#rows").insertAdjacentHTML("beforeend", `
         <div id="genre-tip" class="genre-tip ${genreTipShown ? "no-anim" : ""}" role="status">
           <p><b>Make Top picks yours.</b> Pick a few genres you like.</p>
-          <div class="tip-actions"><button data-genre-tip="later">Not now</button><button data-genre-tip="pick">Pick genres</button></div>
+          <div class="tip-actions"><button data-genre-tip="pick">Pick genres</button><button data-genre-tip="later">Not now</button></div>
         </div>`);
       tip = $("#genre-tip");
       genreTipShown = true;
