@@ -293,6 +293,7 @@ header.top[hidden] { display: none; }
 .ml-filters { margin-top: 20px; }
 .rp-sub { margin: 14px 0 0; color: var(--muted); font-size: 14px; }
 .rp-sub + .ml-filters { margin-top: 16px; }
+.rp-end { margin: 28px 0 8px; color: var(--muted); font-size: 14px; text-align: center; }
 .ml-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; margin-top: 20px; }
 .ml-grid .card { width: auto; }
 /* Grid pages: posters fade in as they arrive; while a new grid's first screen loads,

@@ -808,6 +808,7 @@
       clearTimeout(grid._spin);
       grid.classList.remove("is-loading");
       grid.innerHTML = html;
+      grid._done = token; // this grid is the one on screen now
       for (const img of grid.querySelectorAll("img")) if (img.complete) img.classList.add("in"); // already loaded: show at once, no fade
       if (!instant) { grid.classList.add("fresh"); setTimeout(() => grid.classList.remove("fresh"), 200); }
     };
@@ -881,10 +882,12 @@
   }
 
   // ---------------------------------------------------------------- row page
-  /* "See all ›" at the end of a home row: the same row in full (up to RP_MAX titles),
-     three across, with its own sort, TV & movies and service filters (starting from the
-     home screen's). Like the home screen, titles you rate stay put until you reopen it. */
-  const RP_MAX = 100;
+  /* "See all ›" at the end of a home row: the same row in full, three across, with its
+     own sort, TV & movies and service filters (starting from the home screen's). It
+     starts with 100 titles and adds the next 100 when you're within two screens of the
+     end, until the list runs out ("That's everything"). Like the home screen, titles
+     you rate stay put until you reopen it. */
+  const RP_STEP = 100;
   const RP_FIRST = { picks: "Best match for you", trending: "Most popular", audience: "Audience rating", critics: "Critic rating", new: "Recently added", netflix: "Netflix rank" }; // the row's own order
   const rp = { key: null, sort: "row", kind: "all", service: "all" };
   function rowWith(key, svc, k) { // a home row's definition, computed with the page's filters
@@ -906,14 +909,26 @@
       <button class="chip" data-rp-service="${esc(s.key)}" aria-pressed="${rp.service === s.key}">
         ${s.color ? `<span class="dot" style="background:${esc(s.color)}"></span>` : ""}${esc(s.name)}
       </button>`).join("");
-    let items = def.items.slice(0, RP_MAX);
+    let items = def.items;
     if (rp.sort === "imdb") items = [...items].sort((a, b) => (b.imdb ?? -1) - (a.imdb ?? -1));
     if (rp.sort === "newest") items = [...items].sort((a, b) => latestDate(b).localeCompare(latestDate(a)));
     if (rp.sort === "az") items = [...items].sort((a, b) => a.title.localeCompare(b.title));
     const grid = $("#rp-grid");
     grid.dataset.row = rp.key;
     const cardDef = { ...def, forceService: rp.service !== "all" ? rp.service : null };
-    swapGrid(grid, items.length ? items.map((t) => cardHtml(t, cardDef)).join("") : `<p class="ml-empty">Nothing here for these filters</p>`, false, opening);
+    Object.assign(rp, { items, cardDef, shown: Math.min(RP_STEP, items.length) });
+    $("#rp-end").hidden = true;
+    swapGrid(grid, items.length ? items.slice(0, rp.shown).map((t) => cardHtml(t, cardDef)).join("") : `<p class="ml-empty">Nothing here for these filters</p>`, false, opening);
+    if (items.length && rp.shown >= items.length) $("#rp-end").hidden = items.length <= RP_STEP; // only worth saying on a long list
+  }
+  function rowPageMore() { // near the end: add the next 100
+    const page = $("#rowpage"), grid = $("#rp-grid");
+    if (!rp.items || rp.shown >= rp.items.length || grid._done !== grid._token) return;
+    if (page.scrollTop + page.clientHeight < page.scrollHeight - 2 * page.clientHeight) return;
+    const next = rp.items.slice(rp.shown, rp.shown + RP_STEP);
+    rp.shown += next.length;
+    grid.insertAdjacentHTML("beforeend", next.map((t) => cardHtml(t, rp.cardDef)).join(""));
+    if (rp.shown >= rp.items.length) $("#rp-end").hidden = false;
   }
   function openRowPage(key) {
     Object.assign(rp, { key, sort: "row", kind, service: filter });
@@ -1305,6 +1320,7 @@
       const c = e.target.closest(".card");
       if (c) { lastCardRow = null; openDetails(c.dataset.id); }
     });
+    $("#rowpage").addEventListener("scroll", rowPageMore, { passive: true });
     $("#rp-sort").addEventListener("change", (e) => { rp.sort = e.target.value; renderRowPage(); $("#rowpage").scrollTop = 0; });
     $("#rp-kind").addEventListener("change", (e) => { rp.kind = e.target.value; renderRowPage(); });
     $("#ml-kind").addEventListener("change", (e) => { ml.kind = e.target.value; renderMyList(); });
