@@ -380,8 +380,8 @@
       $("#rows").innerHTML = `
         ${welcomeWall()}
         <div class="notice welcome">
-          <b>Welcome to Sofari!</b>
-          <p>Find the best things to watch. Select streaming services to get started.</p>
+          <b>Welcome to Sofari</b>
+          <p>Let's take a sofa safari! Explore the best shows and movies, picked just for you.</p>
           <button class="done-btn" data-open-settings>Select your services</button>
         </div>`;
       return;
