@@ -252,7 +252,7 @@ body:has(dialog[open]) { overflow: hidden; }
 .genre.disliked { border-color: var(--down); }
 
 .top-btns { display: flex; gap: 8px; }
-.top-btns[hidden] { display: none; }
+header.top[hidden] { display: none; }
 /* Search takes over the whole screen, with its search box where the app title sits */
 .sheet.search-sheet, .sheet.full-sheet {
   inset: 0; max-width: none; height: 100vh; height: 100dvh; max-height: none; margin: 0;

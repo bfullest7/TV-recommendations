@@ -373,7 +373,7 @@
   function drawRows() {
     // The welcome card sits in the middle of the screen below the header
     $("#rows").classList.toggle("is-welcome", !myServices.length);
-    $(".top-btns").hidden = !myServices.length; // search and Settings appear once services are picked
+    $(".top").hidden = !myServices.length; // no header on the welcome screen; it appears once services are picked
     $("#rows").style.minHeight = myServices.length ? "" : `calc(100dvh - ${$(".top").offsetHeight}px)`;
     if (!myServices.length) {
       $("#rows").innerHTML = `
