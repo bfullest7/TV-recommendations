@@ -249,11 +249,11 @@
           .map((x) => x.t),
       },
       {
-        key: "audience", title: "Top rated by audiences", source: "IMDb viewers' highest-rated titles",
+        key: "audience", title: "Top rated by audiences", source: "IMDb's highest rated, favoring recent titles",
         items: tilted(feed.rows.audience, "audience", tilt.audience_recency),
       },
       {
-        key: "critics", title: "Critics' favorites", source: "Best reviewed on Rotten Tomatoes and Metacritic",
+        key: "critics", title: "Critics' favorites", source: "Best reviewed by critics, favoring recent titles",
         items: tilted(feed.rows.critics, "critic", tilt.critics_recency),
         // this row shows the score it's ranked by: Rotten Tomatoes, or Metacritic if there's no RT
         line: (t) => [latestYear(t), t.rt != null ? `RT ${t.rt}%` : t.mc != null ? `MC ${t.mc}` : null].filter(Boolean).join(" · "),
