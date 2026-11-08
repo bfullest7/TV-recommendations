@@ -63,7 +63,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 
 ## Icons
 
-- **App icon:** a retro TV (rabbit-ear antennas, rounded screen, play arrow) drawn in thick dark (#0f1115) lines on the orange app color, sitting a little above center. The header logo is the same drawing in orange on the dark header; the launch screen shows it dark on an orange circle.
+- **App icon:** a retro TV (rabbit-ear antennas, rounded screen, play arrow) drawn in thick dark (#0f1115) lines on a "Sunset" orange fade (light orange #ffc65c at the top to deeper orange #f2801f at the bottom), sitting a little above center. Chosen over a flat orange because it looks more finished next to iPhone icons, and over a dark icon because orange runs through the whole app. The header logo is the same drawing in orange on the dark header; the launch screen shows it dark on a circle with the same Sunset fade.
 
 - **Link preview:** `icons/preview.png` (1200×630): the orange TV logo and "Tivvy" in large white type on the page color, with a soft orange glow. No tagline in the image, since the description shows under it. Preview title "Tivvy: Discover what to watch" (iMessage shows only the image, the title and the web address, not the description; the page title and home-screen name stay "Tivvy"), description "Discover what to watch. The best shows and movies, picked just for you." The preview tags use full web addresses.
 

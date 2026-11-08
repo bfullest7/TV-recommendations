@@ -26,7 +26,7 @@
   <meta name="apple-mobile-web-app-title" content="Tivvy">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icons/icon-1024.png"><!-- large, so iPhone scales it down crisply at any icon size -->
+  <link rel="apple-touch-icon" href="icons/icon-1024.png?v=sunset"><!-- large, so iPhone scales it down crisply at any icon size -->
   <link rel="stylesheet" href="styles.css">
   <script>
     // Home-screen app on iPhone: hide the page until its launch layout has settled (see app.js), then fade in
@@ -50,7 +50,7 @@
 </head>
 <body>
   <div id="splash" aria-hidden="true">
-    <svg viewBox="0 0 512 512"><circle cx="256" cy="256" r="256" fill="#ffb547"/>
+    <svg viewBox="0 0 512 512"><defs><linearGradient id="splash-sunset" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc65c"/><stop offset="1" stop-color="#f2801f"/></linearGradient></defs><circle cx="256" cy="256" r="256" fill="url(#splash-sunset)"/>
       <g transform="translate(256 256) scale(.86) translate(-256 -248)"><g transform="translate(0 -18)" fill="none" stroke="#0f1115" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"><path d="M196 108 L256 164 L316 108"/><rect x="96" y="182" width="320" height="226" rx="44"/></g><path d="M230 232 L308 277 L230 322 Z" fill="#0f1115" stroke="#0f1115" stroke-width="8" stroke-linejoin="round"/></g></svg>
   </div>
   <header class="top">
