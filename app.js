@@ -322,7 +322,7 @@
     if (!tip) {
       $("#rows").insertAdjacentHTML("beforeend", `
         <div id="genre-tip" class="genre-tip ${genreTipShown ? "no-anim" : ""}" role="status">
-          <p class="tip-title">Make Top picks yours</p><p>Pick a few genres you like</p>
+          <p class="tip-title">Make Top picks yours</p><p>Tell us the genres you love and we'll tailor your picks to match</p>
           <div class="tip-actions"><button data-genre-tip="pick">Pick genres</button><button data-genre-tip="later">Not now</button></div>
         </div>`);
       tip = $("#genre-tip");
