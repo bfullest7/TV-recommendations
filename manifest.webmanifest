@@ -1,6 +1,6 @@
 {
-  "name": "What to Watch",
-  "short_name": "What to Watch",
+  "name": "Up Next",
+  "short_name": "Up Next",
   "description": "Top things to stream right now on your services.",
   "start_url": "./",
   "scope": "./",
