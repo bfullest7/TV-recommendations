@@ -277,7 +277,7 @@
      and similar titles, both ways) to one title, best matches first. The title is one you liked
      ("Because you liked …") or, after those, one on your watchlist ("More like …"); it changes
      the first time the app is opened on a new day, to the next one with at least 6 similar
-     titles you can see. With none, "Based on your likes" pools them from all of those (needs 4).
+     titles you can see. With none, "Based on your favorites" pools them from all of those (needs 4).
      Nothing liked or saved, no row. */
   const BECAUSE_MIN = 6, POOL_MIN = 4;
   let moreBack = null; // id -> titles that list it as similar
@@ -303,7 +303,7 @@
     const ranked = (items) => sinkDisliked(rotate(items.map((t) => ({ t, s: pickScore(t, taste) })).sort((a, b) => b.s - a.s).map((x) => x.t)));
     if (!ok.length) {
       const pool = [...new Map(seeds.flatMap((id) => similarTo(id)).map((t) => [t.id, t])).values()];
-      return pool.length >= POOL_MIN ? { title: "Based on your likes", items: ranked(pool) } : null;
+      return pool.length >= POOL_MIN ? { title: "Based on your favorites", items: ranked(pool) } : null;
     }
     let pick = load(STORE.because, {});
     if (pick.day !== today() || !ok.includes(pick.id)) { // a new day: the next title in line
@@ -1303,7 +1303,7 @@
       ["Netflix Top 10", `
         <p>Netflix's own official list of its most-watched shows and films in the US, published weekly. Shown only when the <b>Netflix</b> filter is selected, and not used in any ranking, since other services don't publish equivalent numbers.</p>`],
       ["Because you liked…", `
-        <p>Once you've liked or saved a title, a row right below Your library shows similar shows and movies (from TMDB), best matches for you first. It's about one title at a time: your likes first ("Because you liked…"), newest first, then titles on your watchlist ("More like…"). It moves on to the next one the first time you open the app each day. If none has enough similar titles yet, the row is "Based on your likes" and mixes them together. Titles you've liked, watched or marked Not for me are left out, and watched titles only count when you've liked them.</p>`],
+        <p>Once you've liked or saved a title, a row right below Your library shows similar shows and movies (from TMDB), best matches for you first. It's about one title at a time: your likes first ("Because you liked…"), newest first, then titles on your watchlist ("More like…"). It moves on to the next one the first time you open the app each day. If none has enough similar titles yet, the row is "Based on your favorites" and mixes them together. Titles you've liked, watched or marked Not for me are left out, and watched titles only count when you've liked them.</p>`],
       ["Keeping rows fresh", `
         <p>Titles you keep scrolling past make room for others. From the 3rd day a title is on your screen without you opening it, it moves 4 places down its row each day. After 2 weeks out of sight, it's back in its usual spot. Titles you open, like, save or mark watched keep their place. Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: Your taste", `
