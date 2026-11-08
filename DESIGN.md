@@ -8,7 +8,7 @@ The app uses one small scale. Each size has one job; avoid in-between sizes like
 
 | Size | Job | Where it's used |
 |---|---|---|
-| 22 | App title | "Sofari", with the orange TV logo (28 wide) just before it |
+| 22 | App title | "Sofari", with the orange retro TV logo (28 wide) just before it |
 | 20 | Screen titles | "Profile"; show title on a detail screen |
 | 18 | Headings | Home row titles ("Trending now"), Settings section headings, detail-screen headings ("Why this pick"), welcome card title |
 | 17 | Score numbers | Big numbers in the detail-screen score boxes ("9.0", "90%") |
@@ -62,6 +62,8 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - Use "＋" for an action that adds ("＋ Add to list"). Show a state that's on with its icon: the bookmark for the list ("Added to list", "In your list"), "✓" for watched ("✓ Watched").
 
 ## Icons
+
+- **App icon:** a retro TV (rabbit-ear antennas, rounded screen, play arrow) drawn in thick dark (#0f1115) lines on the orange app color, sitting a little above center. The header logo is the same drawing in orange on the dark header; the launch screen shows it dark on an orange circle.
 
 - Icons are simple drawn shapes in the style of the search and settings buttons, not emoji (emoji look different on each phone).
 - **Header buttons:** search (21 wide) and Profile (an outline person icon, 20 wide), each in a 40 round button. The person icon opens "Profile" (the settings panel), with plain section headings: "Streaming services", "Genres", "How your picks work", "Back up your data".
