@@ -882,6 +882,28 @@
      the height above what you're looking at, the page scrolls by the same amount so
      nothing on screen moves. `changed` names the pill the change was for: when the row
      comes out of its empty state, that pill is selected so the new title shows. */
+  /* The "Because you liked…" row only changes during a visit when its title stops being one of
+     your favorites (no longer liked or on your watchlist), or when its wording would be wrong
+     ("Because you liked" for a title you've unliked but kept on your list, or the other way).
+     A new like doesn't make it jump: it joins the line for a new day. Like the Your library row,
+     the page shifts so nothing on screen moves. */
+  function updateBecauseRow() {
+    const rows = $("#rows");
+    const old = rows.querySelector('[data-row="because"]');
+    const def = myServices.length && rowDefs().find((d) => d.key === "because");
+    if ((old?.querySelector("h2")?.textContent || null) === (def?.title || null)) return;
+    const anchor = (lastCardRow?.isConnected && !["because", "watchlist"].includes(lastCardRow.dataset.row) && lastCardRow)
+      || [...rows.querySelectorAll('.row:not([data-row="because"]):not([data-row="watchlist"])')].find((r) => r.getBoundingClientRect().bottom > 0);
+    const before = anchor && anchor.getBoundingClientRect().top;
+    if (def) {
+      const tmp = document.createElement("div");
+      tmp.innerHTML = rowHtml(def).trim();
+      if (old) old.replaceWith(tmp.firstElementChild); else rows.querySelector('[data-row="watchlist"]')?.after(tmp.firstElementChild);
+    } else if (old) old.remove();
+    if (anchor) window.scrollBy(0, anchor.getBoundingClientRect().top - before);
+    placeGenreTip();
+    watchSeen();
+  }
   function updateWatchlistRow(resetX = false, changed = null) {
     const rows = $("#rows");
     const old = rows.querySelector('[data-row="watchlist"]');
@@ -912,6 +934,7 @@
     redrawDetails(id);
     patchCards(id);
     updateWatchlistRow(false, "list");
+    updateBecauseRow();
     if ($("#search").open) renderSearch();
   }
   function toggleWatched(id) {
@@ -921,6 +944,7 @@
     redrawDetails(id);
     patchCards(id);
     updateWatchlistRow(false, "watched");
+    updateBecauseRow();
     homeStale = true;
     if ($("#search").open) renderSearch();
   }
@@ -935,6 +959,7 @@
     d.scrollTop = y;
     patchCards(id);
     updateWatchlistRow(false, "liked");
+    updateBecauseRow();
     homeStale = true;
     dismissRateTip(); // rating is what the tip asks for
   }
