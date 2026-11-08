@@ -369,7 +369,7 @@
       $("#rows").innerHTML = `
         <div class="notice welcome">
           <b>Welcome to What to Watch!</b>
-          <p>Find the best things to watch on your services. Pick them to get started.</p>
+          <p>Find the best things to watch on your services. Pick services to get started.</p>
           <button class="done-btn" data-open-settings>Pick your services</button>
         </div>`;
       return;

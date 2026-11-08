@@ -49,7 +49,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - Space between home screen rows: 28 above each row title; 14 between a row's subtitle and its posters.
 - Gap between side-by-side buttons: 10; between tiles in a grid: 6 to 8.
 - Paragraphs in "How it's calculated" (Settings and the Top picks page): 14 between paragraphs; 16 above and below charts.
-- Welcome card: 44 top and bottom, 24 sides, 28 above its button, everything centered. The card sits in the middle of the screen below the header. Its text is "Find the best things to watch on your services. Pick them to get started." on two balanced lines (no single word left alone).
+- Welcome card: 44 top and bottom, 24 sides, 28 above its button, everything centered. The card sits in the middle of the screen below the header. Its text is "Find the best things to watch on your services. Pick services to get started." on two balanced lines (no single word left alone).
 
 ## Writing
 
