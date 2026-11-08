@@ -683,12 +683,15 @@
       card.classList.toggle("is-passed", leaving);
     }
   }
-  /* Adding to or removing from the list updates "Your watchlist" right away. If that
-     changes the height above what you're looking at, the page scrolls by the same
-     amount so nothing on screen moves. */
-  function updateWatchlistRow(resetX = false) {
+  /* Saving, liking or marking watched updates the "Your library" row right away (its
+     height only changes when it goes from just-pills to full or back). If that changes
+     the height above what you're looking at, the page scrolls by the same amount so
+     nothing on screen moves. `changed` names the pill the change was for: when the row
+     comes out of its empty state, that pill is selected so the new title shows. */
+  function updateWatchlistRow(resetX = false, changed = null) {
     const rows = $("#rows");
     const old = rows.querySelector('[data-row="watchlist"]');
+    if (changed && old && !old.querySelector("[data-lib-tab]") && !libAllEmpty()) { libTab = changed; resetX = true; }
     const anchor = [...rows.querySelectorAll('.row:not([data-row="watchlist"])')].find((r) => r.getBoundingClientRect().bottom > 0);
     const before = anchor && anchor.getBoundingClientRect().top;
     const keepX = !resetX && old && old.querySelector(".scroller")?.scrollLeft;
@@ -710,7 +713,7 @@
     save(STORE.watchlist, watchlist);
     redrawDetails(id);
     patchCards(id);
-    updateWatchlistRow();
+    updateWatchlistRow(false, "list");
     if ($("#search").open) renderSearch();
   }
   function toggleWatched(id) {
@@ -719,6 +722,7 @@
     save(STORE.watched, watched);
     redrawDetails(id);
     patchCards(id);
+    updateWatchlistRow(false, "watched");
     homeStale = true;
     if ($("#search").open) renderSearch();
   }
@@ -732,6 +736,7 @@
     openDetails(id); // redraw so "Why this pick" reflects the new rating
     d.scrollTop = y;
     patchCards(id);
+    updateWatchlistRow(false, "liked");
     homeStale = true;
     dismissRateTip(); // rating is what the tip asks for
   }
