@@ -1,4 +1,4 @@
-/* Sofari (formerly Cue, Up Next, What to Watch): phone web app.
+/* Tivvy (formerly Sofari, Cue, Up Next, What to Watch): phone web app.
  *
  * Reads data/feed.json (built every couple of hours by pipeline/build_feed.py)
  * and shows rows of titles on the viewer's streaming services. Everything
@@ -381,7 +381,7 @@
         ${welcomeWall()}
         <div class="notice welcome">
           <svg class="welcome-logo" viewBox="70 64 372 362" aria-hidden="true"><g transform="translate(0 -18)" fill="none" stroke="#ffb547" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"><path d="M196 108 L256 164 L316 108"/><rect x="96" y="182" width="320" height="226" rx="44"/></g><path d="M230 232 L308 277 L230 322 Z" fill="#ffb547" stroke="#ffb547" stroke-width="8" stroke-linejoin="round"/></svg>
-          <b>Welcome to Sofari</b>
+          <b>Welcome to Tivvy</b>
           <p>Come take a sofa safari! Explore the best shows and movies, picked just for you.</p>
           <button class="done-btn" data-open-settings>Select your services</button>
         </div>`;
@@ -1198,7 +1198,7 @@
 
   async function saveBackup() {
     const data = { app: BACKUP_APP, version: 3, saved_at: new Date().toISOString(), services: myServices, thumbs, genres: genrePrefs, watchlist, watched };
-    const name = `sofari-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    const name = `tivvy-backup-${new Date().toISOString().slice(0, 10)}.json`;
     const file = new File([JSON.stringify(data, null, 1)], name, { type: "application/json" });
     try {
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -1245,7 +1245,7 @@
       const nG = genres.length;
       backupStatus(`Restored ${valid.length} rating${valid.length === 1 ? "" : "s"}, ${nG} genre${nG === 1 ? "" : "s"}, ${wl.length} watchlist title${wl.length === 1 ? "" : "s"}, ${wd.length} watched title${wd.length === 1 ? "" : "s"} and ${known.length} service${known.length === 1 ? "" : "s"}.`, "ok");
     } catch {
-      backupStatus("That file isn't a Sofari backup.", "err");
+      backupStatus("That file isn't a Tivvy backup.", "err");
     }
   }
 

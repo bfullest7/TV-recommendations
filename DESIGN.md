@@ -1,6 +1,6 @@
 # Design system
 
-How "Sofari" looks and reads. Follow this when changing the app, and update it when Beth approves a new rule. Sizes are in CSS pixels (`styles.css`); colors are the tokens at the top of `styles.css`.
+How "Tivvy" looks and reads. Follow this when changing the app, and update it when Beth approves a new rule. Sizes are in CSS pixels (`styles.css`); colors are the tokens at the top of `styles.css`.
 
 ## Text sizes
 
@@ -8,7 +8,7 @@ The app uses one small scale. Each size has one job; avoid in-between sizes like
 
 | Size | Job | Where it's used |
 |---|---|---|
-| 22 | App title | "Sofari", with the orange retro TV logo (28 wide) just before it; the welcome card title ("Welcome to Sofari") |
+| 22 | App title | "Tivvy", with the orange retro TV logo (28 wide) just before it; the welcome card title ("Welcome to Tivvy") |
 | 20 | Screen titles | "Profile"; show title on a detail screen |
 | 18 | Headings | Home row titles ("Trending now"), Settings section headings, detail-screen headings ("Why this pick") |
 | 17 | Score numbers | Big numbers in the detail-screen score boxes ("9.0", "90%") |
@@ -50,7 +50,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - Space between home screen rows: 28 above each row title; 14 between a row's subtitle and its posters.
 - Gap between side-by-side buttons: 10; between tiles in a grid: 6 to 8.
 - Paragraphs in "How your picks work" (Settings and the Top picks page): 14 between paragraphs; 16 above and below charts.
-- Welcome screen: behind the card, a tilted (-8°), darkened (38%) wall of today's trending posters, five across, filling the whole screen below the header, with a dark gradient rising from the bottom (solid page color at the very bottom, clear by about halfway up) and a softer one under the header (clear by 30% down). The card's middle sits 45% of the way down the screen (a little above center, which looks centered to the eye), over the wall, slightly see-through (86% of the card color, lightly blurred), 34 in from each side (on small phones it widens to 16 in, so the text keeps two lines) with 50 top, 58 bottom and 26 side padding; 44 top and bottom, 24 sides, 28 above its button, everything centered. Title 22 bold, text 15, button 16. At the top, the orange retro TV logo (the header logo's drawing, 48 wide), 22 above the title. Title "Welcome to Sofari" (no exclamation mark), 22 bold. Text: "Come take a sofa safari! Explore the best shows and movies, picked just for you." on two balanced lines (no single word left alone); it plays on the app's name. Button "Select your services". The welcome screen has no header at all (the poster wall runs to the top of the screen); the header, with search and Settings (a person icon), appears once services are picked.
+- Welcome screen: behind the card, a tilted (-8°), darkened (38%) wall of today's trending posters, five across, filling the whole screen below the header, with a dark gradient rising from the bottom (solid page color at the very bottom, clear by about halfway up) and a softer one under the header (clear by 30% down). The card's middle sits 45% of the way down the screen (a little above center, which looks centered to the eye), over the wall, slightly see-through (86% of the card color, lightly blurred), 34 in from each side (on small phones it widens to 16 in, so the text keeps two lines) with 50 top, 58 bottom and 26 side padding; 44 top and bottom, 24 sides, 28 above its button, everything centered. Title 22 bold, text 15, button 16. At the top, the orange retro TV logo (the header logo's drawing, 48 wide), 22 above the title. Title "Welcome to Tivvy" (no exclamation mark), 22 bold. Text: "Come take a sofa safari! Explore the best shows and movies, picked just for you." on two balanced lines (no single word left alone). Button "Select your services". The welcome screen has no header at all (the poster wall runs to the top of the screen); the header, with search and Settings (a person icon), appears once services are picked.
 
 ## Writing
 
