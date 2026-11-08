@@ -1,7 +1,7 @@
 {
   "name": "Tivvy",
   "short_name": "Tivvy",
-  "description": "Top things to stream right now on your services.",
+  "description": "Discover what to watch. The best shows and movies, picked just for you.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

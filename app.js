@@ -50,6 +50,29 @@
   };
   // Rows leave out watched titles and "Not for me" titles (Your watchlist, Netflix Top 10 and search keep them)
   const visible = (t) => onMyServices(t) && rightKind(t) && !isWatched(t) && !(thumbs[t.id]?.v < 0);
+  /* Saved titles that are no longer on your services, or no longer in the data at all,
+     stay in Your library (dimmed, with a note). A title gone from the data is rebuilt
+     from what was saved with it: name, type, poster, year and genres. */
+  const ghosts = {};
+  function titleOf(id) {
+    if (feed.titles[id]) return feed.titles[id];
+    const recs = [watchlist[id], thumbs[id], watched[id]].filter(Boolean);
+    if (recs.length) {
+      const r = recs.find((x) => x.poster) || recs[0];
+      ghosts[id] = { id, title: r.title, type: r.type, poster: r.poster || null, year: r.year || null, was: r.services || [],
+        services: [], genres: thumbs[id]?.genres || r.genres || [], recs: thumbs[id]?.recs || [], scores: {}, gone: true };
+    }
+    return ghosts[id] || null; // kept after un-saving, so its screen can still be shown
+  }
+  const offServices = (t) => !t.services.some((s) => myServices.includes(s));
+  const inLibrary = (id) => !!(watchlist[id] || thumbs[id]?.v > 0 || watched[id]);
+  // The services a saved title was on while it was on yours (older saves didn't record them)
+  const savedServices = (id) => [watchlist[id], thumbs[id], watched[id]].find((r) => r?.services?.length)?.services || [];
+  /* A saved title that was on your services and isn't any more (or is gone from the data).
+     Older saves didn't record the services, so they count as having been on yours.
+     A title saved from search that was never on your services isn't marked. */
+  const isAway = (t) => offServices(t) && inLibrary(t.id)
+    && (t.gone || !savedServices(t.id).length || savedServices(t.id).some((s) => myServices.includes(s)));
   const kindWord = () => (kind === "tv" ? "TV shows" : kind === "movie" ? "movies" : "titles");
   const fmtCount = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K" : String(n));
   const fmtDate = (iso) => new Date(iso + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -282,15 +305,18 @@
   }
 
   function cardHtml(t, def) {
-    const svcKey = def.forceService || t.services.find((s) => activeServices().includes(s)) || t.services.find((s) => myServices.includes(s));
+    const away = isAway(t); // left your services: dimmed, with a note in the middle and the badge of the service it was on
+    const was = away && savedServices(t.id);
+    const svcKey = away ? was.find((s) => myServices.includes(s)) || was[0] : def.forceService || t.services.find((s) => activeServices().includes(s)) || t.services.find((s) => myServices.includes(s));
     const showSeen = isWatched(t) && !def.plain; // the Watched tab doesn't badge every poster
     const svc = svcKey && svcInfo(svcKey);
     return `
-      <button class="card ${showSeen ? "is-watched" : ""}" data-id="${esc(t.id)}" aria-label="${esc(t.title)}">
+      <button class="card ${showSeen ? "is-watched" : ""} ${away ? "is-away" : ""}" data-id="${esc(t.id)}" aria-label="${esc(t.title)}">
         <div class="poster">
           ${t.poster ? `<img loading="${def.eager ? "eager" : "lazy"}" src="${IMG}w342${esc(t.poster)}" alt="" onload="this.classList.add('in')">` : `<div class="no-img">${esc(t.title)}</div>`}
           ${def.rank ? `<span class="rank">#${t._rank}</span>` : ""}
           <span class="marks">${marksHtml(t, def.key, def.plain)}</span>
+          ${away ? `<span class="away-note">No longer available</span>` : ""}
           ${svc ? `<span class="badge" style="background:${esc(svc.color)}">${esc(svc.name)}</span>` : ""}
         </div>
         <div class="name">${esc(t.title)}</div>
@@ -412,11 +438,13 @@
   const LIB_HINT = { list: "Tap <b>＋ Add to list</b> on any title to save it here", liked: "Tap <b>Like</b> on any title to see it here", watched: "Tap <b>Mark watched</b> on any title to see it here" };
   function libTitles(tab) { // titles for a pill, on your services, most recent first
     if (tab === "list") return Object.entries(watchlist).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || ""))
-      .map(([id]) => feed.titles[id]).filter((t) => t && onMyServices(t) && rightKind(t)); // watched titles stay here
+      .map(([id]) => titleOf(id)).filter((t) => t && libShows(t)); // watched titles stay here
     const stamp = tab === "liked" ? thumbs : watched;
-    return mlTitles(tab).filter((t) => onMyServices(t) && rightKind(t))
+    return mlTitles(tab).filter(libShows)
       .sort((a, b) => (stamp[b.id].at || "").localeCompare(stamp[a.id].at || ""));
   }
+  // Titles that left your services show with "All" selected (they aren't on any one service)
+  const libShows = (t) => (onMyServices(t) || (filter === "all" && isAway(t))) && rightKind(t);
   // Nothing saved, liked or watched yet: the row is just the pills, each opening its
   // (empty) tab on the Your library page, which says how to fill it.
   const libAllEmpty = () => !Object.keys(watchlist).length && !mlTitles("liked").length && !mlTitles("watched").length;
@@ -502,7 +530,7 @@
 
   // ---------------------------------------------------------------- details
   function openDetails(id) {
-    const t = feed.titles[id];
+    const t = titleOf(id);
     if (!t) return;
     const thumb = thumbs[id]?.v || 0;
     const scores = [
@@ -525,7 +553,8 @@
         <div class="d-info">
           <h2 id="d-title">${esc(t.title)}</h2>
           <div class="d-sub">${[yearRange(t), t.type === "tv" ? "TV series" : "Movie", t.genres.slice(0, 3).join(", ")].filter(Boolean).map(esc).join(" · ")}</div>
-          <div class="d-services">${services.map((s) => `<span class="svc ${myServices.includes(s.key) ? "" : "not-mine"}" style="background:${esc(s.color)}">${esc(s.name)}</span>`).join("")}</div>
+          ${services.length ? `<div class="d-services">${services.map((s) => `<span class="svc ${myServices.includes(s.key) ? "" : "not-mine"}" style="background:${esc(s.color)}">${esc(s.name)}</span>`).join("")}</div>` : ""}
+          ${isAway(t) ? `<p class="d-away">No longer available</p>` : ""}
         </div>
       </div>
       ${scores.length ? `<div class="scores">${scores.map((s) => `<div class="score"><div class="v">${esc(s.v)}</div><div class="l">${esc(s.l)}</div></div>`).join("")}</div>` : ""}
@@ -538,7 +567,7 @@
         <button class="thumb up" data-thumb="1" aria-pressed="${thumb > 0}">👍 Like</button>
         <button class="thumb down" data-thumb="-1" aria-pressed="${thumb < 0}">👎 Not for me</button>
       </div>
-      ${whyThisPick(t)}`;
+      ${t.gone ? "" : whyThisPick(t)}`;
     $("#details").dataset.id = id;
     const firstOpen = !$("#details").open;
     showSheet($("#details"));
@@ -681,7 +710,24 @@
       </section>`;
   }
 
-  const entry = (t) => ({ title: t.title, type: t.type, at: new Date().toISOString() });
+  /* Saved with every save, like and watched mark (and kept up to date while the title is
+     in the data), so Your library can still show it if it leaves your services. */
+  const keep = (t) => ({ title: t.title, type: t.type, poster: t.poster || null, year: latestYear(t) || null, services: t.gone ? t.was
+    : offServices(t) && savedServices(t.id).length ? savedServices(t.id) : t.services }); // keeps the service it left
+  const entry = (t) => ({ ...keep(t), at: new Date().toISOString() });
+  function refreshSaved() {
+    for (const [store, recs] of [[STORE.watchlist, watchlist], [STORE.thumbs, thumbs], [STORE.watched, watched]]) {
+      let changed = false;
+      for (const [id, r] of Object.entries(recs)) {
+        const t = feed.titles[id];
+        if (!t) continue;
+        const k = keep(t);
+        if (offServices(t)) delete k.services; // keep the services it was on while it was on yours
+        if (Object.keys(k).some((x) => JSON.stringify(r[x]) !== JSON.stringify(k[x]))) { Object.assign(r, k); changed = true; }
+      }
+      if (changed) save(store, recs);
+    }
+  }
   function redrawDetails(id) {
     const d = $("#details"), y = d.scrollTop;
     openDetails(id);
@@ -694,7 +740,7 @@
   let homeStale = false;
   const KEEPS = ["watchlist", "netflix"]; // rows that keep watched and Not for me titles
   function patchCards(id) {
-    const t = feed.titles[id];
+    const t = titleOf(id);
     for (const card of document.querySelectorAll(`#rows .card[data-id="${CSS.escape(id)}"], #ml-grid .card[data-id="${CSS.escape(id)}"], #rp-grid .card[data-id="${CSS.escape(id)}"]`)) {
       const row = card.closest("[data-row]").dataset.row;
       const plain = row === "mywatched"; // the Watched tab doesn't mark every poster watched
@@ -737,7 +783,7 @@
   }
   function toggleWatchlist(id) {
     if (watchlist[id]) delete watchlist[id];
-    else watchlist[id] = entry(feed.titles[id]);
+    else watchlist[id] = entry(titleOf(id));
     save(STORE.watchlist, watchlist);
     redrawDetails(id);
     patchCards(id);
@@ -745,8 +791,8 @@
     if ($("#search").open) renderSearch();
   }
   function toggleWatched(id) {
-    if (isWatched(feed.titles[id])) delete watched[id];
-    else watched[id] = entry(feed.titles[id]);
+    if (isWatched(titleOf(id))) delete watched[id];
+    else watched[id] = entry(titleOf(id));
     save(STORE.watched, watched);
     redrawDetails(id);
     patchCards(id);
@@ -756,9 +802,9 @@
   }
 
   function setThumb(id, v) {
-    const t = feed.titles[id];
+    const t = titleOf(id);
     if (thumbs[id]?.v === v) delete thumbs[id];
-    else thumbs[id] = { v, title: t.title, genres: t.genres, recs: t.recs, type: t.type, at: new Date().toISOString() };
+    else thumbs[id] = { v, ...keep(t), genres: t.genres, recs: t.recs, at: new Date().toISOString() };
     save(STORE.thumbs, thumbs);
     const d = $("#details"), y = d.scrollTop;
     openDetails(id); // redraw so "Why this pick" reflects the new rating
@@ -782,10 +828,9 @@
   const ML_ROW = { list: "mylist", liked: "myliked", watched: "mywatched" };
   const latestDate = (t) => (t.type === "tv" ? t.latest_air : t.release) || "";
   function mlTitles(tab) {
-    const T = feed.titles;
-    if (tab === "list") return Object.keys(watchlist).map((id) => T[id]).filter((t) => t && !isWatched(t));
-    if (tab === "liked") return Object.keys(thumbs).filter((id) => thumbs[id].v > 0).map((id) => T[id]).filter(Boolean);
-    return Object.keys(watched).map((id) => T[id]).filter((t) => t && isWatched(t));
+    if (tab === "list") return Object.keys(watchlist).map(titleOf).filter((t) => t && !isWatched(t));
+    if (tab === "liked") return Object.keys(thumbs).filter((id) => thumbs[id].v > 0).map(titleOf).filter(Boolean);
+    return Object.keys(watched).map(titleOf).filter((t) => t && isWatched(t));
   }
   /* Showing a new grid (opening a page, or changing its tab, sort or filter): the old
      grid stays, dimmed with a small spinner, while the posters for the first screen
@@ -1449,6 +1494,7 @@
       const next = await fetchFeed();
       if (!feed || next.generated_at !== feed.generated_at) {
         feed = next;
+        refreshSaved();
         render(true);
       }
     } catch { /* keep showing what we have */ }
@@ -1473,6 +1519,7 @@
       return;
     }
     myServices = myServices.filter((k) => svcInfo(k));
+    refreshSaved();
     render();
   }
 
