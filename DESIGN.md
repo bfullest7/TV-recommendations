@@ -9,7 +9,7 @@ The app uses one small scale. Each size has one job; avoid in-between sizes like
 | Size | Job | Where it's used |
 |---|---|---|
 | 22 | App title | "What to Watch", with the orange TV logo (28 wide) just before it |
-| 20 | Screen titles | "Your settings"; show title on a detail screen |
+| 20 | Screen titles | "Profile"; show title on a detail screen |
 | 18 | Headings | Home row titles ("Trending now"), Settings section headings, detail-screen headings ("Why this pick"), welcome card title |
 | 17 | Score numbers | Big numbers in the detail-screen score boxes ("9.0", "90%") |
 | 16 | Form inputs, tip headings | Search box and "TV & movies" picker (16 stops iPhone from zooming in); the bold heading in the genre tip |
@@ -63,7 +63,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 ## Icons
 
 - Icons are simple drawn shapes in the style of the search and settings buttons, not emoji (emoji look different on each phone).
-- **Header buttons:** search (21 wide) and Settings (an outline person icon, 20 wide), each in a 40 round button. The person icon opens "Your settings", whose headings speak to the user without repeating the title: "Streaming services", "Genres", "How your picks work", "Back up your data".
+- **Header buttons:** search (21 wide) and Profile (an outline person icon, 20 wide), each in a 40 round button. The person icon opens "Profile" (the settings panel), with plain section headings: "Streaming services", "Genres", "How your picks work", "Back up your data".
 - **Poster status circles:** small white icons in dark circles in the poster's top-right corner, always in this order: **liked** (drawn thumbs-up), **in your list** (bookmark), **watched** (✓). A watched poster is also dimmed. Each icon is left out where every poster would have it: no bookmark in "Your watchlist" or the In your list tab, no thumb in the Liked tab, no ✓ (or dimming) in the Watched tab.
 - **Not for me** is never marked on posters (those titles are hidden from rows).
 - **Search results** show the same states as small grey pills under the service line: "Liked" (thumb), "In your list" (bookmark), "Watched" (✓).

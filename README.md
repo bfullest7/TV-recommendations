@@ -82,7 +82,7 @@ Open the link, then:
 
 Share the same link with friends; each person picks their own services and gives their own thumbs.
 
-Ratings live only on the phone. To keep them safe, use **Your settings (the person icon) → Back up your data → Save a backup**, and **Restore a backup** on a new phone. On iPhone, the home-screen app and Safari keep separate settings, so use one or the other.
+Ratings live only on the phone. To keep them safe, use **Profile (the person icon) → Back up your data → Save a backup**, and **Restore a backup** on a new phone. On iPhone, the home-screen app and Safari keep separate settings, so use one or the other.
 
 ## Changing things
 
