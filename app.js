@@ -1199,7 +1199,7 @@
       ["Signal: Your taste", `
         <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres and each 👎 lowers them. A genre you set in <b>Genres</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you disliked a drop.</p>
         <p>Not counted until you rate something or pick a genre.</p>
-        <p>Genres you 👎 in <b>Genres</b> apply to every other row: titles in those genres move to the end, after everything else (unless they're also in a genre you 👍). Your library and the Netflix Top 10 aren't affected.</p>`],
+        <p>Genres you 👎 in <b>Genres</b> apply to every row: titles in those genres move to the end, after everything else (unless they're also in a genre you 👍). Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: New & recent", `
         <p>Score by how long ago a title came out:</p>
         ${barsHtml([["Up to 3 months", 90], ["6 months", 182], ["1 year", 365], ["18 months", 547], ["2 years", 730], ["3 years", 1095]]
