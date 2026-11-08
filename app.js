@@ -937,7 +937,7 @@
     try {
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         // iPhone/Android: opens the share sheet (Save to Files, email, etc.)
-        await navigator.share({ files: [file], title: "What to Watch backup" });
+        await navigator.share({ files: [file] }); // file only: a title is saved by some apps (like Google Drive) as an extra text file
       } else {
         const url = URL.createObjectURL(file);
         const a = Object.assign(document.createElement("a"), { href: url, download: name });
