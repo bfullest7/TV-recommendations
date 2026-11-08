@@ -784,10 +784,17 @@
     const grid = $("#ml-grid");
     grid.dataset.row = ML_ROW[ml.tab];
     const def = { key: grid.dataset.row, plain: ml.tab === "watched", forceService: ml.service !== "all" ? ml.service : null };
+    // An empty tab: the tab's icon in a soft circle, a short heading, then what to tap
+    const EMPTY = {
+      list: [BOOKMARK, "Nothing saved yet", "Tap <b>＋ Add to list</b> on any title to save it here."],
+      liked: [THUMB, "Nothing liked yet", "Tap <b>Like</b> on any title to see it here."],
+      watched: [CHECK, "Nothing watched yet", "Tap <b>Mark watched</b> on any title to see it here."],
+    };
+    const [icon, head, msg] = EMPTY[ml.tab];
     const none = mlTitles(ml.tab).length
-      ? "Nothing matches these filters"
-      : { list: "Nothing on your watchlist yet. Tap <b>＋ Add to list</b> on any title to save it here.", liked: "Nothing liked yet. Tap <b>Like</b> on any title to see it here.", watched: "Nothing marked watched yet. Tap <b>Mark watched</b> on any title to see it here." }[ml.tab];
-    grid.innerHTML = items.length ? items.map((t) => cardHtml(t, def)).join("") : `<p class="ml-empty">${none}</p>`;
+      ? `<p class="ml-empty">Nothing matches these filters</p>`
+      : `<div class="ml-empty is-blank"><span class="ml-empty-icon">${icon.replace(/width="13" height="13"/, 'width="28" height="28"')}</span><h3>${head}</h3><p>${msg}</p></div>`;
+    grid.innerHTML = items.length ? items.map((t) => cardHtml(t, def)).join("") : none;
   }
   function openMyList(tab = "list") {
     ml.tab = tab;

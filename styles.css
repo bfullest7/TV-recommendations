@@ -293,6 +293,11 @@ header.top[hidden] { display: none; }
 .ml-grid .card { width: auto; }
 .ml-empty { grid-column: 1 / -1; padding: 100px 0 24px; color: var(--muted); font-size: 14px; text-align: center; text-wrap: balance; }
 .ml-empty b { color: var(--text); font-weight: 600; white-space: nowrap; }
+/* Empty tab: icon in a soft circle, heading 18, message 15 */
+.ml-empty.is-blank { padding-top: 76px; }
+.ml-empty-icon { display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--surface-2); color: var(--text); }
+.ml-empty h3 { margin: 16px 0 0; font-size: 18px; color: var(--text); }
+.ml-empty.is-blank p { margin: 6px auto 0; max-width: 280px; font-size: 15px; line-height: 1.5; }
 .search-input {
   flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
   background: var(--surface-2); color: var(--text); font: inherit; font-size: 16px;
