@@ -942,24 +942,49 @@
   const norm = (x) => String(x || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   let searchIndex = null;
 
-  /* Searches every title the app tracks (on any service). Titles starting with
-   * the search come first, then a word starting with it, then anywhere. */
+  /* Search. Best first:
+   *   0-3  the whole search in the title (exact, start, start of a word, anywhere)
+   *   4    every word starts a word in the title, in any order ("tyson mike")
+   *   5    the words not in the title are in its genres, type, services or description
+   *        ("mike tyson comedy", "tyson netflix")
+   *   6    the leftover words just describe the kind of title, so they're skipped
+   *        ("mike tyson documentary" finds his comedy special)
+   *   7    no title words, but the words are genres, types or services
+   *        ("documentary", "crime netflix"); descriptions only back up a title match
+   * Among equal matches: titles on your services first, then the best known. */
+  const DESCRIBING = new Set("documentary documentaries doc docs docuseries docu movie movies film films show shows series tv special specials standup stand up comedy season seasons episode episodes new the a".split(" "));
   function searchTitles(q) {
     const nq = norm(q);
     if (!nq) return [];
     if (!searchIndex || searchIndex.feed !== feed) {
-      searchIndex = { feed, items: Object.values(feed.titles).map((t) => ({ t, n: norm(t.title) })) };
+      const typeWords = { movie: "movie film", tv: "tv show series" };
+      searchIndex = { feed, items: Object.values(feed.titles).map((t) => ({
+        t, n: norm(t.title),
+        g: " " + norm([...(t.genres || []), typeWords[t.type] || "", ...t.services.map((k) => svcInfo(k)?.name || k)].join(" ")),
+        d: " " + norm(t.overview || ""),
+      })) };
     }
+    const words = nq.split(" ");
+    const startsWord = (text, w) => (" " + text).includes(" " + w);
     const scored = [];
-    for (const { t, n } of searchIndex.items) {
+    for (const { t, n, g, d } of searchIndex.items) {
+      const x = g + d; // genres, type, services and description
       let rank = -1;
       if (n === nq) rank = 0;
       else if (n.startsWith(nq)) rank = 1;
-      else if ((" " + n).includes(" " + nq)) rank = 2;
+      else if (startsWord(n, nq)) rank = 2;
       else if (n.includes(nq)) rank = 3;
+      else {
+        const inTitle = words.filter((w) => startsWord(n, w));
+        const rest = words.filter((w) => !startsWord(n, w));
+        const realTitle = inTitle.some((w) => !DESCRIBING.has(w)); // "the" alone isn't a title match
+        if (!rest.length) rank = 4;
+        else if (!realTitle) { if (words.every((w) => DESCRIBING.has(w) || g.includes(" " + w)) && words.some((w) => g.includes(" " + w))) rank = 7; }
+        else if (rest.every((w) => x.includes(" " + w))) rank = 5;
+        else if (rest.every((w) => DESCRIBING.has(w) || x.includes(" " + w))) rank = 6;
+      }
       if (rank >= 0) scored.push({ t, rank, mine: t.services.some((k) => myServices.includes(k)) ? 0 : 1 });
     }
-    // best match first; among equal matches, titles on your services first, then the best known
     return scored
       .sort((a, b) => a.rank - b.rank || a.mine - b.mine || (b.t.imdb_votes || 0) - (a.t.imdb_votes || 0))
       .slice(0, 40).map((x) => x.t);

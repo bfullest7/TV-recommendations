@@ -24,7 +24,7 @@ Each home row shows its best 20 titles; when there are more, a **See all ›** t
 - Nothing moves while you browse: a title you like, mark Not for me or mark watched stays where it is (dimmed if it's going to leave the row), and the rows update the next time you open the app, change a filter or close Settings. Adding to your list updates "Your library" right away without moving what's on screen.
 - To undo any of these, open the title (search finds every title) and tap the button again.
 - The "Your library" row has **Watchlist**, **Liked** and **Watched** pills that switch what the row shows; the **See all ›** tile at the end opens the **Your library** page: posters three across, with three tabs. **Watchlist** shows titles you've added and haven't watched; **Liked** shows every title you've liked; **Watched** shows everything you've marked watched. Sort (recently added, liked or watched, best match, IMDb rating, newest release, A–Z) and filter by service or TV & movies.
-- **Search** (magnifying glass) opens full screen and starts empty each time. It finds any title the app tracks, across all services; titles on your services come first, with "In your list" and "✓ Watched" labels.
+- **Search** (magnifying glass) opens full screen and starts empty each time. It finds any title the app tracks, across all services. Words can be in any order, and words that describe the title (its genre, "documentary", "movie", a service name) narrow the match instead of breaking it, so "mike tyson documentary" or "tyson netflix" find Mike Tyson's special, and "documentary" or "crime netflix" list matching titles; titles on your services come first, with "In your list" and "✓ Watched" labels.
 
 ## How it works
 
