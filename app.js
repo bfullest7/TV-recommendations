@@ -380,7 +380,7 @@
       $("#rows").innerHTML = `
         ${welcomeWall()}
         <div class="notice welcome">
-          <svg class="welcome-logo" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#ffb547"/><g transform="translate(0 -18)" fill="none" stroke="#0f1115" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"><path d="M196 108 L256 164 L316 108"/><rect x="96" y="182" width="320" height="226" rx="44"/></g><path d="M230 232 L308 277 L230 322 Z" fill="#0f1115" stroke="#0f1115" stroke-width="8" stroke-linejoin="round"/></svg>
+          <svg class="welcome-logo" viewBox="70 64 372 362" aria-hidden="true"><g transform="translate(0 -18)" fill="none" stroke="#ffb547" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"><path d="M196 108 L256 164 L316 108"/><rect x="96" y="182" width="320" height="226" rx="44"/></g><path d="M230 232 L308 277 L230 322 Z" fill="#ffb547" stroke="#ffb547" stroke-width="8" stroke-linejoin="round"/></svg>
           <b>Welcome to Sofari</b>
           <p>Come take a sofa safari! Explore the best shows and movies, picked just for you.</p>
           <button class="done-btn" data-open-settings>Select your services</button>
