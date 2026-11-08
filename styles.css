@@ -103,6 +103,8 @@ h1 .logo { width: 28px; height: 24px; margin-right: 10px; vertical-align: -6px; 
    below for a two-line name, so the row keeps its height */
 .lib-scroller .card { min-height: calc(118px * 1.5 + 57.5px); } /* room for a two-line name, so every pill gives the same row height */
 .ghost-tile, .see-all-tile { flex: none; width: 118px; padding: 0 0 57.5px; border: 0; background: none; scroll-snap-align: start; }
+.ghost-tile { padding: 0; }
+.ghost-tile .ghost-poster { aspect-ratio: auto; height: calc(118px * 1.5 + 57.5px); } /* placeholders fill the whole card height, so no gap below them */
 .ghost-poster {
   display: grid; place-items: center; aspect-ratio: 2 / 3; padding: 10px; border-radius: var(--radius);
   border: 1.5px dashed var(--line); color: var(--muted); font-size: 13px; line-height: 1.4; text-align: center;
