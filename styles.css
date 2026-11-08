@@ -281,7 +281,7 @@ header.top[hidden] { display: none; }
 .ml-filters { margin-top: 20px; }
 .ml-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; margin-top: 20px; }
 .ml-grid .card { width: auto; }
-.ml-empty { grid-column: 1 / -1; padding: 44px 0 24px; color: var(--muted); font-size: 14px; text-align: center; text-wrap: balance; }
+.ml-empty { grid-column: 1 / -1; padding: 100px 0 24px; color: var(--muted); font-size: 14px; text-align: center; text-wrap: balance; }
 .ml-empty b { color: var(--text); font-weight: 600; white-space: nowrap; }
 .search-input {
   flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
