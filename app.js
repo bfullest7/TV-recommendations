@@ -288,7 +288,7 @@
     return `
       <button class="card ${showSeen ? "is-watched" : ""}" data-id="${esc(t.id)}" aria-label="${esc(t.title)}">
         <div class="poster">
-          ${t.poster ? `<img loading="lazy" src="${IMG}w342${esc(t.poster)}" alt="" onload="this.classList.add('in')">` : `<div class="no-img">${esc(t.title)}</div>`}
+          ${t.poster ? `<img loading="${def.eager ? "eager" : "lazy"}" src="${IMG}w342${esc(t.poster)}" alt="" onload="this.classList.add('in')">` : `<div class="no-img">${esc(t.title)}</div>`}
           ${def.rank ? `<span class="rank">#${t._rank}</span>` : ""}
           <span class="marks">${marksHtml(t, def.key, def.plain)}</span>
           ${svc ? `<span class="badge" style="background:${esc(svc.color)}">${esc(svc.name)}</span>` : ""}
@@ -419,16 +419,22 @@
   // Nothing saved, liked or watched yet: the row is just the pills, each opening its
   // (empty) tab on the Your library page, which says how to fill it.
   const libAllEmpty = () => !Object.keys(watchlist).length && !mlTitles("liked").length && !mlTitles("watched").length;
-  /* Fetch the posters behind the other two pills in the background, so switching
-     pills shows them at once instead of filling in a moment later. */
-  const preloaded = new Set();
+  /* Fetch and decode the posters behind the other two pills in the background, and keep
+     them in memory, so switching pills shows them at once instead of filling in a
+     moment later. The row's own posters load right away (not lazily) for the same reason. */
+  const preloaded = new Map();
   function preloadLibrary() {
     setTimeout(() => {
       for (const tab of ["list", "liked", "watched"]) {
         if (tab === libTab) continue;
         for (const t of libTitles(tab).slice(0, libMax())) {
           const src = t.poster && `${IMG}w342${t.poster}`;
-          if (src && !preloaded.has(src)) { preloaded.add(src); new Image().src = src; }
+          if (src && !preloaded.has(src)) {
+            const im = new Image();
+            im.src = src;
+            im.decode?.().catch(() => {});
+            preloaded.set(src, im);
+          }
         }
       }
     }, 300);
@@ -447,7 +453,7 @@
       return `<div class="scroller lib-scroller">${ghost(`<span>${hint}</span>`)}${ghost()}${ghost()}${ghost()}</div>`;
     }
     const key = { list: "watchlist", liked: "myliked", watched: "mywatched" }[libTab];
-    const cardDef = { key, plain: libTab === "watched" };
+    const cardDef = { key, plain: libTab === "watched", eager: true };
     return `<div class="scroller lib-scroller" data-row="${key}">${def.items.slice(0, libMax()).map((t) => cardHtml(t, cardDef)).join("")}
       <button class="see-all-tile" data-open-mylist="${libTab}"><span class="ghost-poster">See all ›</span></button></div>`;
   }
