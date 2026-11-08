@@ -92,6 +92,13 @@ h1 .logo { width: 28px; height: 24px; margin-right: 10px; vertical-align: -6px; 
   scroll-snap-type: x proximity; scroll-padding-inline: 16px; scrollbar-width: none;
 }
 .scroller::-webkit-scrollbar { display: none; }
+/* "Your watchlist" row: pills that open Your list at a tab */
+.list-pills { display: flex; gap: 8px; margin-top: 10px; }
+.list-pill {
+  display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--line); font-size: 14px; white-space: nowrap;
+}
+.list-pills + .source { margin-top: 10px; }
 .empty { padding: 10px 16px 0; color: var(--muted); font-size: 14px; }
 
 .card {
@@ -274,7 +281,8 @@ header.top[hidden] { display: none; }
 .ml-filters { margin-top: 20px; }
 .ml-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; margin-top: 20px; }
 .ml-grid .card { width: auto; }
-.ml-empty { grid-column: 1 / -1; padding: 24px 0; color: var(--muted); font-size: 14px; text-align: center; }
+.ml-empty { grid-column: 1 / -1; padding: 24px 0; color: var(--muted); font-size: 14px; text-align: center; text-wrap: balance; }
+.ml-empty b { color: var(--text); font-weight: 600; white-space: nowrap; }
 .search-input {
   flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
   background: var(--surface-2); color: var(--text); font: inherit; font-size: 16px;

@@ -210,7 +210,7 @@
         key: "watchlist", title: "Your watchlist",
         ...(Object.keys(watchlist).length
           ? { source: "Titles you saved, newest first", items: listed }
-          : { source: "Tap ＋ Add to list on any title to save it here", items: [], hintOnly: true }),
+          : { source: "", items: [], hintOnly: true }), // empty: just the title and the three pills
       },
       {
         key: "trending", title: "Trending now",
@@ -394,13 +394,21 @@
     return `
       <section class="row" data-row="${def.key}" aria-labelledby="row-${def.key}">
         <div class="row-head">
-          <div class="row-title-line"><h2 id="row-${def.key}">${esc(def.title)}</h2>${def.key === "picks" ? `<button class="see-all" data-how-picks>How it works ›</button>` : ""}${def.key === "watchlist" ? `<button class="see-all" data-open-mylist>See all ›</button>` : ""}</div>
-          <p class="source">${esc(def.source)}</p>
+          <div class="row-title-line"><h2 id="row-${def.key}">${esc(def.title)}</h2>${def.key === "picks" ? `<button class="see-all" data-how-picks>How it works ›</button>` : ""}</div>
+          ${def.key === "watchlist" ? listPills() : ""}
+          ${def.source ? `<p class="source">${esc(def.source)}</p>` : ""}
         </div>
         ${def.hintOnly ? "" : def.items.length
           ? `<div class="scroller">${def.items.slice(0, n).map((t) => cardHtml(t, def)).join("")}</div>`
           : `<p class="empty">No ${kindWord() === "titles" ? "titles" : kindWord()} here for ${filter === "all" ? "your services" : esc(svcInfo(filter).name)} right now.</p>`}
       </section>`;
+  }
+
+  /* "Your watchlist" row: three pills that open Your list at that tab, so Liked and
+     Watched are always reachable (even before anything is saved). */
+  function listPills() {
+    const pill = (tab, icon, label) => `<button class="list-pill" data-open-mylist="${tab}">${icon}${label}</button>`;
+    return `<div class="list-pills">${pill("list", BOOKMARK, "In your list")}${pill("liked", THUMB, "Liked")}${pill("watched", CHECK, "Watched")}</div>`;
   }
 
   function renderFilters() {
@@ -753,11 +761,11 @@
     const def = { key: grid.dataset.row, plain: ml.tab === "watched", forceService: ml.service !== "all" ? ml.service : null };
     const none = mlTitles(ml.tab).length
       ? "Nothing matches these filters"
-      : { list: "Nothing in your list yet. Tap ＋ Add to list on any title to save it here.", liked: "Nothing liked yet. Tap Like on any title to see it here.", watched: "Nothing marked watched yet" }[ml.tab];
+      : { list: "Nothing in your list yet. Tap <b>＋ Add to list</b> on any title to save it here.", liked: "Nothing liked yet. Tap <b>Like</b> on any title to see it here.", watched: "Nothing marked watched yet. Tap <b>Mark watched</b> on any title to see it here." }[ml.tab];
     grid.innerHTML = items.length ? items.map((t) => cardHtml(t, def)).join("") : `<p class="ml-empty">${none}</p>`;
   }
-  function openMyList() {
-    ml.tab = "list";
+  function openMyList(tab = "list") {
+    ml.tab = tab;
     renderMyList();
     showSheet($("#mylist"));
     $("#mylist").scrollTop = 0;
@@ -1091,7 +1099,8 @@
     });
     $("#rows").addEventListener("click", (e) => {
       if (e.target.closest("[data-open-settings]")) return openSettings();
-      if (e.target.closest("[data-open-mylist]")) return openMyList();
+      const mlBtn = e.target.closest("[data-open-mylist]");
+      if (mlBtn) return openMyList(mlBtn.dataset.openMylist || "list");
       if (e.target.closest("[data-how-picks]")) return openHowPicks();
       const gt = e.target.closest("[data-genre-tip]");
       if (gt) {
