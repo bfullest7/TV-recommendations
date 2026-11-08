@@ -347,13 +347,13 @@ body:has(dialog[open]) { overflow: hidden; }
 }
 .genre-tip.no-anim { animation: none; }
 .genre-tip p { margin: 0; }
-.genre-tip .tip-title { margin-bottom: 2px; font-size: 16px; font-weight: 700; }
+.genre-tip .tip-title { margin-bottom: 6px; font-size: 16px; font-weight: 700; }
 .genre-tip b { font-weight: 700; }
 .genre-tip::before {
   content: ""; position: absolute; top: -9px; left: var(--caret-x, 50px); transform: translateX(-50%);
   border: 10px solid transparent; border-top: 0; border-bottom-color: var(--accent);
 }
-.genre-tip .tip-actions { display: flex; align-items: center; justify-content: flex-start; gap: 18px; margin-top: 14px; padding-bottom: 6px; }
+.genre-tip .tip-actions { display: flex; align-items: center; justify-content: flex-start; gap: 18px; margin-top: 18px; padding-bottom: 6px; }
 .genre-tip .tip-actions button { border: 0; border-radius: 999px; font-size: 14px; font-weight: 600; }
 .genre-tip [data-genre-tip="pick"] { padding: 8px 18px; background: #e8902a; color: #2b1a00; } /* filled deeper orange: the main choice */
 .genre-tip [data-genre-tip="later"] { padding: 8px 2px; background: none; color: #2b1a00; } /* text only */
