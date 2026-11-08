@@ -339,7 +339,7 @@
     const bottom = Math.max(...onScreen.map((c) => c.getBoundingClientRect().bottom));
     tip.style.top = `${bottom - box.top + 14}px`;
     const first = row.querySelector(".card");
-    if (first) { const c = first.getBoundingClientRect(); tip.style.setProperty("--caret-x", `${c.left + c.width / 2 - box.left - 16}px`); }
+    if (first) { const c = first.getBoundingClientRect(); tip.style.setProperty("--caret-x", `${c.left + c.width / 2 - box.left - 28}px`); }
   }
   function dismissGenreTip() {
     save(GENRE_TIP_KEY, true);
