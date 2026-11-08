@@ -73,17 +73,19 @@ class FakeHttp:
             pre = "m" if kind == "movie" else "t"
             return [{"watchers": w, kind: {"title": U[k]["title"], "ids": {"tmdb": int(k[1:])}}}
                     for k, w in sorted(WATCHERS.items(), key=lambda x: -x[1]) if k.startswith(pre)]
-        if host == "query.wikidata.org":
+        if host == "www.wikidata.org":
             self.wd_calls = getattr(self, "wd_calls", 0) + 1
-            pages = {  # several addresses, a season page, and junk that must be ignored
-                "tt001": [("m/great_movie_2024", "movie/great-movie"), ("m/great_movie", None)],
-                "tt101": [("tv/big_show/s02", "tv/big-show")],
-                "tt102": [("https://example.com/x", None)],
+            items = {  # Q-id: (IMDb id, Rotten Tomatoes ids, Metacritic ids); several addresses, a season page, junk
+                "Q1": ("tt001", ["m/great_movie_2024", "m/great_movie"], ["movie/great-movie"]),
+                "Q101": ("tt101", ["tv/big_show/s02"], ["tv/big-show"]),
+                "Q102": ("tt102", ["https://example.com/x"], []),
             }
-            asked = set(re.findall(r'"(tt\d+)"', q["query"]))
-            return {"results": {"bindings": [
-                {"imdb": {"value": i}, **({"rt": {"value": rt}} if rt else {}), **({"mc": {"value": mc}} if mc else {})}
-                for i in sorted(asked) for rt, mc in pages.get(i, [(None, None)])]}}
+            if q["action"] == "query":
+                asked = set(re.findall(r"P345=(tt\d+)", q["srsearch"]))
+                return {"query": {"search": [{"title": k} for k, v in items.items() if v[0] in asked]}}
+            claim = lambda vals: [{"mainsnak": {"datavalue": {"value": v}}} for v in vals]
+            return {"entities": {k: {"claims": {"P345": claim([items[k][0]]), "P1258": claim(items[k][1]), "P1712": claim(items[k][2])}}
+                                 for k in q["ids"].split("|")}}
         if host == "api.mdblist.com":
             self.mdb_calls = getattr(self, "mdb_calls", 0) + 1
             imdb_id = path.rsplit("/", 1)[-1]

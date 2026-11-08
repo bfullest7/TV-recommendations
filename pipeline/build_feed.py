@@ -49,7 +49,8 @@ OMDB = "https://www.omdbapi.com/"
 MDBLIST = "https://api.mdblist.com"
 IMDB_RATINGS = "https://datasets.imdbws.com/title.ratings.tsv.gz"
 NETFLIX_TOP10 = "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv"
-WIKIDATA_SPARQL = "https://query.wikidata.org/sparql"
+WIKIDATA_API = "https://www.wikidata.org/w/api.php"
+WIKIDATA_UA = "tivvy/1.0 (https://github.com/bfullest7/tivvy; personal project)"
 
 USER_AGENT = "tv-recommendations/1.0 (personal project)"
 
@@ -404,32 +405,45 @@ MC_ID = re.compile(r"^(movie|tv)/[a-z0-9\-]+$")
 
 def wikidata_pages(imdb_ids: list[str]) -> dict[str, dict]:
     """Exact Rotten Tomatoes ("m/oppenheimer_2023") and Metacritic ("movie/oppenheimer")
-    page ids from Wikidata, looked up by IMDb id. Returns {imdb_id: {"rt": .., "mc": ..}}
-    for every id asked about (None where Wikidata has no page)."""
+    page ids from Wikidata, looked up by IMDb id. Uses Wikidata's
+    main API (search, then read the items), not the often-overloaded query service.
+    Returns {imdb_id: {"rt": .., "mc": ..}} for every id asked about (None where unknown)."""
     out = {i: {"rt": None, "mc": None} for i in imdb_ids}
-    values = " ".join(f'"{i}"' for i in imdb_ids if re.fullmatch(r"tt\d+", i))
-    if not values:
+    ids = [i for i in imdb_ids if re.fullmatch(r"tt\d+", i)]
+    if not ids:
         return out
-    query = f"""SELECT ?imdb ?rt ?mc WHERE {{
-      VALUES ?imdb {{ {values} }}
-      ?item wdt:P345 ?imdb .
-      OPTIONAL {{ ?item wdt:P1258 ?rt . }}
-      OPTIONAL {{ ?item wdt:P1712 ?mc . }}
-    }}"""
-    url = f"{WIKIDATA_SPARQL}?{urllib.parse.urlencode({'query': query, 'format': 'json'})}"
-    d = http.get_json(url, {"Accept": "application/sparql-results+json"})
-    found: dict[str, dict[str, set]] = {}
-    for b in (d.get("results") or {}).get("bindings") or []:
-        imdb = (b.get("imdb") or {}).get("value")
-        if imdb not in out:
-            continue
-        f = found.setdefault(imdb, {"rt": set(), "mc": set()})
-        for k, pat in (("rt", RT_ID), ("mc", MC_ID)):
-            v = ((b.get(k) or {}).get("value") or "").strip().strip("/").lower()
-            v = re.sub(r"/s\d+$", "", v)  # a season page -> the show's page
-            if pat.match(v):
-                f[k].add(v)
-    for imdb, f in found.items():
+    hdrs = {"User-Agent": WIKIDATA_UA}
+
+    def api(**params):
+        return http.get_json(f"{WIKIDATA_API}?{urllib.parse.urlencode({**params, 'format': 'json', 'maxlag': 5})}", hdrs)
+
+    # search allows about 300 characters, so 15 IMDb ids per search; items are read 50 at a time
+    qids: list[str] = []
+    for i in range(0, len(ids), 15):
+        found = api(action="query", list="search", srnamespace=0, srlimit=50,
+                    srsearch="haswbstatement:" + "|".join(f"P345={x}" for x in ids[i:i + 15]))
+        qids += [r["title"] for r in ((found.get("query") or {}).get("search") or [])
+                 if re.fullmatch(r"Q\d+", r.get("title", "")) and r["title"] not in qids]
+    ents: dict = {}
+    for i in range(0, len(qids), 50):
+        ents.update(api(action="wbgetentities", ids="|".join(qids[i:i + 50]), props="claims").get("entities") or {})
+
+    def values(claims, prop):
+        return [((c.get("mainsnak") or {}).get("datavalue") or {}).get("value") for c in claims.get(prop) or []]
+
+    pages: dict[str, dict[str, set]] = {}
+    for e in ents.values():
+        claims = e.get("claims") or {}
+        for imdb in values(claims, "P345"):
+            if imdb not in out:
+                continue
+            f = pages.setdefault(imdb, {"rt": set(), "mc": set()})
+            for k, prop, pat in (("rt", "P1258", RT_ID), ("mc", "P1712", MC_ID)):
+                for v in values(claims, prop):
+                    v = re.sub(r"/s\d+$", "", str(v or "").strip().strip("/").lower())  # a season page -> the show's page
+                    if pat.match(v):
+                        f[k].add(v)
+    for imdb, f in pages.items():
         # several ids (old and new addresses): the shortest is usually the main page
         out[imdb] = {k: (min(v, key=lambda x: (len(x), x)) if v else None) for k, v in f.items()}
     return out
