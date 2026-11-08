@@ -63,6 +63,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 ## Icons
 
 - Icons are simple drawn shapes in the style of the search and settings buttons, not emoji (emoji look different on each phone).
+- **Header buttons:** search (21 wide) and Settings (an eight-point gear, 18 wide, so it looks the same size as the search icon), each in a 40 round button.
 - **Poster status circles:** small white icons in dark circles in the poster's top-right corner, always in this order: **liked** (drawn thumbs-up), **in your list** (bookmark), **watched** (✓). A watched poster is also dimmed. Each icon is left out where every poster would have it: no bookmark in "Your watchlist" or the In your list tab, no thumb in the Liked tab, no ✓ (or dimming) in the Watched tab.
 - **Not for me** is never marked on posters (those titles are hidden from rows).
 - **Search results** show the same states as small grey pills under the service line: "Liked" (thumb), "In your list" (bookmark), "Watched" (✓).
