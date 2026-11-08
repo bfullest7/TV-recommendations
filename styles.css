@@ -227,13 +227,15 @@ body:has(dialog[open]) { overflow: hidden; }
 .svc { padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: #fff; }
 .svc.not-mine { background: var(--surface-2) !important; color: var(--muted); font-weight: 500; }
 .d-away { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
-/* "Watch trailer" on a title's screen: the one yellow button there, under the service badges.
-   Opens the official trailer on YouTube. Only shown when TMDB lists a trailer. */
-.trailer-btn {
-  display: inline-flex; align-items: center; gap: 7px; margin-top: 12px; padding: 9px 16px; border-radius: 10px;
-  background: var(--accent); color: #0f1115; font-size: 15px; font-weight: 700; text-decoration: none; white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
+/* A title with a trailer: its poster on the title screen links to the trailer on YouTube,
+   with a small see-through play button in the middle (no label) */
+.poster.has-trailer { display: block; -webkit-tap-highlight-color: transparent; }
+.poster .play {
+  position: absolute; left: 50%; top: 50%; width: 36px; height: 36px; transform: translate(-50%, -50%);
+  display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255,255,255,.55);
+  background: rgba(15,17,21,.45); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
 }
+.poster .play svg { margin-left: 2px; }
 .d-head-title { font-weight: 600; font-size: 15px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .d-top { padding-top: 16px; }
 
