@@ -812,21 +812,22 @@
       if (!instant) { grid.classList.add("fresh"); setTimeout(() => grid.classList.remove("fresh"), 200); }
     };
     if (instant || !srcs.length) return show();
-    // Opening a page or changing its tab, sort or filter: the spinner shows straight away
-    // and stays at least 0.3 seconds, so it always reads as "loading, then all the posters".
+    // Instant when the posters are ready within 0.12 seconds (no spinner). Otherwise the
+    // spinner shows, and once shown it stays at least 0.3 seconds so it never flickers.
     const spin = () => { // centred in the tile area: between the top of the grid (or of the screen) and the bottom of the screen
       grid.classList.add("is-loading");
       requestAnimationFrame(() => { // measured once the page is on screen
         const top = Math.max(grid.getBoundingClientRect().top, 0);
-        grid.style.setProperty("--spin-top", `${(top + window.innerHeight) / 2}px`);
+        grid.style.setProperty("--spin-top", `${top + (window.innerHeight - top) * 0.4}px`); // 40% down: looks centred to the eye
       });
     };
-    spin();
-    const minWait = new Promise((done) => setTimeout(done, 300));
+    let shownAt = 0;
+    grid._spin = setTimeout(() => { shownAt = Date.now(); spin(); }, 120);
     // loaded and decoded (ready to draw), kept in memory so the new grid can use them at once
     grid._keep = []; // hold the decoded posters until the next change
     const loads = srcs.map((src) => { const im = new Image(); im.src = src; grid._keep.push(im); return (im.decode ? im.decode() : new Promise((d) => { im.onload = d; })).catch(() => {}).then(() => im); });
-    Promise.race([Promise.all([...loads, minWait]), new Promise((done) => setTimeout(done, 3000))]).then(show);
+    Promise.race([Promise.all(loads), new Promise((done) => setTimeout(done, 3000))])
+      .then(() => setTimeout(show, shownAt ? Math.max(0, shownAt + 300 - Date.now()) : 0));
   }
 
   function renderMyList(instant = false, opening = false) {
