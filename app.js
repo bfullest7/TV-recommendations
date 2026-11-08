@@ -414,7 +414,29 @@
       </div>
       ${whyThisPick(t)}`;
     $("#details").dataset.id = id;
+    const firstOpen = !$("#details").open;
     showSheet($("#details"));
+    if (firstOpen) showRateTip();
+  }
+
+  /* One-time tip, the first time someone opens a title: a yellow banner slides up
+     from the bottom about half a second after the screen opens. "Got it", Like or
+     Not for me fade it away for good. Never shown to someone who has rated anything. */
+  const TIP_KEY = "wtw.tipRate";
+  function showRateTip() {
+    if (hasTaste() || load(TIP_KEY, false) || $("#rate-tip")) return;
+    $("#details").insertAdjacentHTML("beforeend", `
+      <div id="rate-tip" class="rate-tip" role="status">
+        <span>Tap <b>Like</b> or <b>Not for me</b> on titles you know. Each one helps tune your Top picks.</span>
+        <button class="got" data-tip-ok>Got it</button>
+      </div>`);
+  }
+  function dismissRateTip() {
+    const tip = $("#rate-tip");
+    save(TIP_KEY, true);
+    if (!tip) return;
+    tip.classList.add("leaving"); // fades in place
+    setTimeout(() => tip.remove(), 250);
   }
 
   // ---------------------------------------------------------------- why this pick
@@ -606,6 +628,7 @@
     d.scrollTop = y;
     patchCards(id);
     homeStale = true;
+    dismissRateTip(); // rating is what the tip asks for
   }
 
   // ---------------------------------------------------------------- your list page
@@ -1008,6 +1031,8 @@
     $("#open-search").addEventListener("click", () => feed && openSearch());
     $("#search-input").addEventListener("input", renderSearch);
     $("#search-input").addEventListener("keydown", (e) => { if (e.key === "Enter") e.target.blur(); });
+    $("#details").addEventListener("click", (e) => { if (e.target.closest("[data-tip-ok]")) dismissRateTip(); });
+    $("#details").addEventListener("close", () => $("#rate-tip")?.remove()); // not dismissed: it comes back next time
     $("#mylist").addEventListener("click", (e) => {
       const tab = e.target.closest("[data-tab]");
       if (tab) { ml.tab = tab.dataset.tab; renderMyList(); return; }

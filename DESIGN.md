@@ -31,7 +31,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 | `--text` | #f2f3f5 | Main text |
 | `--muted` | #9aa1ad | Subtitles, descriptions, fine print |
 | `--line` | #2b303b | Borders and dividers |
-| `--accent` | #ffb547 (orange) | Main call to action only ("Pick your services"), checked boxes, and the underline under the active tab on the Your list page (the one place it marks a selection) |
+| `--accent` | #ffb547 (orange) | Main call to action only ("Pick your services"), checked boxes, the underline under the active tab on the Your list page (the one place it marks a selection), and one-time tips (dark text on the app color) |
 | `--up` / `--down` | green / red | "Like" and "Not for me" when selected |
 
 **Orange is not a "selected" or "focused" color.** The search box shows a thin grey (`--muted`) outline while you type. Nothing else ever shows a focus outline or tap flash: dropdowns, buttons, pills, posters and tabs just respond. The list and watched buttons stay white with a plain outline when on; the icon and wording show the state.
@@ -77,6 +77,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - Search opens full screen on the page background, with the search box where the app title sits. It starts empty each time it's opened (viewing a result and coming back keeps the search). Settings and the detail screen are sheets that slide up over the home screen.
 - **Nothing moves while browsing.** Like, Not for me and Mark watched leave the title where it is. A title that will leave the row dims (watched also shows "✓ Watched"); liked titles look unchanged and stay in Top picks. The rows update at natural moments: reopening the app, coming back to it, changing a filter, or closing Settings.
 - Adding to or removing from the list updates "Your watchlist" right away, and the page shifts by the same height so what's on screen doesn't move.
+- **One-time rating tip:** the first time someone who hasn't rated anything opens a title, a yellow banner ("Tap Like or Not for me on titles you know. Each one helps tune your Top picks.") slides up from the bottom about half a second later, with "Got it" on the right and 24 of space before it. "Got it", Like or Not for me fade it away in place and it never shows again; closing the title without either brings it back next time.
 - Changes made in Settings (services, genre likes, restoring a backup) update the home screen when Settings closes, so nothing flashes behind the sheet.
 
 ## Checking a visual change
