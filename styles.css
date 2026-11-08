@@ -372,6 +372,9 @@ header.top[hidden] { display: none; }
   background: var(--surface-2); font-weight: 600; font-size: 15px;
 }
 .backup-status { margin-top: 0; min-height: 1.2em; }
+.share-btns { margin-bottom: 8px; }
+.share-btns:has(> [hidden]) { grid-template-columns: 1fr; } /* no share sheet on this browser: Copy link alone */
+.share-url { margin: 0; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
 .backup-status.ok { color: var(--up); }
 .backup-status.err { color: var(--down); }
 

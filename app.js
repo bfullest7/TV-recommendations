@@ -1268,6 +1268,26 @@
     }
   }
 
+  /* "Share Tivvy" in Settings: the iPhone share sheet (where the browser has one) and
+     Copy link, which says "✓ Copied" for 2 seconds. Shares the app's public address. */
+  function wireShare() {
+    const url = document.querySelector('meta[property="og:url"]')?.content || location.origin + location.pathname;
+    $("#share-url").textContent = url.replace(/^https:\/\//, "").replace(/\/$/, "");
+    const share = $("#share-app"), copy = $("#copy-link");
+    share.hidden = typeof navigator.share !== "function";
+    share.addEventListener("click", () => navigator.share({ title: "Tivvy", url }).catch(() => {})); // closed without sharing: nothing to do
+    let timer;
+    copy.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(url); } catch {
+        const box = Object.assign(document.createElement("textarea"), { value: url }); // older browsers
+        document.body.append(box); box.select(); document.execCommand("copy"); box.remove();
+      }
+      copy.textContent = "✓ Copied";
+      clearTimeout(timer);
+      timer = setTimeout(() => { copy.textContent = "Copy link"; }, 2000);
+    });
+  }
+
   async function restoreBackup(file) {
     try {
       const data = JSON.parse(await file.text());
@@ -1416,6 +1436,7 @@
       if (b) setGenre(b.dataset.genre, Number(b.dataset.v));
     });
     $("#backup-save").addEventListener("click", saveBackup);
+    wireShare();
     $("#backup-restore").addEventListener("click", () => $("#backup-file").click());
     $("#backup-file").addEventListener("change", (e) => {
       const f = e.target.files && e.target.files[0];
