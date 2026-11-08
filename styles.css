@@ -347,6 +347,7 @@ body:has(dialog[open]) { overflow: hidden; }
 }
 .genre-tip.no-anim { animation: none; }
 .genre-tip p { margin: 0; }
+.genre-tip .tip-title { margin-bottom: 2px; font-size: 16px; font-weight: 700; }
 .genre-tip b { font-weight: 700; }
 .genre-tip::before {
   content: ""; position: absolute; top: -9px; left: var(--caret-x, 50px); transform: translateX(-50%);
