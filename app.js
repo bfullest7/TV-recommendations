@@ -73,6 +73,11 @@
      A title saved from search that was never on your services isn't marked. */
   const isAway = (t) => offServices(t) && inLibrary(t.id)
     && (t.gone || !savedServices(t.id).length || savedServices(t.id).some((s) => myServices.includes(s)));
+  /* Genres disliked in Profile: in every row (not Your library or the Netflix Top 10), titles
+     in a disliked genre move behind all the others, keeping each row's own order otherwise.
+     A liked genre wins: a title with both stays put. Thumbs on single titles don't count here. */
+  const genreSunk = (t) => (t.genres || []).some((g) => genrePrefs[g] === -1) && !(t.genres || []).some((g) => genrePrefs[g] === 1);
+  const sinkDisliked = (items) => [...items.filter((t) => !genreSunk(t)), ...items.filter(genreSunk)];
   const kindWord = () => (kind === "tv" ? "TV shows" : kind === "movie" ? "movies" : "titles");
   const fmtCount = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K" : String(n));
   const fmtDate = (iso) => new Date(iso + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -207,7 +212,7 @@
       .filter((t) => visible(t) && (t.imdb_votes || 0) >= min)
       .map((t) => ({ t, s: pickScore(t, taste) }))
       .sort((a, b) => b.s - a.s);
-    return ranked.map((x) => x.t);
+    return sinkDisliked(ranked.map((x) => x.t));
   }
 
   // ---------------------------------------------------------------- rows
@@ -258,6 +263,7 @@
         items: from(feed.rows.new),
       },
     ];
+    for (const d of defs) if (["trending", "audience", "critics", "new"].includes(d.key)) d.items = sinkDisliked(d.items); // Top picks does this itself
     // Only Netflix publishes official viewing numbers, so its Top 10 shows only when the Netflix filter is selected
     const hasNetflix = myServices.includes("netflix") && filter === "netflix";
     if (hasNetflix && feed.rows.netflix.length) {
@@ -1192,7 +1198,8 @@
         <p>Netflix's own official list of its most-watched shows and films in the US, published weekly. Shown only when the <b>Netflix</b> filter is selected, and not used in any ranking, since other services don't publish equivalent numbers.</p>`],
       ["Signal: Your taste", `
         <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres and each 👎 lowers them. A genre you set in <b>Genres</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you disliked a drop.</p>
-        <p>Not counted until you rate something or pick a genre.</p>`],
+        <p>Not counted until you rate something or pick a genre.</p>
+        <p>Genres you 👎 in <b>Genres</b> also apply to every other row: titles in those genres move to the end, after everything else (unless they're also in a genre you 👍). Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: New & recent", `
         <p>Score by how long ago a title came out:</p>
         ${barsHtml([["Up to 3 months", 90], ["6 months", 182], ["1 year", 365], ["18 months", 547], ["2 years", 730], ["3 years", 1095]]
