@@ -364,8 +364,9 @@
   /* Behind the welcome card: a tilted, darkened wall of today's trending posters
      (across all services) that fades out toward the card */
   function welcomeWall() {
-    const posters = (feed.rows.trending || []).map((id) => feed.titles[id]).filter((t) => t && t.poster).slice(0, 20);
+    let posters = (feed.rows.trending || []).map((id) => feed.titles[id]).filter((t) => t && t.poster).slice(0, 40);
     if (!posters.length) return "";
+    while (posters.length < 40) posters = posters.concat(posters).slice(0, 40); // enough to fill the whole screen
     return `<div class="welcome-wall" aria-hidden="true"><div class="wall-grid">${posters.map((t) => `<img src="${IMG}w185${esc(t.poster)}" alt="">`).join("")}</div></div>`;
   }
 

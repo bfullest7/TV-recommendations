@@ -128,8 +128,11 @@ h1 .logo { width: 28px; height: 24px; margin-right: 10px; vertical-align: -6px; 
 /* Welcome screen: a wall of trending posters behind the card */
 .rows.is-welcome { padding-top: 0; overflow: hidden; }
 .welcome-wall {
-  position: absolute; left: 0; right: 0; top: 0; height: 88vh; overflow: hidden; pointer-events: none;
-  -webkit-mask-image: linear-gradient(#000 55%, transparent 100%); mask-image: linear-gradient(#000 55%, transparent 100%);
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none; /* fills the whole screen below the header */
+}
+.welcome-wall::after { /* dark gradient rising from the bottom of the screen */
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(to top, var(--bg) 0%, rgba(15,17,21,.85) 22%, rgba(15,17,21,0) 55%);
 }
 .wall-grid {
   display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 125%; margin: -40px 0 0 -12%;
