@@ -248,7 +248,7 @@ class Tmdb:
 
     def details(self, kind: str, tmdb_id: int, provider_to_service: dict[int, str]) -> dict | None:
         try:
-            d = self.get(f"/{kind}/{tmdb_id}", append_to_response="external_ids,watch/providers,recommendations,keywords,videos",
+            d = self.get(f"/{kind}/{tmdb_id}", append_to_response="external_ids,watch/providers,recommendations,similar,keywords,videos",
                          include_video_language="en,null")
         except urllib.error.HTTPError as e:
             if e.code == 404:
@@ -276,7 +276,11 @@ class Tmdb:
         overview = (d.get("overview") or "").strip()
         if len(overview) > 450:
             overview = overview[:447].rsplit(" ", 1)[0] + "…"
-        recs = [key_for(kind, r["id"]) for r in (d.get("recommendations") or {}).get("results", [])[:12]]
+        rec_ids = [r["id"] for r in (d.get("recommendations") or {}).get("results", [])]
+        recs = [key_for(kind, i) for i in rec_ids[:12]]  # "Your taste": boosts titles like the ones you liked
+        # For "Because you liked…" rows: all of TMDB's recommendations, then its similar titles
+        more = list(dict.fromkeys([key_for(kind, i) for i in rec_ids[:20]]
+                                  + [key_for(kind, r["id"]) for r in (d.get("similar") or {}).get("results", [])[:20]]))
         return {
             "id": key_for(kind, tmdb_id),
             "type": kind,
@@ -291,6 +295,7 @@ class Tmdb:
             "imdb_id": (d.get("external_ids") or {}).get("imdb_id") or d.get("imdb_id"),
             "popularity": round(d.get("popularity") or 0, 2),
             "recs": recs,
+            "more": more,
             "trailer": pick_trailer((d.get("videos") or {}).get("results", [])),  # YouTube video id, or None
             "sports_keywords": sport_kw[:4] or None,  # why it was tagged Sports, for checking
             "link": wp.get("link") or f"https://www.themoviedb.org/{kind}/{tmdb_id}/watch?locale={self.region}",
@@ -772,6 +777,8 @@ def run(mode: str = "auto") -> dict:
     # 7. Keep titles that are on at least one service (or in the Netflix Top 10)
     nf_ids = {r["id"] for r in netflix_rows}
     titles = {k: d for k, d in details.items() if d["services"] or k in nf_ids}
+    # "more" (similar titles) only lists titles the app has, to keep the data small
+    titles = {k: {**d, "more": [m for m in d.get("more") or [] if m in titles and m != k]} for k, d in titles.items()}
     netflix_ranks = {r["id"]: r["rank"] for r in netflix_rows}
     add_scores(titles, watchers, tmdb_trend, netflix_ranks, seen_cache["seen"], seen_cache.get("baseline"), cfg)
 

@@ -8,7 +8,7 @@
   "use strict";
 
   const IMG = "https://image.tmdb.org/t/p/";
-  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", kind: "wtw.kind", watched: "wtw.watched", seen: "wtw.seen", watchlist: "wtw.watchlist", refreshedTo: "wtw.refreshedTo", lastBackup: "wtw.lastBackup" };
+  const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", kind: "wtw.kind", watched: "wtw.watched", seen: "wtw.seen", because: "wtw.because", watchlist: "wtw.watchlist", refreshedTo: "wtw.refreshedTo", lastBackup: "wtw.lastBackup" };
   const BACKUP_APP = "what-to-watch";
   const RESET_AFTER_MS = 2 * 60 * 1000; // away this long -> reopen at the main screen
 
@@ -273,6 +273,43 @@
     return sinkDisliked(rotate(ranked.map((x) => x.t)));
   }
 
+  /* "Because you liked…" row, right below Your library. Similar titles (TMDB's recommendations
+     and similar titles, both ways) to one title you liked, best matches first. Which liked title
+     changes the first time the app is opened on a new day, to the next one (newest likes first)
+     with at least 6 similar titles you can see. With none, "Based on your likes" pools them
+     from all your likes (needs 4). No likes, no row. */
+  const BECAUSE_MIN = 6, POOL_MIN = 4;
+  let moreBack = null; // id -> titles that list it as similar
+  function similarTo(id) {
+    if (!moreBack || moreBack.feed !== feed) {
+      moreBack = { feed, map: {} };
+      for (const t of Object.values(feed.titles)) for (const m of t.more || []) (moreBack.map[m] ||= []).push(t.id);
+    }
+    const own = feed.titles[id]?.more || thumbs[id]?.recs || [];
+    return [...new Set([...own, ...(moreBack.map[id] || [])])].filter((x) => x !== id && !(thumbs[x]?.v > 0))
+      .map((x) => feed.titles[x]).filter((t) => t && visible(t));
+  }
+  function becauseRow() {
+    const liked = Object.entries(thumbs).filter(([, r]) => r.v > 0).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || "")).map(([id]) => id);
+    if (!liked.length) return null;
+    const ok = liked.filter((id) => similarTo(id).length >= BECAUSE_MIN);
+    const taste = tasteModel();
+    const ranked = (items) => sinkDisliked(rotate(items.map((t) => ({ t, s: pickScore(t, taste) })).sort((a, b) => b.s - a.s).map((x) => x.t)));
+    if (!ok.length) {
+      const pool = [...new Map(liked.flatMap((id) => similarTo(id)).map((t) => [t.id, t])).values()];
+      return pool.length >= POOL_MIN ? { title: "Based on your likes", items: ranked(pool) } : null;
+    }
+    let pick = load(STORE.because, {});
+    if (pick.day !== today() || !ok.includes(pick.id)) { // a new day: the next liked title in line
+      const prev = liked.indexOf(pick.id);
+      const next = ok.find((id) => liked.indexOf(id) > prev) || ok[0];
+      pick = { day: today(), id: pick.day === today() ? ok[0] : next };
+      save(STORE.because, pick);
+    }
+    const name = feed.titles[pick.id]?.title || thumbs[pick.id]?.title;
+    return { title: `Because you liked ${name}`, items: ranked(similarTo(pick.id)) };
+  }
+
   // ---------------------------------------------------------------- rows
   function rowDefs() {
     const T = feed.titles;
@@ -297,6 +334,7 @@
         key: "watchlist", title: "Your library", library: true,
         items: libTitles(libTab),
       },
+      ...(() => { const b = becauseRow(); return b ? [{ key: "because", title: b.title, source: "Similar shows and movies you might enjoy", items: b.items }] : []; })(),
       {
         key: "trending", title: "Trending now",
         source: "What people are watching right now",
@@ -1013,7 +1051,7 @@
      end, until the list runs out ("That's everything"). Like the home screen, titles
      you rate stay put until you reopen it. */
   const RP_STEP = 100;
-  const RP_FIRST = { picks: "Best match for you", trending: "Most popular", audience: "Audience rating", critics: "Critic rating", new: "Recently added", netflix: "Netflix rank" }; // the row's own order
+  const RP_FIRST = { picks: "Best match for you", because: "Best match for you", trending: "Most popular", audience: "Audience rating", critics: "Critic rating", new: "Recently added", netflix: "Netflix rank" }; // the row's own order
   const rp = { key: null, sort: "row", kind: "all", service: "all" };
   function rowWith(key, svc, k) { // a home row's definition, computed with the page's filters
     const f0 = filter, k0 = kind;
@@ -1256,6 +1294,8 @@
         <p>Titles from the last 30 days, newest first: new movies, new seasons of shows, and titles that just arrived on one of your services. Streaming availability comes from TMDB, provided by JustWatch.</p>`],
       ["Netflix Top 10", `
         <p>Netflix's own official list of its most-watched shows and films in the US, published weekly. Shown only when the <b>Netflix</b> filter is selected, and not used in any ranking, since other services don't publish equivalent numbers.</p>`],
+      ["Because you liked…", `
+        <p>Once you've liked a title, a row right below Your library shows similar shows and movies (from TMDB), best matches for you first. It's about one of your liked titles at a time, newest likes first, and moves on to the next one the first time you open the app each day. If none of your likes has enough similar titles yet, the row is "Based on your likes" and mixes them together. Titles you've liked, watched or marked Not for me are left out.</p>`],
       ["Keeping rows fresh", `
         <p>Titles you keep scrolling past make room for others. From the 3rd day a title is on your screen without you opening it, it moves 4 places down its row each day. After 2 weeks out of sight, it's back in its usual spot. Titles you open, like, save or mark watched keep their place. Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: Your taste", `

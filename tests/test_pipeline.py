@@ -116,6 +116,7 @@ class FakeHttp:
             "external_ids": {"imdb_id": f["imdb"][0]},
             "watch/providers": {"results": {"US": {"link": f"https://tmdb.example/{k}", "flatrate": [{"provider_id": x} for x in f["prov"]]}}},
             "recommendations": {"results": [{"id": 1}]},
+            "similar": {"results": [{"id": 3}, {"id": 1}, {"id": 999}]},
         }
         if k == "m1":  # a teaser, a fan video and two official trailers: the newest official trailer wins
             d["videos"] = {"results": [
@@ -159,6 +160,9 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(T["m3"]["services"], ["netflix"])
         self.assertEqual(T["m1"]["trailer"], "main1")  # newest official YouTube trailer
         self.assertIsNone(T["t2"]["trailer"])  # none listed: no button in the app
+        # similar titles: recommendations first, then TMDB similar, no repeats, only titles in the app, never itself
+        self.assertEqual(T["t2"]["more"], ["t1", "t3"])
+        self.assertEqual(T["t1"]["more"], ["t3"])
         self.assertNotIn("m4", T)  # only on an Amazon Channel
         self.assertNotIn("m5", T)  # trending but not on any service
         self.assertEqual(T["t1"]["services"], ["hbomax", "netflix"])
