@@ -499,25 +499,34 @@
       </button>`).join("");
   }
 
-  // Data refresh status, shown at the bottom of Settings. The refresh job is
-  // scheduled at :17 past every even hour (UTC); GitHub often starts it late.
-  function nextRefreshText(lastIso) {
-    const last = new Date(lastIso);
-    const next = new Date(last);
-    next.setUTCMinutes(17, 0, 0);
-    while (next <= last) next.setUTCHours(next.getUTCHours() + 1);
-    while (next.getUTCHours() % 2) next.setUTCHours(next.getUTCHours() + 1);
-    const mins = Math.round((next - Date.now()) / 60000);
-    if (mins <= 2) return "Next refresh any minute now.";
-    if (mins < 60) return `Next refresh in about ${mins} min.`;
-    const h = Math.floor(mins / 60), m = Math.round((mins % 60) / 5) * 5;
-    return `Next refresh in about ${h} hr${m ? ` ${m} min` : ""}.`;
+  /* "When data updates" at the bottom of Profile. Under each kind of data from the
+     internet: when it last updated and when the next update is due. The refresh job is
+     scheduled at :17 past every even hour (UTC), and a full refresh runs on the first of
+     those at least 20 hours after the last one. GitHub often starts it late, so the next
+     time is when it's due, not a promise. */
+  const FULL_EVERY_H = 20; // config.json refresh.full_refresh_every_hours
+  function nextSlot(after) { // the first scheduled run at or after this time
+    const t = new Date(after);
+    t.setUTCMinutes(17, 0, 0);
+    while (t < after) t.setUTCHours(t.getUTCHours() + 1);
+    while (t.getUTCHours() % 2) t.setUTCHours(t.getUTCHours() + 1);
+    return t;
+  }
+  function dueText(when) {
+    const now = new Date();
+    if (when - now < 5 * 60000) return "Next update due any minute";
+    const time = when.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    const day = when.toDateString() === now.toDateString() ? "today"
+      : when.toDateString() === new Date(now.getTime() + 86400000).toDateString() ? "tomorrow"
+      : when.toLocaleDateString(undefined, { weekday: "long" });
+    return `Next update due ${day} around ${time}`;
   }
   function renderUpdated() {
-    const iso = feed?.trending_updated_at;
-    $("#data-updated").textContent = iso
-      ? `Data last updated ${timeAgo(iso)}. ${nextRefreshText(iso)} The data refreshes about every 2 hours.`
-      : "";
+    const line = (iso, next) => `Updated ${timeAgo(iso)}\n${dueText(next)}`; // two short lines
+    const trend = feed?.trending_updated_at, full = feed?.full_refreshed_at;
+    $("#upd-trending").textContent = trend ? line(trend, nextSlot(new Date(new Date(trend).getTime() + 60000))) : "";
+    $("#upd-full").textContent = full ? line(full, nextSlot(new Date(new Date(full).getTime() + FULL_EVERY_H * 3600000))) : "";
+    $("#upd-netflix").textContent = feed?.netflix_week ? `Latest: the week ending ${fmtDate(feed.netflix_week)}` : "";
   }
 
   function render(keepPlace = false) {
@@ -1192,8 +1201,6 @@
         <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the TMDB/Trakt blend from the Trending now row (without that row's recency share, since New &amp; recent is its own signal).</p>`],
       ["Watchlist & watched", `
         <p><b>＋ Add to list</b> on any title adds it to your watchlist, shown in the "Your library" row right below Top picks, newest first. <b>Mark watched</b> hides a title from every row except "Your library" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. A watched series comes back if a new season premieres after you marked it. <b>👎 Not for me</b> hides a title from the same rows. Titles you like stay in Top picks. Nothing moves while you're browsing: the rows update the next time you open the app, change a filter or close Settings. All are saved on this phone and included in backups. To undo any of them, open the title (search finds watched titles too) and tap the button again.</p>`],
-      ["When data updates", `
-        <p>Trending numbers refresh every 2 hours. Everything else (what's on each service, ratings, Netflix Top 10) refreshes about once a day. Critic scores fill in gradually because of OMDb's and MDBList's daily limits. The time at the top of the app shows the last update.</p>`],
     ];
     $("#how").innerHTML = items.map(([title, body]) => `<details><summary>${esc(title)}</summary><div class="how-body">${body}</div></details>`).join("");
   }

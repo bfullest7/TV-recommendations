@@ -204,7 +204,46 @@
         <p id="backup-status" class="hint backup-status" role="status"></p>
       </section>
 
-      <p id="data-updated" class="data-updated"></p>
+      <section>
+        <h3>When data updates</h3>
+        <p class="upd-group">Data from the internet</p>
+        <div class="updates">
+          <div class="upd">
+            <div class="upd-head"><b>Trending</b><span>Every 2 hours</span></div>
+            <p>What people are watching right now (Trakt) and what's trending today (TMDB).</p>
+            <p class="upd-when" id="upd-trending"></p>
+          </div>
+          <div class="upd">
+            <div class="upd-head"><b>Title details</b><span>About once a day</span></div>
+            <p>Which streaming services each title is on, new arrivals, IMDb ratings, genres and posters.</p>
+            <p class="upd-when" id="upd-full"></p>
+          </div>
+          <div class="upd">
+            <div class="upd-head"><b>Critic scores</b><span>Gradually</span></div>
+            <p>Rotten Tomatoes and Metacritic fill in a little each day because of daily lookup limits. Each title is re-checked about every 30 days.</p>
+          </div>
+          <div class="upd">
+            <div class="upd-head"><b>Netflix Top 10</b><span>Weekly</span></div>
+            <p>The most-watched titles on Netflix in the US, published by Netflix each week.</p>
+            <p class="upd-when" id="upd-netflix"></p>
+          </div>
+        </div>
+        <p class="upd-group">Your choices, saved on this phone</p>
+        <div class="updates">
+          <div class="upd">
+            <div class="upd-head"><b>Your taste</b><span>Instantly</span></div>
+            <p>Likes, Not for me and the genres you pick are saved as soon as you tap. Top picks re-ranks the next time you open the app or close Profile.</p>
+          </div>
+          <div class="upd">
+            <div class="upd-head"><b>Your streaming services</b><span>Instantly</span></div>
+            <p>The services you pick above. Your rows update when you close Profile.</p>
+          </div>
+          <div class="upd">
+            <div class="upd-head"><b>Your library</b><span>Instantly</span></div>
+            <p>Your watchlist and watched titles, saved as soon as you tap.</p>
+          </div>
+        </div>
+      </section>
 
     </div>
   </dialog>

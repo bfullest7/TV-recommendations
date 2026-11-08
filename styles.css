@@ -44,7 +44,18 @@ button:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visib
 .top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 h1 { margin: 0; font-size: 22px; line-height: 1.1; letter-spacing: -0.01em; }
 h1 .logo { width: 28px; height: 27px; margin-right: 10px; vertical-align: -3.5px; }
-.data-updated { margin: 8px 0 4px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.4; }
+/* "When data updates" in Profile: one line per kind of data, with how long ago it last updated on the right */
+.updates { border-top: 1px solid var(--line); }
+.upd-group { margin: 18px 0 6px; color: var(--muted); font-size: 14px; font-weight: 600; } /* "From the internet" / "Your choices, saved on this phone" */
+.upd-group:first-of-type { margin-top: 4px; }
+.upd { padding: 11px 0; border-bottom: 1px solid var(--line); }
+.upd-head { font-size: 15px; } /* name, then how often it updates, on one line: "Trending · Every 2 hours" */
+.upd-head b { font-weight: 600; }
+.upd-head span::before { content: " · "; }
+.upd-head span { color: var(--text); font-weight: 400; }
+.upd p { margin: 3px 0 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+.upd .upd-when { margin-top: 4px; font-size: 12px; white-space: pre-line; } /* fine print: last updated · next due */
+.upd .upd-when:empty { display: none; }
 
 .icon-btn {
   display: grid; place-items: center;
