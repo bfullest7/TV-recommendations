@@ -305,6 +305,45 @@
       }
       window.scrollTo({ top: pageY });
     }
+    showGenreTip();
+  }
+
+  /* One-time genre tip on the home screen: a yellow bubble just below the Top picks row,
+     pointing up at its first title. Fades in half a second after the rows first show.
+     Goes away for good on "Pick genres" (which opens Settings at Genres you like),
+     "Not now", or liking/disliking any genre. Rating titles doesn't affect it. */
+  const GENRE_TIP_KEY = "wtw.tipGenres";
+  let genreTipShown = false; // fade in only the first time this visit; later redraws just place it
+  function showGenreTip() {
+    if (!myServices.length || Object.keys(genrePrefs).length || load(GENRE_TIP_KEY, false)) return;
+    const row = $('#rows [data-row="picks"] .scroller');
+    if (!row) return;
+    let tip = $("#genre-tip");
+    if (!tip) {
+      $("#rows").insertAdjacentHTML("beforeend", `
+        <div id="genre-tip" class="genre-tip ${genreTipShown ? "no-anim" : ""}" role="status">
+          <p><b>Make Top picks yours.</b> Pick a few genres you like.</p>
+          <div class="tip-actions"><button data-genre-tip="later">Not now</button><button data-genre-tip="pick">Pick genres</button></div>
+        </div>`);
+      tip = $("#genre-tip");
+      genreTipShown = true;
+    }
+    placeGenreTip();
+  }
+  function placeGenreTip() {
+    const tip = $("#genre-tip"), row = $('#rows [data-row="picks"] .scroller');
+    if (!tip || !row) return;
+    const box = $("#rows").getBoundingClientRect(), r = row.getBoundingClientRect();
+    tip.style.top = `${r.bottom - box.top + 10}px`;
+    const first = row.querySelector(".card");
+    if (first) { const c = first.getBoundingClientRect(); tip.style.setProperty("--caret-x", `${c.left + c.width / 2 - box.left - 16}px`); }
+  }
+  function dismissGenreTip() {
+    save(GENRE_TIP_KEY, true);
+    const tip = $("#genre-tip");
+    if (!tip) return;
+    tip.classList.add("leaving"); // fades in place
+    setTimeout(() => tip.remove(), 250);
   }
 
   function drawRows() {
@@ -424,7 +463,7 @@
      Not for me fade it away for good. Never shown to someone who has rated anything. */
   const TIP_KEY = "wtw.tipRate";
   function showRateTip() {
-    if (hasTaste() || load(TIP_KEY, false) || $("#rate-tip")) return;
+    if (Object.keys(thumbs).length || load(TIP_KEY, false) || $("#rate-tip") || $("#genre-tip")) return;
     $("#details").insertAdjacentHTML("beforeend", `
       <div id="rate-tip" class="rate-tip" role="status">
         <span>Tap <b>Like</b> or <b>Not for me</b> on titles you know. Each one helps tune your Top picks.</span>
@@ -609,6 +648,7 @@
       if (sc && keepX) sc.scrollLeft = keepX;
     } else if (old) old.remove();
     if (anchor) window.scrollBy(0, anchor.getBoundingClientRect().top - before);
+    placeGenreTip(); // the watchlist row above it may have appeared or gone
   }
   function toggleWatchlist(id) {
     if (watchlist[id]) delete watchlist[id];
@@ -800,6 +840,7 @@
     renderGenres();
     renderWeights();
     homeStale = true; // the home screen updates when Settings closes
+    if (Object.keys(genrePrefs).length) dismissGenreTip();
   }
 
   // ---------------------------------------------------------------- how it's calculated
@@ -1028,6 +1069,16 @@
       if (e.target.closest("[data-open-settings]")) return openSettings();
       if (e.target.closest("[data-open-mylist]")) return openMyList();
       if (e.target.closest("[data-how-picks]")) return openHowPicks();
+      const gt = e.target.closest("[data-genre-tip]");
+      if (gt) {
+        dismissGenreTip();
+        if (gt.dataset.genreTip === "pick") {
+          openSettings();
+          const s = $("#settings"), sec = $("#genre-picker").closest("section");
+          s.scrollTop = sec.offsetTop - $("#settings .sheet-head").offsetHeight - 8;
+        }
+        return;
+      }
       const c = e.target.closest(".card");
       if (c) openDetails(c.dataset.id);
     });

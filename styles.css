@@ -82,7 +82,7 @@ h1 .logo { width: 28px; height: 24px; margin-right: 10px; vertical-align: -6px; 
 .chip .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
 
 /* Rows */
-.rows { padding: 8px 0 32px; }
+.rows { position: relative; padding: 8px 0 32px; } /* the genre tip floats over it */
 .row { margin-top: 20px; }
 .row-head { padding: 0 16px; }
 .row h2 { margin: 0; font-size: 18px; }
@@ -337,6 +337,25 @@ body:has(dialog[open]) { overflow: hidden; }
 }
 .rate-tip.leaving { opacity: 0; transition: opacity .25s ease; }
 @keyframes tip-in { from { opacity: 0; visibility: hidden; } to { opacity: 1; visibility: visible; } } /* can't be tapped before it shows */
+
+/* One-time genre tip on the home screen, below the Top picks row, pointing up at its first title */
+.genre-tip {
+  position: absolute; left: 16px; right: 16px; top: 0; z-index: 4;
+  padding: 18px 20px 12px; border-radius: 14px;
+  background: var(--accent); color: #2b1a00; font-size: 14px; line-height: 1.45; box-shadow: 0 10px 28px rgba(0,0,0,.45);
+  animation: tip-in .3s ease .5s both;
+}
+.genre-tip.no-anim { animation: none; }
+.genre-tip p { margin: 0; }
+.genre-tip b { font-weight: 700; }
+.genre-tip::before {
+  content: ""; position: absolute; top: -9px; left: var(--caret-x, 50px); transform: translateX(-50%);
+  border: 10px solid transparent; border-top: 0; border-bottom-color: var(--accent);
+}
+.genre-tip .tip-actions { display: flex; justify-content: flex-end; gap: 22px; margin-top: 6px; }
+.genre-tip .tip-actions button { padding: 6px 0; border: 0; background: none; color: #2b1a00; font-size: 15px; font-weight: 600; }
+.genre-tip .tip-actions [data-genre-tip="pick"] { font-weight: 700; }
+.genre-tip.leaving { opacity: 0; transition: opacity .25s ease; }
 
 /* Update available banner */
 .update-banner {
