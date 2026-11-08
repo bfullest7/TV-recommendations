@@ -10,7 +10,7 @@
   const IMG = "https://image.tmdb.org/t/p/";
   const STORE = { services: "wtw.services", thumbs: "wtw.thumbs", genres: "wtw.genres", filter: "wtw.filter", kind: "wtw.kind", watched: "wtw.watched", watchlist: "wtw.watchlist", refreshedTo: "wtw.refreshedTo", lastBackup: "wtw.lastBackup" };
   const BACKUP_APP = "what-to-watch";
-  const RESET_AFTER_MS = 60 * 1000; // away this long -> reopen at the main screen
+  const RESET_AFTER_MS = 2 * 60 * 1000; // away this long -> reopen at the main screen
 
   let feed = null;
   let myServices = [];
@@ -788,7 +788,8 @@
   }
   /* Showing a new grid (opening a page, or changing its tab, sort or filter): the old
      grid stays, dimmed with a small spinner, while the posters for the first screen
-     load; then the new grid appears at once. Never waits more than 1.5 seconds; the
+     load and are ready to draw; then the new grid appears at once, with those posters
+     already in place (no fade). Never waits more than 3 seconds; the
      rest load as you scroll and fade in. `instant` skips the wait (used to refresh in
      place after closing a title, when the posters are already on the phone). */
   const FIRST_SCREEN = 12;
@@ -798,7 +799,10 @@
     clearTimeout(grid._spin);
     const tmp = document.createElement("template");
     tmp.innerHTML = html;
-    const srcs = [...tmp.content.querySelectorAll("img")].slice(0, FIRST_SCREEN).map((i) => i.getAttribute("src"));
+    const first = [...tmp.content.querySelectorAll("img")].slice(0, FIRST_SCREEN);
+    for (const img of first) { img.loading = "eager"; img.classList.add("in"); } // drawn at once, not faded in
+    html = tmp.innerHTML;
+    const srcs = first.map((i) => i.getAttribute("src"));
     const show = () => {
       if (grid._token !== token) return; // a newer change won
       clearTimeout(grid._spin);
@@ -808,8 +812,10 @@
     };
     if (instant || !srcs.length) return show();
     grid._spin = setTimeout(() => grid.classList.add("is-loading"), 120); // no spinner flash when posters are already saved
-    const loads = srcs.map((src) => new Promise((done) => { const im = new Image(); im.onload = im.onerror = done; im.src = src; }));
-    Promise.race([Promise.all(loads), new Promise((done) => setTimeout(done, 1500))]).then(show);
+    // loaded and decoded (ready to draw), kept in memory so the new grid can use them at once
+    grid._keep = []; // hold the decoded posters until the next change
+    const loads = srcs.map((src) => { const im = new Image(); im.src = src; grid._keep.push(im); return (im.decode ? im.decode() : new Promise((d) => { im.onload = d; })).catch(() => {}).then(() => im); });
+    Promise.race([Promise.all(loads), new Promise((done) => setTimeout(done, 3000))]).then(show);
   }
 
   function renderMyList(instant = false) {
