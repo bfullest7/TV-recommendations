@@ -812,9 +812,8 @@
       if (!instant) { grid.classList.add("fresh"); setTimeout(() => grid.classList.remove("fresh"), 200); }
     };
     if (instant || !srcs.length) return show();
-    // Opening a page: the spinner shows straight away and stays at least 0.4 seconds, so
-    // the page always reads as "loading, then all the posters". Changing a sort or filter:
-    // the spinner only shows if the wait passes 0.12 seconds (no flash when posters are saved).
+    // Opening a page or changing its tab, sort or filter: the spinner shows straight away
+    // and stays at least 0.3 seconds, so it always reads as "loading, then all the posters".
     const spin = () => { // centred in the tile area: between the top of the grid (or of the screen) and the bottom of the screen
       grid.classList.add("is-loading");
       requestAnimationFrame(() => { // measured once the page is on screen
@@ -822,9 +821,8 @@
         grid.style.setProperty("--spin-top", `${(top + window.innerHeight) / 2}px`);
       });
     };
-    if (opening) spin();
-    else grid._spin = setTimeout(spin, 120);
-    const minWait = new Promise((done) => setTimeout(done, opening ? 400 : 0));
+    spin();
+    const minWait = new Promise((done) => setTimeout(done, 300));
     // loaded and decoded (ready to draw), kept in memory so the new grid can use them at once
     grid._keep = []; // hold the decoded posters until the next change
     const loads = srcs.map((src) => { const im = new Image(); im.src = src; grid._keep.push(im); return (im.decode ? im.decode() : new Promise((d) => { im.onload = d; })).catch(() => {}).then(() => im); });
