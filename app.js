@@ -793,7 +793,7 @@
      rest load as you scroll and fade in. `instant` skips the wait (used to refresh in
      place after closing a title, when the posters are already on the phone). */
   const FIRST_SCREEN = 12;
-  function swapGrid(grid, html, instant = false) {
+  function swapGrid(grid, html, instant = false, opening = false) {
     const token = (grid._token || 0) + 1;
     grid._token = token;
     clearTimeout(grid._spin);
@@ -809,16 +809,22 @@
       grid.classList.remove("is-loading");
       grid.innerHTML = html;
       for (const img of grid.querySelectorAll("img")) if (img.complete) img.classList.add("in"); // already loaded: show at once, no fade
+      if (!instant) { grid.classList.add("fresh"); setTimeout(() => grid.classList.remove("fresh"), 200); }
     };
     if (instant || !srcs.length) return show();
-    grid._spin = setTimeout(() => grid.classList.add("is-loading"), 120); // no spinner flash when posters are already saved
+    // Opening a page: the spinner shows straight away and stays at least 0.4 seconds, so
+    // the page always reads as "loading, then all the posters". Changing a sort or filter:
+    // the spinner only shows if the wait passes 0.12 seconds (no flash when posters are saved).
+    if (opening) grid.classList.add("is-loading");
+    else grid._spin = setTimeout(() => grid.classList.add("is-loading"), 120);
+    const minWait = new Promise((done) => setTimeout(done, opening ? 400 : 0));
     // loaded and decoded (ready to draw), kept in memory so the new grid can use them at once
     grid._keep = []; // hold the decoded posters until the next change
     const loads = srcs.map((src) => { const im = new Image(); im.src = src; grid._keep.push(im); return (im.decode ? im.decode() : new Promise((d) => { im.onload = d; })).catch(() => {}).then(() => im); });
-    Promise.race([Promise.all(loads), new Promise((done) => setTimeout(done, 3000))]).then(show);
+    Promise.race([Promise.all([...loads, minWait]), new Promise((done) => setTimeout(done, 3000))]).then(show);
   }
 
-  function renderMyList(instant = false) {
+  function renderMyList(instant = false, opening = false) {
     for (const b of document.querySelectorAll(".ml-tab")) {
       const tab = b.dataset.tab;
       b.setAttribute("aria-selected", tab === ml.tab);
@@ -858,12 +864,12 @@
     const none = mlTitles(ml.tab).length
       ? `<p class="ml-empty">Nothing matches these filters</p>`
       : `<div class="ml-empty is-blank"><span class="ml-empty-icon">${icon.replace(/width="13" height="13"/, 'width="28" height="28"')}</span><h3>${head}</h3><p>${msg}</p></div>`;
-    swapGrid(grid, items.length ? items.map((t) => cardHtml(t, def)).join("") : none, instant);
+    swapGrid(grid, items.length ? items.map((t) => cardHtml(t, def)).join("") : none, instant, opening);
   }
   function openMyList(tab = "list") {
     ml.tab = tab;
     $("#ml-grid").innerHTML = ""; // don't show the last visit's titles while the new ones load
-    renderMyList();
+    renderMyList(false, true);
     showSheet($("#mylist"));
     $("#mylist").scrollTop = 0;
   }
@@ -880,7 +886,7 @@
     filter = svc; kind = k;
     try { return rowDefs().find((d) => d.key === key); } finally { filter = f0; kind = k0; }
   }
-  function renderRowPage() {
+  function renderRowPage(opening = false) {
     if (rp.service !== "all" && !myServices.includes(rp.service)) rp.service = "all";
     const def = rowWith(rp.key, rp.service, rp.kind);
     if (!def) return;
@@ -901,12 +907,12 @@
     const grid = $("#rp-grid");
     grid.dataset.row = rp.key;
     const cardDef = { ...def, forceService: rp.service !== "all" ? rp.service : null };
-    swapGrid(grid, items.length ? items.map((t) => cardHtml(t, cardDef)).join("") : `<p class="ml-empty">Nothing here for these filters</p>`);
+    swapGrid(grid, items.length ? items.map((t) => cardHtml(t, cardDef)).join("") : `<p class="ml-empty">Nothing here for these filters</p>`, false, opening);
   }
   function openRowPage(key) {
     Object.assign(rp, { key, sort: "row", kind, service: filter });
     $("#rp-grid").innerHTML = "";
-    renderRowPage();
+    renderRowPage(true);
     showSheet($("#rowpage"));
     $("#rowpage").scrollTop = 0;
   }

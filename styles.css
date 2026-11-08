@@ -301,6 +301,8 @@ header.top[hidden] { display: none; }
 .ml-grid .poster img.in { opacity: 1; }
 .ml-grid { position: relative; }
 .ml-grid.is-loading { min-height: 160px; }
+.ml-grid.fresh > .card { animation: grid-in .15s ease; } /* a new grid appears as one soft fade */
+@keyframes grid-in { from { opacity: 0; } }
 .ml-grid.is-loading > * { opacity: .4; transition: opacity .15s ease; }
 .ml-grid.is-loading::after {
   content: ""; position: absolute; left: 50%; top: 60px; width: 28px; height: 28px; margin-left: -14px;
