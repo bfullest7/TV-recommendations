@@ -5,6 +5,7 @@ Run: python -m unittest discover -s tests
 
 import gzip
 import json
+import re
 import os
 import shutil
 import sys
@@ -72,6 +73,17 @@ class FakeHttp:
             pre = "m" if kind == "movie" else "t"
             return [{"watchers": w, kind: {"title": U[k]["title"], "ids": {"tmdb": int(k[1:])}}}
                     for k, w in sorted(WATCHERS.items(), key=lambda x: -x[1]) if k.startswith(pre)]
+        if host == "query.wikidata.org":
+            self.wd_calls = getattr(self, "wd_calls", 0) + 1
+            pages = {  # several addresses, a season page, and junk that must be ignored
+                "tt001": [("m/great_movie_2024", "movie/great-movie"), ("m/great_movie", None)],
+                "tt101": [("tv/big_show/s02", "tv/big-show")],
+                "tt102": [("https://example.com/x", None)],
+            }
+            asked = set(re.findall(r'"(tt\d+)"', q["query"]))
+            return {"results": {"bindings": [
+                {"imdb": {"value": i}, **({"rt": {"value": rt}} if rt else {}), **({"mc": {"value": mc}} if mc else {})}
+                for i in sorted(asked) for rt, mc in pages.get(i, [(None, None)])]}}
         if host == "api.mdblist.com":
             self.mdb_calls = getattr(self, "mdb_calls", 0) + 1
             imdb_id = path.rsplit("/", 1)[-1]
@@ -170,6 +182,11 @@ class PipelineTest(unittest.TestCase):
         # Sports comes from keywords; "transport"/"passport" must not match "sport"
         self.assertEqual(T["m1"]["genres"], ["Drama", "Sports"])
         self.assertNotIn("Sports", T["t2"]["genres"])
+        # exact Rotten Tomatoes / Metacritic pages from Wikidata
+        self.assertEqual((T["m1"]["rt_id"], T["m1"]["mc_id"]), ("m/great_movie", "movie/great-movie"))  # shortest of several
+        self.assertEqual((T["t1"]["rt_id"], T["t1"]["mc_id"]), ("tv/big_show", "tv/big-show"))  # season page -> show page
+        self.assertEqual((T["t2"]["rt_id"], T["t2"]["mc_id"]), (None, None))  # not a page id: ignored
+        self.assertIsNone(T["t3"]["rt_id"])  # Wikidata has nothing
 
         # audience: the 120-vote 9.6 indie must not beat the 900k-vote 8.6 movie
         self.assertLess(rows["audience"].index("m1"), rows["audience"].index("m2"))
@@ -218,6 +235,7 @@ class PipelineTest(unittest.TestCase):
         new_calls = self.fake.calls[calls_before:]
         self.assertTrue(all("trakt" in u or "/trending/" in u for u in new_calls), new_calls)
         self.assertEqual(self.fake.omdb_calls, omdb_before)  # critic scores are cached
+        self.assertEqual(feed["titles"]["m1"]["rt_id"], "m/great_movie")  # Wikidata pages are cached too
         # t2 now has 900 watchers (Trakt ~93) and is #1 on TMDB -> stays first, well ahead
         self.assertEqual(feed["rows"]["trending"][0], "t2")
         self.assertGreater(feed["titles"]["t2"]["scores"]["buzz"], 95)

@@ -399,7 +399,7 @@
   const metaLine1 = (t) => [latestYear(t), t.imdb != null && `IMDb ${t.imdb.toFixed(1)}`].filter(Boolean).join(" · ");
 
   /* "In your list" icon: a simple bookmark ribbon, drawn like the header icons. */
-  // small "opens a website" arrow in the corner of the IMDb / Rotten Tomatoes / Metacritic score tiles
+  // small "opens a website" arrow on score tiles that link out (IMDb, Rotten Tomatoes when its exact page is known, Metacritic)
   const OPEN_ARROW = `<svg class="open-arrow" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16L16 8M9 8h7v7"/></svg>`;
   const BOOKMARK = `<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4.2L6 21V4a1 1 0 0 1 1-1z"/></svg>`;
 
@@ -658,8 +658,8 @@
     const thumb = thumbs[id]?.v || 0;
     const scores = [
       t.imdb != null && { v: t.imdb.toFixed(1), l: `IMDb · ${fmtCount(t.imdb_votes || 0)} votes`, href: t.imdb_id && `https://www.imdb.com/title/${encodeURIComponent(t.imdb_id)}/` },
-      t.rt != null && { v: `${t.rt}%`, l: "Rotten Tomatoes (critics)", href: `https://www.rottentomatoes.com/search?search=${encodeURIComponent(t.title)}` },
-      t.mc != null && { v: t.mc, l: "Metacritic", href: `https://www.metacritic.com/search/${encodeURIComponent(t.title.replace(/\//g, " "))}/` },
+      t.rt != null && { v: `${t.rt}%`, l: "Rotten Tomatoes (critics)", href: t.rt_id && `https://www.rottentomatoes.com/${t.rt_id}` },
+      t.mc != null && { v: t.mc, l: "Metacritic", href: t.mc_id ? `https://www.metacritic.com/${t.mc_id}/` : `https://www.metacritic.com/search/${encodeURIComponent(t.title.replace(/\//g, " "))}/` },
       t.watchers > 0 && { v: fmtCount(t.watchers), l: "Watching now on Trakt" },
       t.tmdb_trend_rank && { v: `#${t.tmdb_trend_rank}`, l: `Trending on TMDB today (${t.type === "tv" ? "TV" : "movies"})` },
       t.netflix_rank && { v: `#${t.netflix_rank}`, l: "Netflix Top 10" },

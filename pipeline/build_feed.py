@@ -15,6 +15,8 @@ API keys come from environment variables (GitHub Secrets):
   OMDB_API_KEY      OMDb key (optional: without it there are no critic scores)
   MDBLIST_API_KEY   MDBList key (optional: fills critic scores OMDb lacks, mostly TV)
 
+Exact Rotten Tomatoes and Metacritic page addresses come from Wikidata (no key).
+
 Uses only the Python standard library.
 """
 
@@ -47,6 +49,7 @@ OMDB = "https://www.omdbapi.com/"
 MDBLIST = "https://api.mdblist.com"
 IMDB_RATINGS = "https://datasets.imdbws.com/title.ratings.tsv.gz"
 NETFLIX_TOP10 = "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv"
+WIKIDATA_SPARQL = "https://query.wikidata.org/sparql"
 
 USER_AGENT = "tv-recommendations/1.0 (personal project)"
 
@@ -395,6 +398,43 @@ def mdblist_lookup(api_key: str, imdb_id: str, kind: str) -> dict:
     return {"rt": num(scores.get("tomatoes")), "mc": num(scores.get("metacritic"))}
 
 
+RT_ID = re.compile(r"^(m|tv)/[a-z0-9_\-]+$")
+MC_ID = re.compile(r"^(movie|tv)/[a-z0-9\-]+$")
+
+
+def wikidata_pages(imdb_ids: list[str]) -> dict[str, dict]:
+    """Exact Rotten Tomatoes ("m/oppenheimer_2023") and Metacritic ("movie/oppenheimer")
+    page ids from Wikidata, looked up by IMDb id. Returns {imdb_id: {"rt": .., "mc": ..}}
+    for every id asked about (None where Wikidata has no page)."""
+    out = {i: {"rt": None, "mc": None} for i in imdb_ids}
+    values = " ".join(f'"{i}"' for i in imdb_ids if re.fullmatch(r"tt\d+", i))
+    if not values:
+        return out
+    query = f"""SELECT ?imdb ?rt ?mc WHERE {{
+      VALUES ?imdb {{ {values} }}
+      ?item wdt:P345 ?imdb .
+      OPTIONAL {{ ?item wdt:P1258 ?rt . }}
+      OPTIONAL {{ ?item wdt:P1712 ?mc . }}
+    }}"""
+    url = f"{WIKIDATA_SPARQL}?{urllib.parse.urlencode({'query': query, 'format': 'json'})}"
+    d = http.get_json(url, {"Accept": "application/sparql-results+json"})
+    found: dict[str, dict[str, set]] = {}
+    for b in (d.get("results") or {}).get("bindings") or []:
+        imdb = (b.get("imdb") or {}).get("value")
+        if imdb not in out:
+            continue
+        f = found.setdefault(imdb, {"rt": set(), "mc": set()})
+        for k, pat in (("rt", RT_ID), ("mc", MC_ID)):
+            v = ((b.get(k) or {}).get("value") or "").strip().strip("/").lower()
+            v = re.sub(r"/s\d+$", "", v)  # a season page -> the show's page
+            if pat.match(v):
+                f[k].add(v)
+    for imdb, f in found.items():
+        # several ids (old and new addresses): the shortest is usually the main page
+        out[imdb] = {k: (min(v, key=lambda x: (len(x), x)) if v else None) for k, v in f.items()}
+    return out
+
+
 def omdb_lookup(api_key: str, imdb_id: str) -> dict | None:
     d = http.get_json(f"{OMDB}?{urllib.parse.urlencode({'apikey': api_key, 'i': imdb_id})}")
     if d.get("Response") != "True":
@@ -578,6 +618,7 @@ def run(mode: str = "auto") -> dict:
     details_cache = load_json(CACHE / "details.json", {})
     omdb_cache = load_json(CACHE / "omdb.json", {"usage": {}, "titles": {}})
     mdb_cache = load_json(CACHE / "mdblist.json", {"usage": {}, "titles": {}})
+    wd_cache = load_json(CACHE / "wikidata.json", {"titles": {}})
     seen_cache = load_json(CACHE / "first_seen.json", {"baseline": None, "seen": {}})
     nf_map = load_json(CACHE / "netflix_map.json", {})
 
@@ -774,6 +815,28 @@ def run(mode: str = "auto") -> dict:
         if d["mc"] is None:
             d["mc"] = m.get("mc")
 
+    # 6c. Exact Rotten Tomatoes / Metacritic pages from Wikidata (full refresh only; cached)
+    wd = wd_cache.setdefault("titles", {})
+    if mode == "full":
+        cutoff = (today() - dt.timedelta(days=rf.get("wikidata_recheck_days", 30))).isoformat()
+        todo = sorted({d["imdb_id"] for d in details.values()
+                       if d.get("imdb_id") and (d["rt"] is not None or d["mc"] is not None)
+                       and wd.get(d["imdb_id"], {}).get("checked", "") < cutoff})
+        done = 0
+        for i in range(0, len(todo), 150):
+            try:
+                got = wikidata_pages(todo[i:i + 150])
+            except Exception as e:
+                log(f"warning: Wikidata: {e}")
+                break
+            for imdb, r in got.items():
+                wd[imdb] = {**r, "checked": today().isoformat()}
+            done += len(got)
+        log(f"wikidata pages checked: {done}/{len(todo)}")
+    for d in details.values():
+        w = wd.get(d.get("imdb_id") or "", {})
+        d["rt_id"], d["mc_id"] = w.get("rt"), w.get("mc")
+
     # 7. Keep titles that are on at least one service (or in the Netflix Top 10)
     nf_ids = {r["id"] for r in netflix_rows}
     titles = {k: d for k, d in details.items() if d["services"] or k in nf_ids}
@@ -805,6 +868,7 @@ def run(mode: str = "auto") -> dict:
         save_json(CACHE / "netflix_map.json", nf_map)
     save_json(CACHE / "omdb.json", omdb_cache, compact=True)
     save_json(CACHE / "mdblist.json", mdb_cache, compact=True)
+    save_json(CACHE / "wikidata.json", wd_cache, compact=True)
     log(f"wrote {feed_path} with {len(titles)} titles")
     return feed
 

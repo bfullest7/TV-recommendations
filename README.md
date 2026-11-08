@@ -55,6 +55,7 @@ If a title is missing a signal (no critic score, or you haven't rated anything o
 - **Trakt**: create an account at trakt.tv, then go to Settings → Your API Apps → New Application. Any name is fine; use `urn:ietf:wg:oauth:2.0:oob` as the redirect URI. Copy the **Client ID**.
 - **OMDb**: request a free key at omdbapi.com/apikey.aspx and click the activation link in the email.
 - **MDBList** (optional, adds critic scores for TV): sign up at mdblist.com, then Preferences → API Access → generate a key.
+- **Wikidata** (no key needed): the exact Rotten Tomatoes and Metacritic page for each title, so those score tiles on a title's screen can open the right page. Checked on full refreshes, rechecked monthly.
 
 ### 2. Add them to GitHub
 
