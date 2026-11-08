@@ -274,10 +274,11 @@
   }
 
   /* "Because you liked…" row, right below Your library. Similar titles (TMDB's recommendations
-     and similar titles, both ways) to one title you liked, best matches first. Which liked title
-     changes the first time the app is opened on a new day, to the next one (newest likes first)
-     with at least 6 similar titles you can see. With none, "Based on your likes" pools them
-     from all your likes (needs 4). No likes, no row. */
+     and similar titles, both ways) to one title, best matches first. The title is one you liked
+     ("Because you liked …") or, after those, one on your watchlist ("More like …"); it changes
+     the first time the app is opened on a new day, to the next one with at least 6 similar
+     titles you can see. With none, "Based on your likes" pools them from all of those (needs 4).
+     Nothing liked or saved, no row. */
   const BECAUSE_MIN = 6, POOL_MIN = 4;
   let moreBack = null; // id -> titles that list it as similar
   function similarTo(id) {
@@ -290,25 +291,32 @@
       .map((x) => feed.titles[x]).filter((t) => t && visible(t));
   }
   function becauseRow() {
-    const liked = Object.entries(thumbs).filter(([, r]) => r.v > 0).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || "")).map(([id]) => id);
-    if (!liked.length) return null;
-    const ok = liked.filter((id) => similarTo(id).length >= BECAUSE_MIN);
+    // Seeds: liked titles (newest first), then watchlist titles (newest first) that aren't
+    // liked, disliked or watched. Watched titles only count if they're also liked.
+    const byDate = (recs) => Object.entries(recs).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || "")).map(([id]) => id);
+    const liked = byDate(Object.fromEntries(Object.entries(thumbs).filter(([, r]) => r.v > 0)));
+    const listed = byDate(watchlist).filter((id) => !thumbs[id] && !watched[id]);
+    const seeds = [...liked, ...listed];
+    if (!seeds.length) return null;
+    const ok = seeds.filter((id) => similarTo(id).length >= BECAUSE_MIN);
     const taste = tasteModel();
     const ranked = (items) => sinkDisliked(rotate(items.map((t) => ({ t, s: pickScore(t, taste) })).sort((a, b) => b.s - a.s).map((x) => x.t)));
     if (!ok.length) {
-      const pool = [...new Map(liked.flatMap((id) => similarTo(id)).map((t) => [t.id, t])).values()];
+      const pool = [...new Map(seeds.flatMap((id) => similarTo(id)).map((t) => [t.id, t])).values()];
       return pool.length >= POOL_MIN ? { title: "Based on your likes", items: ranked(pool) } : null;
     }
     let pick = load(STORE.because, {});
-    if (pick.day !== today() || !ok.includes(pick.id)) { // a new day: the next liked title in line
-      const prev = liked.indexOf(pick.id);
-      const next = ok.find((id) => liked.indexOf(id) > prev) || ok[0];
+    if (pick.day !== today() || !ok.includes(pick.id)) { // a new day: the next title in line
+      const prev = seeds.indexOf(pick.id);
+      const next = ok.find((id) => seeds.indexOf(id) > prev) || ok[0];
       pick = { day: today(), id: pick.day === today() ? ok[0] : next };
       save(STORE.because, pick);
     }
-    const name = feed.titles[pick.id]?.title || thumbs[pick.id]?.title;
-    return { title: `Because you liked ${name}`, items: ranked(similarTo(pick.id)) };
+    const name = feed.titles[pick.id]?.title || thumbs[pick.id]?.title || watchlist[pick.id]?.title;
+    // never say "liked" about a title you've only saved
+    return { title: liked.includes(pick.id) ? `Because you liked ${name}` : `More like ${name}`, items: ranked(similarTo(pick.id)) };
   }
+
 
   // ---------------------------------------------------------------- rows
   function rowDefs() {
@@ -1295,7 +1303,7 @@
       ["Netflix Top 10", `
         <p>Netflix's own official list of its most-watched shows and films in the US, published weekly. Shown only when the <b>Netflix</b> filter is selected, and not used in any ranking, since other services don't publish equivalent numbers.</p>`],
       ["Because you liked…", `
-        <p>Once you've liked a title, a row right below Your library shows similar shows and movies (from TMDB), best matches for you first. It's about one of your liked titles at a time, newest likes first, and moves on to the next one the first time you open the app each day. If none of your likes has enough similar titles yet, the row is "Based on your likes" and mixes them together. Titles you've liked, watched or marked Not for me are left out.</p>`],
+        <p>Once you've liked or saved a title, a row right below Your library shows similar shows and movies (from TMDB), best matches for you first. It's about one title at a time: your likes first ("Because you liked…"), newest first, then titles on your watchlist ("More like…"). It moves on to the next one the first time you open the app each day. If none has enough similar titles yet, the row is "Based on your likes" and mixes them together. Titles you've liked, watched or marked Not for me are left out, and watched titles only count when you've liked them.</p>`],
       ["Keeping rows fresh", `
         <p>Titles you keep scrolling past make room for others. From the 3rd day a title is on your screen without you opening it, it moves 4 places down its row each day. After 2 weeks out of sight, it's back in its usual spot. Titles you open, like, save or mark watched keep their place. Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: Your taste", `
