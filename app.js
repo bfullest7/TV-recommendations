@@ -20,6 +20,7 @@
   let watchlist = {}; // id -> { title, type, at }: shown in "Your watchlist"
   let filter = "all";
   let kind = "all"; // "all", "tv" or "movie"
+  let lastCardRow = null; // home row of the title last opened, kept still when "Your library" changes height
   let libTab = "list"; // which pill the "Your library" row shows: "list" (Watchlist), "liked" or "watched"
 
   const $ = (sel) => document.querySelector(sel);
@@ -708,7 +709,10 @@
     const rows = $("#rows");
     const old = rows.querySelector('[data-row="watchlist"]');
     if (changed && old && !old.querySelector("[data-lib-tab]") && !libAllEmpty()) { libTab = changed; resetX = true; }
-    const anchor = [...rows.querySelectorAll('.row:not([data-row="watchlist"])')].find((r) => r.getBoundingClientRect().bottom > 0);
+    // Keep still the row of the title you opened (so closing it never shows a jump);
+    // otherwise the first row on screen.
+    const anchor = (lastCardRow?.isConnected && lastCardRow.dataset.row !== "watchlist" && lastCardRow)
+      || [...rows.querySelectorAll('.row:not([data-row="watchlist"])')].find((r) => r.getBoundingClientRect().bottom > 0);
     const before = anchor && anchor.getBoundingClientRect().top;
     const keepX = !resetX && old && old.querySelector(".scroller")?.scrollLeft;
     const def = myServices.length && rowDefs().find((d) => d.key === "watchlist");
@@ -1165,7 +1169,7 @@
         return;
       }
       const c = e.target.closest(".card");
-      if (c) openDetails(c.dataset.id);
+      if (c) { lastCardRow = c.closest("section.row"); openDetails(c.dataset.id); }
     });
     $("#details").addEventListener("click", (e) => {
       const id = $("#details").dataset.id;
@@ -1186,7 +1190,7 @@
       const svc = e.target.closest("[data-ml-service]");
       if (svc) { ml.service = svc.dataset.mlService; renderMyList(); return; }
       const c = e.target.closest(".card");
-      if (c) openDetails(c.dataset.id);
+      if (c) { lastCardRow = null; openDetails(c.dataset.id); }
     });
     // Closing a title opened from Your list updates the page right away, so each tab
     // shows exactly what belongs there: removed titles leave "In your list", titles
@@ -1202,7 +1206,7 @@
     $("#ml-kind").addEventListener("change", (e) => { ml.kind = e.target.value; renderMyList(); });
     $("#search-results").addEventListener("click", (e) => {
       const r = e.target.closest(".result");
-      if (r) openDetails(r.dataset.id);
+      if (r) { lastCardRow = null; openDetails(r.dataset.id); }
     });
     $("#service-picker").addEventListener("change", () => {
       myServices = [...$("#service-picker").querySelectorAll("input:checked")].map((i) => i.value);
