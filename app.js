@@ -558,12 +558,7 @@
         <button class="icon-btn close" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="d-top">
-        ${(() => { // with a trailer, the poster is a link to it on YouTube, with a small play button in the middle
-          const art = t.poster ? `<img src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`;
-          return t.trailer
-            ? `<a class="poster has-trailer" href="https://www.youtube.com/watch?v=${encodeURIComponent(t.trailer)}" target="_blank" rel="noopener" aria-label="Watch the trailer">${art}<span class="play" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M7 4.5v15l12.5-7.5z"/></svg></span></a>`
-            : `<div class="poster">${art}</div>`;
-        })()}
+        <div class="poster">${t.poster ? `<img src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}</div>
         <div class="d-info">
           <h2 id="d-title">${esc(t.title)}</h2>
           <div class="d-sub">${[yearRange(t), t.type === "tv" ? "TV series" : "Movie", t.genres.slice(0, 3).join(", ")].filter(Boolean).map(esc).join(" · ")}</div>
@@ -571,6 +566,7 @@
           ${isAway(t) ? `<p class="d-away">No longer available</p>` : ""}
         </div>
       </div>
+      ${t.trailer ? `<a class="trailer-row" href="https://www.youtube.com/watch?v=${encodeURIComponent(t.trailer)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" fill="currentColor"><path d="M7 4.5v15l12.5-7.5z"/></svg>Watch trailer</a>` : ""}
       ${scores.length ? `<div class="scores">${scores.map((s) => `<div class="score"><div class="v">${esc(s.v)}</div><div class="l">${esc(s.l)}</div></div>`).join("")}</div>` : ""}
       ${t.overview ? `<p class="overview">${esc(t.overview)}</p>` : ""}
       <div class="list-btns">
