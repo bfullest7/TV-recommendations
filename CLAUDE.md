@@ -9,7 +9,7 @@
 
 ## The app
 - Phone web app ("Tivvy", formerly "Sofari", "Cue", "Up Next" and "What to Watch"), mostly used as an iPhone home-screen app.
-- Live at https://bfullest7.github.io/TV-recommendations/ (the address is case-sensitive). Repo: `bfullest7/TV-recommendations`, branch `main`.
+- Live at https://bfullest7.github.io/tivvy/ (the address is case-sensitive). Repo: `bfullest7/tivvy` (renamed from `TV-recommendations`), branch `main`.
 - Files: `index.html`, `app.js`, `styles.css`, `sw.js` (helper that always loads the newest page), `manifest.webmanifest`, `icons/`, `config.json` (services, score weights, row settings; read live by the app).
 - Data: `pipeline/build_feed.py` (Python standard library only) builds `data/feed.json` from TMDB, Trakt, IMDb, OMDb, MDBList and Netflix Top 10. Tests: `python3 -m unittest discover -s tests`.
 - `README.md` explains the rows, scoring and setup.

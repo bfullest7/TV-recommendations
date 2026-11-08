@@ -73,7 +73,7 @@ In this repository: **Settings → Secrets and variables → Actions → New rep
 
 **Actions → Refresh data and publish app → Run workflow**, mode `full`. It takes a few minutes. After that it runs on its own every 2 hours.
 
-The app is then at **https://bfullest7.github.io/TV-recommendations/**.
+The app is then at **https://bfullest7.github.io/tivvy/**.
 
 The free OMDb key allows 1,000 lookups a day, so critic scores fill in over the first 2 days.
 
