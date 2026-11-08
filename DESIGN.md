@@ -8,9 +8,9 @@ The app uses one small scale. Each size has one job; avoid in-between sizes like
 
 | Size | Job | Where it's used |
 |---|---|---|
-| 22 | App title | "Sofari", with the orange retro TV logo (28 wide) just before it |
+| 22 | App title | "Sofari", with the orange retro TV logo (28 wide) just before it; the welcome card title ("Welcome to Sofari") |
 | 20 | Screen titles | "Profile"; show title on a detail screen |
-| 18 | Headings | Home row titles ("Trending now"), Settings section headings, detail-screen headings ("Why this pick"), welcome card title |
+| 18 | Headings | Home row titles ("Trending now"), Settings section headings, detail-screen headings ("Why this pick") |
 | 17 | Score numbers | Big numbers in the detail-screen score boxes ("9.0", "90%") |
 | 16 | Form inputs, tip headings | Search box and "TV & movies" picker (16 stops iPhone from zooming in); the bold heading in the genre tip |
 | 15 | Buttons and tappable labels | Add to list, Mark watched, Like, Not for me, backup buttons, "Pick your services", "How your picks work" item names, name in a detail screen's top bar, show names in search results |
