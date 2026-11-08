@@ -735,6 +735,7 @@
       const tab = b.dataset.tab;
       b.setAttribute("aria-selected", tab === ml.tab);
     }
+    $("#mylist .ml-filters").hidden = !mlTitles(ml.tab).length; // no sort or filters on an empty tab
     const sorts = ML_SORTS[ml.tab];
     $("#ml-sort").innerHTML = sorts.map(([k, l]) => `<option value="${k}" ${ml.sort[ml.tab] === k ? "selected" : ""}>${l}</option>`).join("");
     $("#ml-kind").value = ml.kind;
