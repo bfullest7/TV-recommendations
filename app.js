@@ -815,8 +815,15 @@
     // Opening a page: the spinner shows straight away and stays at least 0.4 seconds, so
     // the page always reads as "loading, then all the posters". Changing a sort or filter:
     // the spinner only shows if the wait passes 0.12 seconds (no flash when posters are saved).
-    if (opening) grid.classList.add("is-loading");
-    else grid._spin = setTimeout(() => grid.classList.add("is-loading"), 120);
+    const spin = () => { // centred in the tile area: between the top of the grid (or of the screen) and the bottom of the screen
+      grid.classList.add("is-loading");
+      requestAnimationFrame(() => { // measured once the page is on screen
+        const top = Math.max(grid.getBoundingClientRect().top, 0);
+        grid.style.setProperty("--spin-top", `${(top + window.innerHeight) / 2}px`);
+      });
+    };
+    if (opening) spin();
+    else grid._spin = setTimeout(spin, 120);
     const minWait = new Promise((done) => setTimeout(done, opening ? 400 : 0));
     // loaded and decoded (ready to draw), kept in memory so the new grid can use them at once
     grid._keep = []; // hold the decoded posters until the next change

@@ -305,7 +305,7 @@ header.top[hidden] { display: none; }
 @keyframes grid-in { from { opacity: 0; } }
 .ml-grid.is-loading > * { opacity: .4; transition: opacity .15s ease; }
 .ml-grid.is-loading::after {
-  content: ""; position: fixed; left: 50%; top: 50%; width: 28px; height: 28px; margin: -14px 0 0 -14px; /* middle of the screen */
+  content: ""; position: fixed; left: 50%; top: var(--spin-top, 50%); width: 28px; height: 28px; margin: -14px 0 0 -14px; /* middle of the tile area */
   border: 3px solid var(--line); border-top-color: var(--text); border-radius: 50%; animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
