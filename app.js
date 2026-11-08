@@ -200,7 +200,6 @@
       .map((x) => x.t);
     const trendMin = tilt.trending_min_imdb_votes ?? 5000;
     const trendRecency = tilt.trending_recency ?? 0.25;
-    const listed = Object.entries(watchlist).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || "")).map(([id]) => T[id]).filter((t) => t && onMyServices(t) && rightKind(t)); // watched titles stay here
     const defs = [
       {
         key: "picks", title: "Top picks for you",
@@ -209,7 +208,7 @@
       },
       { // always shown, right below Top picks; its pills switch between Watchlist, Liked and Watched
         key: "watchlist", title: "Your library", library: true,
-        items: libTab === "list" ? listed : libTitles(libTab),
+        items: libTitles(libTab),
       },
       {
         key: "trending", title: "Trending now",
@@ -387,6 +386,7 @@
       return;
     }
     $("#rows").innerHTML = rowDefs().map(rowHtml).join("");
+    preloadLibrary();
   }
   function rowHtml(def) {
     const n = feed.row_length || 30;
@@ -408,7 +408,9 @@
      saying what to tap, so the row keeps its height. */
   const LIB_MAX = 10;
   const LIB_HINT = { list: "Tap <b>＋ Add to list</b> on any title to save it here", liked: "Tap <b>Like</b> on any title to see it here", watched: "Tap <b>Mark watched</b> on any title to see it here" };
-  function libTitles(tab) { // liked or watched titles on your services, most recent first
+  function libTitles(tab) { // titles for a pill, on your services, most recent first
+    if (tab === "list") return Object.entries(watchlist).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || ""))
+      .map(([id]) => feed.titles[id]).filter((t) => t && onMyServices(t) && rightKind(t)); // watched titles stay here
     const stamp = tab === "liked" ? thumbs : watched;
     return mlTitles(tab).filter((t) => onMyServices(t) && rightKind(t))
       .sort((a, b) => (stamp[b.id].at || "").localeCompare(stamp[a.id].at || ""));
@@ -416,6 +418,20 @@
   // Nothing saved, liked or watched yet: the row is just the pills, each opening its
   // (empty) tab on the Your library page, which says how to fill it.
   const libAllEmpty = () => !Object.keys(watchlist).length && !mlTitles("liked").length && !mlTitles("watched").length;
+  /* Fetch the posters behind the other two pills in the background, so switching
+     pills shows them at once instead of filling in a moment later. */
+  const preloaded = new Set();
+  function preloadLibrary() {
+    setTimeout(() => {
+      for (const tab of ["list", "liked", "watched"]) {
+        if (tab === libTab) continue;
+        for (const t of libTitles(tab).slice(0, LIB_MAX)) {
+          const src = t.poster && `${IMG}w342${t.poster}`;
+          if (src && !preloaded.has(src)) { preloaded.add(src); new Image().src = src; }
+        }
+      }
+    }, 300);
+  }
   function listPills() {
     const pill = libAllEmpty()
       ? (tab, icon, label) => `<button class="list-pill" data-open-mylist="${tab}">${icon}${label}</button>`
@@ -706,6 +722,7 @@
     } else if (old) old.remove();
     if (anchor) window.scrollBy(0, anchor.getBoundingClientRect().top - before);
     placeGenreTip(); // the watchlist row above it may have appeared or gone
+    preloadLibrary();
   }
   function toggleWatchlist(id) {
     if (watchlist[id]) delete watchlist[id];
