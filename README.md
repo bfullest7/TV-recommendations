@@ -16,7 +16,7 @@ A phone web app that shows the best things to stream right now on the services y
 A filter at the top limits every row to one service. Your services and thumbs are saved only on your phone.
 
 **Your lists and search:**
-- **＋ Add to list** on any title adds it to a "Your watchlist" row at the top, newest first. Posters show small status icons in the corner: a thumb for titles you liked, a bookmark for titles in your list and a ✓ (on a dimmed poster) for titles you watched.
+- **＋ Add to list** on any title adds it to a "Your watchlist" row right below Top picks, newest first. Posters show small status icons in the corner: a thumb for titles you liked, a bookmark for titles in your list and a ✓ (on a dimmed poster) for titles you watched.
 - **Mark watched** hides a title from every row except "Your watchlist" and the Netflix Top 10, where it shows the ✓. It doesn't take the title off your list. A watched series comes back to the rows when a new season premieres after you marked it.
 - **👎 Not for me** hides a title from the same rows. Titles you like get a thumb on their poster; Not for me titles aren't marked.
 - Nothing moves while you browse: a title you like, mark Not for me or mark watched stays where it is (dimmed if it's going to leave the row), and the rows update the next time you open the app, change a filter or close Settings. Adding to your list updates "Your watchlist" right away without moving what's on screen.

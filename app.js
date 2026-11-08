@@ -201,14 +201,16 @@
     const trendRecency = tilt.trending_recency ?? 0.25;
     const listed = Object.entries(watchlist).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || "")).map(([id]) => T[id]).filter((t) => t && onMyServices(t) && rightKind(t)); // watched titles stay here
     const defs = [
-      ...(listed.length ? [{
-        key: "watchlist", title: "Your watchlist", source: "Titles you saved, newest first",
-        items: listed,
-      }] : []),
       {
         key: "picks", title: "Top picks for you",
         source: "Highly rated, popular and new",
         items: topPicks(),
+      },
+      { // always shown (right below Top picks) so "See all ›" can reach Liked and Watched
+        key: "watchlist", title: "Your watchlist",
+        ...(Object.keys(watchlist).length
+          ? { source: "Titles you saved, newest first", items: listed }
+          : { source: "Tap ＋ Add to list on any title to save it here", items: [], hintOnly: true }),
       },
       {
         key: "trending", title: "Trending now",
@@ -395,7 +397,7 @@
           <div class="row-title-line"><h2 id="row-${def.key}">${esc(def.title)}</h2>${def.key === "picks" ? `<button class="see-all" data-how-picks>How it works ›</button>` : ""}${def.key === "watchlist" ? `<button class="see-all" data-open-mylist>See all ›</button>` : ""}</div>
           <p class="source">${esc(def.source)}</p>
         </div>
-        ${def.items.length
+        ${def.hintOnly ? "" : def.items.length
           ? `<div class="scroller">${def.items.slice(0, n).map((t) => cardHtml(t, def)).join("")}</div>`
           : `<p class="empty">No ${kindWord() === "titles" ? "titles" : kindWord()} here for ${filter === "all" ? "your services" : esc(svcInfo(filter).name)} right now.</p>`}
       </section>`;
@@ -663,7 +665,7 @@
       const tmp = document.createElement("div");
       tmp.innerHTML = rowHtml(def).trim();
       const fresh = tmp.firstElementChild;
-      if (old) old.replaceWith(fresh); else rows.prepend(fresh);
+      if (old) old.replaceWith(fresh); else rows.querySelector('[data-row="picks"]')?.after(fresh);
       const sc = fresh.querySelector(".scroller");
       if (sc && keepX) sc.scrollLeft = keepX;
     } else if (old) old.remove();
@@ -938,7 +940,7 @@
       ["Signal: Audience, Critics, Trending", `
         <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the TMDB/Trakt blend from the Trending now row (without that row's recency share, since New &amp; recent is its own signal).</p>`],
       ["Watchlist & watched", `
-        <p><b>＋ Add to list</b> on any title adds it to the "Your watchlist" row at the top, newest first. <b>Mark watched</b> hides a title from every row except "Your watchlist" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. A watched series comes back if a new season premieres after you marked it. <b>👎 Not for me</b> hides a title from the same rows. Titles you like stay in Top picks. Nothing moves while you're browsing: the rows update the next time you open the app, change a filter or close Settings. All are saved on this phone and included in backups. To undo any of them, open the title (search finds watched titles too) and tap the button again.</p>`],
+        <p><b>＋ Add to list</b> on any title adds it to the "Your watchlist" row right below Top picks, newest first. <b>Mark watched</b> hides a title from every row except "Your watchlist" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. A watched series comes back if a new season premieres after you marked it. <b>👎 Not for me</b> hides a title from the same rows. Titles you like stay in Top picks. Nothing moves while you're browsing: the rows update the next time you open the app, change a filter or close Settings. All are saved on this phone and included in backups. To undo any of them, open the title (search finds watched titles too) and tap the button again.</p>`],
       ["When data updates", `
         <p>Trending numbers refresh every 2 hours. Everything else (what's on each service, ratings, Netflix Top 10) refreshes about once a day. Critic scores fill in gradually because of OMDb's and MDBList's daily limits. The time at the top of the app shows the last update.</p>`],
     ];
