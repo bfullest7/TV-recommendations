@@ -353,9 +353,8 @@ body:has(dialog[open]) { overflow: hidden; }
   content: ""; position: absolute; top: -9px; left: var(--caret-x, 50px); transform: translateX(-50%);
   border: 10px solid transparent; border-top: 0; border-bottom-color: var(--accent);
 }
-.genre-tip .tip-actions { display: flex; justify-content: flex-start; gap: 22px; margin-top: 8px; }
-.genre-tip .tip-actions button { padding: 6px 0; border: 0; background: none; color: #2b1a00; font-size: 14px; font-weight: 500; }
-.genre-tip .tip-actions [data-genre-tip="pick"] { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; } /* quieter than the heading */
+.genre-tip .tip-actions { display: flex; justify-content: flex-start; gap: 10px; margin-top: 14px; padding-bottom: 6px; }
+.genre-tip .tip-actions button { padding: 7px 16px; border: 1.5px solid #2b1a00; border-radius: 999px; background: none; color: #2b1a00; font-size: 14px; font-weight: 600; }
 .genre-tip.leaving { opacity: 0; transition: opacity .25s ease; }
 
 /* Update available banner */
