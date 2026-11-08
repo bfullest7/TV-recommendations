@@ -380,7 +380,7 @@
         ${welcomeWall()}
         <div class="notice welcome">
           <b>Welcome to What to Watch!</b>
-          <p>Find the best things to watch on your services. Select services to get started.</p>
+          <p>Find the best things to watch. Select streaming services to get started.</p>
           <button class="done-btn" data-open-settings>Select your services</button>
         </div>`;
       return;
