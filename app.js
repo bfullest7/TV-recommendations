@@ -1,4 +1,4 @@
-/* Up Next (formerly What to Watch): phone web app.
+/* Cue (formerly Up Next, What to Watch): phone web app.
  *
  * Reads data/feed.json (built every couple of hours by pipeline/build_feed.py)
  * and shows rows of titles on the viewer's streaming services. Everything
@@ -380,7 +380,7 @@
       $("#rows").innerHTML = `
         ${welcomeWall()}
         <div class="notice welcome">
-          <b>Welcome to Up Next!</b>
+          <b>Welcome to Cue!</b>
           <p>Find the best things to watch. Select streaming services to get started.</p>
           <button class="done-btn" data-open-settings>Select your services</button>
         </div>`;
@@ -1197,7 +1197,7 @@
 
   async function saveBackup() {
     const data = { app: BACKUP_APP, version: 3, saved_at: new Date().toISOString(), services: myServices, thumbs, genres: genrePrefs, watchlist, watched };
-    const name = `up-next-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    const name = `cue-backup-${new Date().toISOString().slice(0, 10)}.json`;
     const file = new File([JSON.stringify(data, null, 1)], name, { type: "application/json" });
     try {
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -1244,7 +1244,7 @@
       const nG = genres.length;
       backupStatus(`Restored ${valid.length} rating${valid.length === 1 ? "" : "s"}, ${nG} genre${nG === 1 ? "" : "s"}, ${wl.length} watchlist title${wl.length === 1 ? "" : "s"}, ${wd.length} watched title${wd.length === 1 ? "" : "s"} and ${known.length} service${known.length === 1 ? "" : "s"}.`, "ok");
     } catch {
-      backupStatus("That file isn't an Up Next backup.", "err");
+      backupStatus("That file isn't a Cue backup.", "err");
     }
   }
 

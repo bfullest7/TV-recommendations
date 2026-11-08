@@ -1,6 +1,6 @@
 # Design system
 
-How "Up Next" looks and reads. Follow this when changing the app, and update it when Beth approves a new rule. Sizes are in CSS pixels (`styles.css`); colors are the tokens at the top of `styles.css`.
+How "Cue" looks and reads. Follow this when changing the app, and update it when Beth approves a new rule. Sizes are in CSS pixels (`styles.css`); colors are the tokens at the top of `styles.css`.
 
 ## Text sizes
 
@@ -8,7 +8,7 @@ The app uses one small scale. Each size has one job; avoid in-between sizes like
 
 | Size | Job | Where it's used |
 |---|---|---|
-| 22 | App title | "Up Next", with the orange TV logo (28 wide) just before it |
+| 22 | App title | "Cue", with the orange TV logo (28 wide) just before it |
 | 20 | Screen titles | "Profile"; show title on a detail screen |
 | 18 | Headings | Home row titles ("Trending now"), Settings section headings, detail-screen headings ("Why this pick"), welcome card title |
 | 17 | Score numbers | Big numbers in the detail-screen score boxes ("9.0", "90%") |

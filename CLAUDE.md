@@ -8,7 +8,7 @@
 - Never ask for API keys in chat. Keys live only in GitHub Secrets: `TMDB_API_KEY`, `TRAKT_CLIENT_ID`, `OMDB_API_KEY`, `MDBLIST_API_KEY`.
 
 ## The app
-- Phone web app ("Up Next", formerly "What to Watch"), mostly used as an iPhone home-screen app.
+- Phone web app ("Cue", formerly "Up Next" and "What to Watch"), mostly used as an iPhone home-screen app.
 - Live at https://bfullest7.github.io/TV-recommendations/ (the address is case-sensitive). Repo: `bfullest7/TV-recommendations`, branch `main`.
 - Files: `index.html`, `app.js`, `styles.css`, `sw.js` (helper that always loads the newest page), `manifest.webmanifest`, `icons/`, `config.json` (services, score weights, row settings; read live by the app).
 - Data: `pipeline/build_feed.py` (Python standard library only) builds `data/feed.json` from TMDB, Trakt, IMDb, OMDb, MDBList and Netflix Top 10. Tests: `python3 -m unittest discover -s tests`.

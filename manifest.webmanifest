@@ -1,6 +1,6 @@
 {
-  "name": "Up Next",
-  "short_name": "Up Next",
+  "name": "Cue",
+  "short_name": "Cue",
   "description": "Top things to stream right now on your services.",
   "start_url": "./",
   "scope": "./",
