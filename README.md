@@ -15,6 +15,8 @@ A phone web app that shows the best things to stream right now on the services y
 
 A filter at the top limits every row to one service. Your services and thumbs are saved only on your phone.
 
+Each home row shows its best 20 titles; when there are more, a **See all ›** tile at the end opens the row in full (up to 100 titles, three across) with its own sort and filters.
+
 **Your lists and search:**
 - **＋ Add to list** on any title adds it to a "Your library" row right below Top picks, newest first. Posters show small status icons in the corner: a thumb for titles you liked, a bookmark for titles in your list and a ✓ (on a dimmed poster) for titles you watched.
 - **Mark watched** hides a title from every row except "Your library" and the Netflix Top 10, where it shows the ✓. It doesn't take the title off your list. A watched series comes back to the rows when a new season premieres after you marked it.

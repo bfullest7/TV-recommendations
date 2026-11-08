@@ -102,6 +102,29 @@
     </div>
   </dialog>
 
+  <!-- A home row in full ("See all" tile at the end of a row): many more titles, three across -->
+  <dialog id="rowpage" class="sheet full-sheet" aria-labelledby="rp-title">
+    <div class="sheet-body">
+      <div class="sheet-head">
+        <div class="head-left">
+          <button class="icon-btn back" data-close aria-label="Back"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <h2 id="rp-title"></h2>
+        </div>
+      </div>
+      <p id="rp-sub" class="rp-sub"></p>
+      <div class="filter-bar ml-filters">
+        <select id="rp-sort" class="kind-select" aria-label="Sort"></select>
+        <select id="rp-kind" class="kind-select" aria-label="TV shows or movies">
+          <option value="all">TV &amp; movies</option>
+          <option value="tv">TV shows</option>
+          <option value="movie">Movies</option>
+        </select>
+        <nav id="rp-services" class="filters" aria-label="Filter by service"></nav>
+      </div>
+      <div id="rp-grid" class="ml-grid"></div>
+    </div>
+  </dialog>
+
   <!-- How Top picks work: full screen, from the ⓘ next to "Top picks for you" -->
   <dialog id="howpicks" class="sheet full-sheet" aria-labelledby="hp-title">
     <div class="sheet-body">

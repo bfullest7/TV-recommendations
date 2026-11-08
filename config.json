@@ -38,7 +38,7 @@
     "imdb_min_votes_tv": 2000,
     "trending_min_watchers": 10,
     "new_window_days": 30,
-    "row_length": 30
+    "row_length": 20
   },
 
   "refresh": {

@@ -390,7 +390,7 @@
     preloadLibrary();
   }
   function rowHtml(def) {
-    const n = feed.row_length || 30;
+    const n = feed.row_length || 20;
     return `
       <section class="row" data-row="${def.key}" aria-labelledby="row-${def.key}">
         <div class="row-head">
@@ -398,7 +398,7 @@
           ${def.library ? listPills() : `<p class="source">${esc(def.source)}</p>`}
         </div>
         ${def.library ? libraryBody(def) : def.items.length
-          ? `<div class="scroller">${def.items.slice(0, n).map((t) => cardHtml(t, def)).join("")}</div>`
+          ? `<div class="scroller">${def.items.slice(0, n).map((t) => cardHtml(t, def)).join("")}${def.items.length > n ? `<button class="see-all-tile" data-open-row="${def.key}"><span class="ghost-poster">See all ›</span></button>` : ""}</div>`
           : `<p class="empty">No ${kindWord() === "titles" ? "titles" : kindWord()} here for ${filter === "all" ? "your services" : esc(svcInfo(filter).name)} right now.</p>`}
       </section>`;
   }
@@ -629,7 +629,7 @@
     else {
       const picks = topPicks();
       const rank = picks.findIndex((x) => x.id === t.id) + 1;
-      const shown = feed.row_length || 30;
+      const shown = feed.row_length || 20;
       lead = rank <= shown ? `#${rank} in your Top picks` : `#${rank} of ${picks.length} in your Top picks (below the ${shown} shown)`;
     }
 
@@ -688,7 +688,7 @@
   const KEEPS = ["watchlist", "netflix"]; // rows that keep watched and Not for me titles
   function patchCards(id) {
     const t = feed.titles[id];
-    for (const card of document.querySelectorAll(`#rows .card[data-id="${CSS.escape(id)}"], #ml-grid .card[data-id="${CSS.escape(id)}"]`)) {
+    for (const card of document.querySelectorAll(`#rows .card[data-id="${CSS.escape(id)}"], #ml-grid .card[data-id="${CSS.escape(id)}"], #rp-grid .card[data-id="${CSS.escape(id)}"]`)) {
       const row = card.closest("[data-row]").dataset.row;
       const plain = row === "mywatched"; // the Watched tab doesn't mark every poster watched
       card.querySelector(".marks").innerHTML = marksHtml(t, row, plain);
@@ -827,6 +827,48 @@
     renderMyList();
     showSheet($("#mylist"));
     $("#mylist").scrollTop = 0;
+  }
+
+  // ---------------------------------------------------------------- row page
+  /* "See all ›" at the end of a home row: the same row in full (up to RP_MAX titles),
+     three across, with its own sort, TV & movies and service filters (starting from the
+     home screen's). Like the home screen, titles you rate stay put until you reopen it. */
+  const RP_MAX = 100;
+  const RP_FIRST = { picks: "Best match for you", trending: "Most popular", audience: "Audience rating", critics: "Critic rating", new: "Recently added", netflix: "Netflix rank" }; // the row's own order
+  const rp = { key: null, sort: "row", kind: "all", service: "all" };
+  function rowWith(key, svc, k) { // a home row's definition, computed with the page's filters
+    const f0 = filter, k0 = kind;
+    filter = svc; kind = k;
+    try { return rowDefs().find((d) => d.key === key); } finally { filter = f0; kind = k0; }
+  }
+  function renderRowPage() {
+    if (rp.service !== "all" && !myServices.includes(rp.service)) rp.service = "all";
+    const def = rowWith(rp.key, rp.service, rp.kind);
+    if (!def) return;
+    $("#rp-title").textContent = def.title;
+    $("#rp-sub").textContent = def.source;
+    const sorts = [["row", RP_FIRST[rp.key] || "Default"], ["imdb", "IMDb rating"], ["newest", "Newest release"], ["az", "A–Z"]];
+    $("#rp-sort").innerHTML = sorts.map(([k, l]) => `<option value="${k}" ${rp.sort === k ? "selected" : ""}>${l}</option>`).join("");
+    $("#rp-kind").value = rp.kind;
+    $("#rp-kind").classList.toggle("active", rp.kind !== "all");
+    $("#rp-services").innerHTML = [{ key: "all", name: "All" }, ...myServices.map(svcInfo).filter(Boolean)].map((s) => `
+      <button class="chip" data-rp-service="${esc(s.key)}" aria-pressed="${rp.service === s.key}">
+        ${s.color ? `<span class="dot" style="background:${esc(s.color)}"></span>` : ""}${esc(s.name)}
+      </button>`).join("");
+    let items = def.items.slice(0, RP_MAX);
+    if (rp.sort === "imdb") items = [...items].sort((a, b) => (b.imdb ?? -1) - (a.imdb ?? -1));
+    if (rp.sort === "newest") items = [...items].sort((a, b) => latestDate(b).localeCompare(latestDate(a)));
+    if (rp.sort === "az") items = [...items].sort((a, b) => a.title.localeCompare(b.title));
+    const grid = $("#rp-grid");
+    grid.dataset.row = rp.key;
+    const cardDef = { ...def, forceService: rp.service !== "all" ? rp.service : null };
+    grid.innerHTML = items.length ? items.map((t) => cardHtml(t, cardDef)).join("") : `<p class="ml-empty">Nothing here for these filters</p>`;
+  }
+  function openRowPage(key) {
+    Object.assign(rp, { key, sort: "row", kind, service: filter });
+    renderRowPage();
+    showSheet($("#rowpage"));
+    $("#rowpage").scrollTop = 0;
   }
 
   // ---------------------------------------------------------------- search
@@ -1157,6 +1199,8 @@
     });
     $("#rows").addEventListener("click", (e) => {
       if (e.target.closest("[data-open-settings]")) return openSettings();
+      const rowBtn = e.target.closest("[data-open-row]");
+      if (rowBtn) return openRowPage(rowBtn.dataset.openRow);
       const libBtn = e.target.closest("[data-lib-tab]");
       if (libBtn) { if (libBtn.dataset.libTab !== libTab) { libTab = libBtn.dataset.libTab; updateWatchlistRow(true); } return; }
       const mlBtn = e.target.closest("[data-open-mylist]");
@@ -1203,6 +1247,14 @@
       page.scrollTop = y;
     });
     $("#ml-sort").addEventListener("change", (e) => { ml.sort[ml.tab] = e.target.value; renderMyList(); });
+    $("#rowpage").addEventListener("click", (e) => {
+      const svc = e.target.closest("[data-rp-service]");
+      if (svc) { rp.service = svc.dataset.rpService; renderRowPage(); return; }
+      const c = e.target.closest(".card");
+      if (c) { lastCardRow = null; openDetails(c.dataset.id); }
+    });
+    $("#rp-sort").addEventListener("change", (e) => { rp.sort = e.target.value; renderRowPage(); $("#rowpage").scrollTop = 0; });
+    $("#rp-kind").addEventListener("change", (e) => { rp.kind = e.target.value; renderRowPage(); });
     $("#ml-kind").addEventListener("change", (e) => { ml.kind = e.target.value; renderMyList(); });
     $("#search-results").addEventListener("click", (e) => {
       const r = e.target.closest(".result");
@@ -1289,6 +1341,7 @@
       const cfg = await (await fetch("config.json", { cache: "no-cache" })).json();
       if (cfg && cfg.weights) data.weights = cfg.weights;
       if (cfg && cfg.row_tilt) data.row_tilt = cfg.row_tilt;
+      if (cfg?.ranking?.row_length) data.row_length = cfg.ranking.row_length;
     } catch { /* keep the weights saved with the data */ }
     return data;
   }
