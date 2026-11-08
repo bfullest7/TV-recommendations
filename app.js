@@ -500,6 +500,37 @@
   }
 
   // ---------------------------------------------------------------- details
+  /* "Watch on …": opens the service's own search for the title (its app opens if the
+     link is one it handles), since services don't share their title IDs. "More" lists
+     your other services with the title and TMDB's "where to watch" page for every option. */
+  const WATCH_SEARCH = {
+    netflix: "https://www.netflix.com/search?q=",
+    prime: "https://www.amazon.com/gp/video/search?phrase=",
+    disney: "https://www.disneyplus.com/search?q=",
+    hulu: "https://www.hulu.com/search?q=",
+    hbomax: "https://play.hbomax.com/search?q=",
+    appletv: "https://tv.apple.com/search?term=",
+    paramount: "https://www.paramountplus.com/search/?q=",
+    peacock: "https://www.peacocktv.com/search?q=",
+  };
+  const PLAY = `<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>`;
+  function watchHtml(t) {
+    const mine = myServices.filter((k) => t.services.includes(k) && WATCH_SEARCH[k]);
+    if (filter !== "all" && mine.includes(filter)) mine.unshift(...mine.splice(mine.indexOf(filter), 1)); // the service you're viewing first
+    const link = (k) => `${WATCH_SEARCH[k]}${encodeURIComponent(t.title)}`;
+    const ext = `target="_blank" rel="noopener"`;
+    if (!mine.length) return t.link ? `<div class="watch-btns"><a class="watch-btn" href="${esc(t.link)}" ${ext}>${PLAY}Where to watch</a></div>` : "";
+    const [main, ...others] = mine;
+    return `<div class="watch-btns">
+        <a class="watch-btn" href="${esc(link(main))}" ${ext}>${PLAY}Watch on ${esc(svcInfo(main).name)}</a>
+        <button class="list-btn watch-more-btn" data-watch-more aria-expanded="false">More</button>
+      </div>
+      <div class="watch-more" hidden>
+        ${others.map((k) => `<a class="watch-alt" href="${esc(link(k))}" ${ext}><span class="dot" style="background:${esc(svcInfo(k).color)}"></span>Watch on ${esc(svcInfo(k).name)}</a>`).join("")}
+        ${t.link ? `<a class="watch-alt" href="${esc(t.link)}" ${ext}>All places to watch ›</a>` : ""}
+      </div>`;
+  }
+
   function openDetails(id) {
     const t = feed.titles[id];
     if (!t) return;
@@ -527,6 +558,7 @@
           <div class="d-services">${services.map((s) => `<span class="svc ${myServices.includes(s.key) ? "" : "not-mine"}" style="background:${esc(s.color)}">${esc(s.name)}</span>`).join("")}</div>
         </div>
       </div>
+      ${watchHtml(t)}
       ${scores.length ? `<div class="scores">${scores.map((s) => `<div class="score"><div class="v">${esc(s.v)}</div><div class="l">${esc(s.l)}</div></div>`).join("")}</div>` : ""}
       ${t.overview ? `<p class="overview">${esc(t.overview)}</p>` : ""}
       <div class="list-btns">
@@ -1318,7 +1350,16 @@
     $("#open-search").addEventListener("click", () => feed && openSearch());
     $("#search-input").addEventListener("input", renderSearch);
     $("#search-input").addEventListener("keydown", (e) => { if (e.key === "Enter") e.target.blur(); });
-    $("#details").addEventListener("click", (e) => { if (e.target.closest("[data-tip-ok]")) dismissRateTip(); });
+    $("#details").addEventListener("click", (e) => {
+      if (e.target.closest("[data-tip-ok]")) dismissRateTip();
+      const more = e.target.closest("[data-watch-more]");
+      if (more) {
+        const open = more.getAttribute("aria-expanded") !== "true";
+        more.setAttribute("aria-expanded", open);
+        more.parentElement.nextElementSibling.hidden = !open;
+        placeRateTip(); // the buttons below may have moved
+      }
+    });
     $("#details").addEventListener("close", () => $("#rate-tip")?.remove()); // not dismissed: it comes back next time
     $("#mylist").addEventListener("click", (e) => {
       const tab = e.target.closest("[data-tab]");

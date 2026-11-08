@@ -209,6 +209,18 @@ body:has(dialog[open]) { overflow: hidden; }
 .d-head-title { font-weight: 600; font-size: 15px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .d-top { padding-top: 16px; }
 
+/* Watch on (the service): the detail screen's main call to action, plus "More" */
+.watch-btns { display: flex; gap: 10px; margin-top: 16px; }
+.watch-btn {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 8px; border-radius: 10px;
+  background: var(--accent); color: #2b1a00; font-size: 15px; font-weight: 700; text-decoration: none; white-space: nowrap;
+}
+.watch-btns .watch-more-btn { flex: none; padding: 11px 18px; }
+.watch-more { display: flex; flex-direction: column; margin-top: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.watch-more[hidden] { display: none; }
+.watch-alt { display: flex; align-items: center; gap: 8px; padding: 12px 14px; color: var(--text); font-size: 15px; font-weight: 600; text-decoration: none; }
+.watch-alt + .watch-alt { border-top: 1px solid var(--line); }
+.watch-alt .dot { width: 8px; height: 8px; border-radius: 50%; }
 .scores { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin-top: 16px; }
 .score { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; }
 .score .v { font-size: 17px; font-weight: 700; }
