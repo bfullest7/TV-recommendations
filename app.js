@@ -207,9 +207,9 @@
         items: topPicks(),
       },
       { // always shown (right below Top picks) so "See all ›" can reach Liked and Watched
-        key: "watchlist", title: "Your watchlist",
+        key: "watchlist", title: "Your library",
         ...(Object.keys(watchlist).length
-          ? { source: "Titles you saved, newest first", items: listed }
+          ? { source: "Your watchlist, newest first", items: listed }
           : { source: "", items: [], hintOnly: true }), // empty: just the title and the three pills
       },
       {
@@ -404,11 +404,11 @@
       </section>`;
   }
 
-  /* "Your watchlist" row: three pills that open Your list at that tab, so Liked and
+  /* "Your library" row: three pills that open the Your library page at that tab, so Liked and
      Watched are always reachable (even before anything is saved). */
   function listPills() {
     const pill = (tab, icon, label) => `<button class="list-pill" data-open-mylist="${tab}">${icon}${label}</button>`;
-    return `<div class="list-pills">${pill("list", BOOKMARK, "In your list")}${pill("liked", THUMB, "Liked")}${pill("watched", CHECK, "Watched")}</div>`;
+    return `<div class="list-pills">${pill("list", BOOKMARK, "Watchlist")}${pill("liked", THUMB, "Liked")}${pill("watched", CHECK, "Watched")}</div>`;
   }
 
   function renderFilters() {
@@ -762,7 +762,7 @@
     const def = { key: grid.dataset.row, plain: ml.tab === "watched", forceService: ml.service !== "all" ? ml.service : null };
     const none = mlTitles(ml.tab).length
       ? "Nothing matches these filters"
-      : { list: "Nothing in your list yet. Tap <b>＋ Add to list</b> on any title to save it here.", liked: "Nothing liked yet. Tap <b>Like</b> on any title to see it here.", watched: "Nothing marked watched yet. Tap <b>Mark watched</b> on any title to see it here." }[ml.tab];
+      : { list: "Nothing on your watchlist yet. Tap <b>＋ Add to list</b> on any title to save it here.", liked: "Nothing liked yet. Tap <b>Like</b> on any title to see it here.", watched: "Nothing marked watched yet. Tap <b>Mark watched</b> on any title to see it here." }[ml.tab];
     grid.innerHTML = items.length ? items.map((t) => cardHtml(t, def)).join("") : `<p class="ml-empty">${none}</p>`;
   }
   function openMyList(tab = "list") {
@@ -949,7 +949,7 @@
       ["Signal: Audience, Critics, Trending", `
         <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the TMDB/Trakt blend from the Trending now row (without that row's recency share, since New &amp; recent is its own signal).</p>`],
       ["Watchlist & watched", `
-        <p><b>＋ Add to list</b> on any title adds it to the "Your watchlist" row right below Top picks, newest first. <b>Mark watched</b> hides a title from every row except "Your watchlist" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. A watched series comes back if a new season premieres after you marked it. <b>👎 Not for me</b> hides a title from the same rows. Titles you like stay in Top picks. Nothing moves while you're browsing: the rows update the next time you open the app, change a filter or close Settings. All are saved on this phone and included in backups. To undo any of them, open the title (search finds watched titles too) and tap the button again.</p>`],
+        <p><b>＋ Add to list</b> on any title adds it to your watchlist, shown in the "Your library" row right below Top picks, newest first. <b>Mark watched</b> hides a title from every row except "Your library" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. A watched series comes back if a new season premieres after you marked it. <b>👎 Not for me</b> hides a title from the same rows. Titles you like stay in Top picks. Nothing moves while you're browsing: the rows update the next time you open the app, change a filter or close Settings. All are saved on this phone and included in backups. To undo any of them, open the title (search finds watched titles too) and tap the button again.</p>`],
       ["When data updates", `
         <p>Trending numbers refresh every 2 hours. Everything else (what's on each service, ratings, Netflix Top 10) refreshes about once a day. Critic scores fill in gradually because of OMDb's and MDBList's daily limits. The time at the top of the app shows the last update.</p>`],
     ];

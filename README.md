@@ -16,12 +16,12 @@ A phone web app that shows the best things to stream right now on the services y
 A filter at the top limits every row to one service. Your services and thumbs are saved only on your phone.
 
 **Your lists and search:**
-- **＋ Add to list** on any title adds it to a "Your watchlist" row right below Top picks, newest first. Posters show small status icons in the corner: a thumb for titles you liked, a bookmark for titles in your list and a ✓ (on a dimmed poster) for titles you watched.
-- **Mark watched** hides a title from every row except "Your watchlist" and the Netflix Top 10, where it shows the ✓. It doesn't take the title off your list. A watched series comes back to the rows when a new season premieres after you marked it.
+- **＋ Add to list** on any title adds it to a "Your library" row right below Top picks, newest first. Posters show small status icons in the corner: a thumb for titles you liked, a bookmark for titles in your list and a ✓ (on a dimmed poster) for titles you watched.
+- **Mark watched** hides a title from every row except "Your library" and the Netflix Top 10, where it shows the ✓. It doesn't take the title off your list. A watched series comes back to the rows when a new season premieres after you marked it.
 - **👎 Not for me** hides a title from the same rows. Titles you like get a thumb on their poster; Not for me titles aren't marked.
-- Nothing moves while you browse: a title you like, mark Not for me or mark watched stays where it is (dimmed if it's going to leave the row), and the rows update the next time you open the app, change a filter or close Settings. Adding to your list updates "Your watchlist" right away without moving what's on screen.
+- Nothing moves while you browse: a title you like, mark Not for me or mark watched stays where it is (dimmed if it's going to leave the row), and the rows update the next time you open the app, change a filter or close Settings. Adding to your list updates "Your library" right away without moving what's on screen.
 - To undo any of these, open the title (search finds every title) and tap the button again.
-- **See all ›** on "Your watchlist" opens the **Your list** page: posters three across, with three tabs. **In your list** shows titles you've added and haven't watched; **Liked** shows every title you've liked; **Watched** shows everything you've marked watched. Sort (recently added, liked or watched, best match, IMDb rating, newest release, A–Z) and filter by service or TV & movies.
+- The **Watchlist**, **Liked** and **Watched** pills on the "Your library" row open the **Your library** page at that tab: posters three across, with three tabs. **Watchlist** shows titles you've added and haven't watched; **Liked** shows every title you've liked; **Watched** shows everything you've marked watched. Sort (recently added, liked or watched, best match, IMDb rating, newest release, A–Z) and filter by service or TV & movies.
 - **Search** (magnifying glass) opens full screen and starts empty each time. It finds any title the app tracks, across all services; titles on your services come first, with "In your list" and "✓ Watched" labels.
 
 ## How it works
