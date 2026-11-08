@@ -399,6 +399,8 @@
   const metaLine1 = (t) => [latestYear(t), t.imdb != null && `IMDb ${t.imdb.toFixed(1)}`].filter(Boolean).join(" · ");
 
   /* "In your list" icon: a simple bookmark ribbon, drawn like the header icons. */
+  // small "opens a website" arrow in the corner of the IMDb / Rotten Tomatoes / Metacritic score tiles
+  const OPEN_ARROW = `<svg class="open-arrow" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16L16 8M9 8h7v7"/></svg>`;
   const BOOKMARK = `<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4.2L6 21V4a1 1 0 0 1 1-1z"/></svg>`;
 
   const THUMB = `<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M2 10.5h3.5V21H2zM7.5 21h9.2a2 2 0 0 0 1.96-1.6l1.3-6.5A2 2 0 0 0 18 10.5h-4.6l.7-3.6a2 2 0 0 0-.55-1.8L12.6 4l-5.1 5.6z"/></svg>`;
@@ -655,9 +657,9 @@
     if (!t) return;
     const thumb = thumbs[id]?.v || 0;
     const scores = [
-      t.imdb != null && { v: t.imdb.toFixed(1), l: `IMDb · ${fmtCount(t.imdb_votes || 0)} votes` },
-      t.rt != null && { v: `${t.rt}%`, l: "Rotten Tomatoes (critics)" },
-      t.mc != null && { v: t.mc, l: "Metacritic" },
+      t.imdb != null && { v: t.imdb.toFixed(1), l: `IMDb · ${fmtCount(t.imdb_votes || 0)} votes`, href: t.imdb_id && `https://www.imdb.com/title/${encodeURIComponent(t.imdb_id)}/` },
+      t.rt != null && { v: `${t.rt}%`, l: "Rotten Tomatoes (critics)", href: `https://www.rottentomatoes.com/search?search=${encodeURIComponent(t.title)}` },
+      t.mc != null && { v: t.mc, l: "Metacritic", href: `https://www.metacritic.com/search/${encodeURIComponent(t.title.replace(/\//g, " "))}/` },
       t.watchers > 0 && { v: fmtCount(t.watchers), l: "Watching now on Trakt" },
       t.tmdb_trend_rank && { v: `#${t.tmdb_trend_rank}`, l: `Trending on TMDB today (${t.type === "tv" ? "TV" : "movies"})` },
       t.netflix_rank && { v: `#${t.netflix_rank}`, l: "Netflix Top 10" },
@@ -679,7 +681,9 @@
         </div>
       </div>
       ${t.trailer ? `<a class="trailer-row" href="https://www.youtube.com/watch?v=${encodeURIComponent(t.trailer)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" fill="currentColor"><path d="M7 4.5v15l12.5-7.5z"/></svg>Watch trailer</a>` : ""}
-      ${scores.length ? `<div class="scores">${scores.map((s) => `<div class="score"><div class="v">${esc(s.v)}</div><div class="l">${esc(s.l)}</div></div>`).join("")}</div>` : ""}
+      ${scores.length ? `<div class="scores">${scores.map((s) => s.href
+        ? `<a class="score linked" href="${esc(s.href)}" target="_blank" rel="noopener"><div class="v">${esc(s.v)}</div><div class="l">${esc(s.l)}</div>${OPEN_ARROW}</a>`
+        : `<div class="score"><div class="v">${esc(s.v)}</div><div class="l">${esc(s.l)}</div></div>`).join("")}</div>` : ""}
       ${t.overview ? `<p class="overview">${esc(t.overview)}</p>` : ""}
       <div class="list-btns">
         <button class="list-btn" data-watchlist aria-pressed="${!!watchlist[id]}">${watchlist[id] ? `<span class="btn-icon">${BOOKMARK}</span>Added to list` : "＋ Add to list"}</button>

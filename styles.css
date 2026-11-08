@@ -241,6 +241,9 @@ body:has(dialog[open]) { overflow: hidden; }
 .score { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; }
 .score .v { font-size: 17px; font-weight: 700; }
 .score .l { font-size: 12px; color: var(--muted); }
+/* IMDb, Rotten Tomatoes and Metacritic tiles open that site (IMDb page, or a search on the other two) */
+.score.linked { position: relative; display: block; color: inherit; text-decoration: none; padding-right: 22px; }
+.score .open-arrow { position: absolute; top: 8px; right: 8px; color: var(--muted); }
 .overview { margin: 14px 0 0; font-size: 14px; line-height: 1.5; }
 
 .list-btns { display: flex; gap: 10px; margin-top: 18px; }
