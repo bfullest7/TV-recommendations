@@ -9,12 +9,12 @@ The app uses one small scale. Each size has one job; avoid in-between sizes like
 | Size | Job | Where it's used |
 |---|---|---|
 | 22 | App title | "What to Watch", with the orange TV logo (28 wide) just before it |
-| 20 | Screen titles | "Settings"; show title on a detail screen |
+| 20 | Screen titles | "Your settings"; show title on a detail screen |
 | 18 | Headings | Home row titles ("Trending now"), Settings section headings, detail-screen headings ("Why this pick"), welcome card title |
 | 17 | Score numbers | Big numbers in the detail-screen score boxes ("9.0", "90%") |
 | 16 | Form inputs, tip headings | Search box and "TV & movies" picker (16 stops iPhone from zooming in); the bold heading in the genre tip |
-| 15 | Buttons and tappable labels | Add to list, Mark watched, Like, Not for me, backup buttons, "Pick your services", "How it's calculated" item names, name in a detail screen's top bar, show names in search results |
-| 14 | Body text and subtitles | Home row subtitles, Settings descriptions, "How it's calculated" text, genre and service names, show description, "Why this pick" text, detail-screen year/type/genres line, welcome card text, filter buttons |
+| 15 | Buttons and tappable labels | Add to list, Mark watched, Like, Not for me, backup buttons, "Pick your services", "How your picks work" item names, name in a detail screen's top bar, show names in search results |
+| 14 | Body text and subtitles | Home row subtitles, Settings descriptions, "How your picks work" text, genre and service names, show description, "Why this pick" text, detail-screen year/type/genres line, welcome card text, filter buttons |
 | 13 | Title details in lists | Show names under posters (posters are narrow, so 13 keeps long names readable); the year/type/rating and service lines in search results |
 | 12 | Fine print | Year and rating under posters, score labels, service badges on the detail screen, "Liked", "In your list" and "Watched" pills in search, "Data updated" note, table headers, the grey source line under each signal in "Why this pick" |
 | 10.5 | Badges on posters | Service badge on a poster ("Netflix") |
@@ -48,13 +48,13 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 - Screen side margin: 16.
 - Space between home screen rows: 28 above each row title; 14 between a row's subtitle and its posters.
 - Gap between side-by-side buttons: 10; between tiles in a grid: 6 to 8.
-- Paragraphs in "How it's calculated" (Settings and the Top picks page): 14 between paragraphs; 16 above and below charts.
-- Welcome screen: behind the card, a tilted (-8°), darkened (38%) wall of today's trending posters, five across, filling the whole screen below the header, with a dark gradient rising from the bottom (solid page color at the very bottom, clear by about halfway up) and a softer one under the header (clear by 30% down). The card's middle sits 45% of the way down the screen (a little above center, which looks centered to the eye), over the wall, slightly see-through (86% of the card color, lightly blurred), 34 in from each side (on small phones it widens to 16 in, so the text keeps two lines) with 50 top, 58 bottom and 26 side padding; 44 top and bottom, 24 sides, 28 above its button, everything centered. Title 20 bold, text 15, button 16. Text: "Find the best things to watch. Select streaming services to get started." on two balanced lines (no single word left alone); button "Select your services". The welcome screen has no header at all (the poster wall runs to the top of the screen); the header, with search and Settings (a gear icon), appears once services are picked.
+- Paragraphs in "How your picks work" (Settings and the Top picks page): 14 between paragraphs; 16 above and below charts.
+- Welcome screen: behind the card, a tilted (-8°), darkened (38%) wall of today's trending posters, five across, filling the whole screen below the header, with a dark gradient rising from the bottom (solid page color at the very bottom, clear by about halfway up) and a softer one under the header (clear by 30% down). The card's middle sits 45% of the way down the screen (a little above center, which looks centered to the eye), over the wall, slightly see-through (86% of the card color, lightly blurred), 34 in from each side (on small phones it widens to 16 in, so the text keeps two lines) with 50 top, 58 bottom and 26 side padding; 44 top and bottom, 24 sides, 28 above its button, everything centered. Title 20 bold, text 15, button 16. Text: "Find the best things to watch. Select streaming services to get started." on two balanced lines (no single word left alone); button "Select your services". The welcome screen has no header at all (the poster wall runs to the top of the screen); the header, with search and Settings (a person icon), appears once services are picked.
 
 ## Writing
 
 - Plain, short and friendly. Sentence case ("Add to list", not "Add To List").
-- **Row subtitles:** one short line that says what the row is. Full explanations live in Settings under "How it's calculated". Subtitles may wrap to two lines on small phones; never cut them off with "…".
+- **Row subtitles:** one short line that says what the row is. Full explanations live in Settings under "How your picks work". Subtitles may wrap to two lines on small phones; never cut them off with "…".
 - **Periods:** leave the period off a subtitle or description that is a single sentence. Keep periods when there are two or more sentences.
 - The Top picks subtitle stays the same before and after the user rates titles.
 - Use "list" in buttons ("＋ Add to list", then a bookmark icon + "Added to list") and "Your watchlist" for the row.
@@ -63,7 +63,7 @@ Default text (anything not listed) is 15 with 1.4 line spacing. Paragraphs use 1
 ## Icons
 
 - Icons are simple drawn shapes in the style of the search and settings buttons, not emoji (emoji look different on each phone).
-- **Header buttons:** search (21 wide) and Settings (an eight-point gear, 18 wide, so it looks the same size as the search icon), each in a 40 round button.
+- **Header buttons:** search (21 wide) and Settings (an outline person icon, 20 wide), each in a 40 round button. The person icon opens "Your settings", whose headings all speak to the user: "Your streaming services", "Genres you like", "How your picks work", "Back up your data".
 - **Poster status circles:** small white icons in dark circles in the poster's top-right corner, always in this order: **liked** (drawn thumbs-up), **in your list** (bookmark), **watched** (✓). A watched poster is also dimmed. Each icon is left out where every poster would have it: no bookmark in "Your watchlist" or the In your list tab, no thumb in the Liked tab, no ✓ (or dimming) in the Watched tab.
 - **Not for me** is never marked on posters (those titles are hidden from rows).
 - **Search results** show the same states as small grey pills under the service line: "Liked" (thumb), "In your list" (bookmark), "Watched" (✓).
