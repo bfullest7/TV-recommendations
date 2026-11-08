@@ -568,9 +568,11 @@
         <button class="thumb down" data-thumb="-1" aria-pressed="${thumb < 0}">👎 Not for me</button>
       </div>
       ${t.gone ? "" : whyThisPick(t)}`;
+    const newTitle = $("#details").dataset.id !== id;
     $("#details").dataset.id = id;
     const firstOpen = !$("#details").open;
     showSheet($("#details"));
+    if (firstOpen || newTitle) $("#details").scrollTop = 0; // a title always opens at the top (redraws after a tap keep their place)
     if (firstOpen) showRateTip();
   }
 
