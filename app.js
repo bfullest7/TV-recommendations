@@ -361,16 +361,25 @@
     setTimeout(() => tip.remove(), 250);
   }
 
+  /* Behind the welcome card: a tilted, darkened wall of today's trending posters
+     (across all services) that fades out toward the card */
+  function welcomeWall() {
+    const posters = (feed.rows.trending || []).map((id) => feed.titles[id]).filter((t) => t && t.poster).slice(0, 20);
+    if (!posters.length) return "";
+    return `<div class="welcome-wall" aria-hidden="true"><div class="wall-grid">${posters.map((t) => `<img src="${IMG}w185${esc(t.poster)}" alt="">`).join("")}</div></div>`;
+  }
+
   function drawRows() {
     // The welcome card sits in the middle of the screen below the header
     $("#rows").classList.toggle("is-welcome", !myServices.length);
     $("#rows").style.minHeight = myServices.length ? "" : `calc(100dvh - ${$(".top").offsetHeight}px)`;
     if (!myServices.length) {
       $("#rows").innerHTML = `
+        ${welcomeWall()}
         <div class="notice welcome">
           <b>Welcome to What to Watch!</b>
-          <p>Find the best things to watch on your services. Pick services to get started.</p>
-          <button class="done-btn" data-open-settings>Pick your services</button>
+          <p>Find the best things to watch on your services. Select services to get started.</p>
+          <button class="done-btn" data-open-settings>Select your services</button>
         </div>`;
       return;
     }

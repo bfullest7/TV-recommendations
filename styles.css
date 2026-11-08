@@ -125,8 +125,18 @@ h1 .logo { width: 28px; height: 24px; margin-right: 10px; vertical-align: -6px; 
 .notice b { color: var(--text); }
 .welcome { text-align: center; padding: 44px 24px; }
 .welcome p { text-wrap: balance; } /* even lines, no single word left alone */
-.rows.is-welcome { display: flex; flex-direction: column; justify-content: center; padding-bottom: 8px; }
-.rows.is-welcome .welcome { margin-top: 0; margin-bottom: 0; }
+/* Welcome screen: a wall of trending posters behind the card */
+.rows.is-welcome { padding-top: 0; overflow: hidden; }
+.welcome-wall {
+  position: absolute; left: 0; right: 0; top: 0; height: 64vh; overflow: hidden; pointer-events: none;
+  -webkit-mask-image: linear-gradient(#000 35%, transparent 95%); mask-image: linear-gradient(#000 35%, transparent 95%);
+}
+.wall-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 125%; margin: -40px 0 0 -12%;
+  transform: rotate(-8deg); opacity: .45;
+}
+.wall-grid img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: var(--surface-2); display: block; }
+.rows.is-welcome .welcome { position: relative; margin-top: 30vh; box-shadow: 0 -10px 40px rgba(0,0,0,.35); }
 .welcome b { font-size: 18px; }
 .welcome p { margin: 10px 0 0; font-size: 14px; line-height: 1.5; }
 .welcome .done-btn { width: auto; margin-top: 28px; padding: 12px 24px; }
