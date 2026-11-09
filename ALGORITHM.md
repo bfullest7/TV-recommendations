@@ -11,6 +11,27 @@ The data build runs every 2 hours on GitHub and writes `data/feed.json`, which e
 - **Every 2 hours (Trending update):** who's watching what right now (Trakt) and TMDB's daily trending lists. Critic score lookups also run then, within their daily limits.
 - **Every morning (full rebuild):** the first run after 10:00 UTC, about 5:17 AM Eastern in winter (`full_refresh_utc_hour`). A missed morning run is caught up by the next one, and a manual rebuild doesn't skip the next morning's.
 
+**When each source refreshes.** The schedule runs at 17 minutes past every even hour (UTC). GitHub often starts it late, sometimes by an hour.
+
+| Source | What it gives | When it's fetched |
+|---|---|---|
+| **Trakt** | People watching each title right now | Every 2 hours |
+| **TMDB trending** | Today's trending movies and shows | Every 2 hours. Titles new to the data get their details fetched right away. |
+| **TMDB lists and details** | Which titles are on each service (via JustWatch), genres, posters, descriptions, release and season dates, running time, seasons, trailers, similar titles | Every morning. Service changes and "New on your services" arrivals are detected then. |
+| **IMDb** | Ratings and vote counts (IMDb's daily file) | Every morning. If the file is unavailable, the previous ratings are kept. |
+| **OMDb** | Rotten Tomatoes, Metacritic, IMDb fallback | Every 2 hours, new titles first, up to 900 lookups a day (`omdb_daily_limit`). Each title is rechecked every 30 days (`omdb_recheck_days`); recent releases still missing a score every 3 days. |
+| **MDBList** | Rotten Tomatoes and Metacritic that OMDb lacks (mostly TV) | Same as OMDb, up to 900 a day (`mdblist_daily_limit`). |
+| **Wikidata** | Exact Rotten Tomatoes and Metacritic page addresses | Every morning, for titles not checked yet; each title rechecked every 30 days. |
+| **Netflix Top 10** | Netflix's official US weekly list | Checked every morning. Netflix publishes a new week each Tuesday, so it changes once a week. |
+
+The daily lookup limits reset at midnight UTC (7 PM Eastern in winter). A big batch of new titles (like adding a new list) takes a day or so to get all its critic scores; normally new titles get them within 2 hours.
+
+**On the phone.**
+- **The data:** the app checks for new data each time it's opened or brought back to the screen, and redraws only if the data changed.
+- **The settings:** `config.json` (weights, rotation and so on) is read each time the app starts, so a change applies the next time the app opens.
+- **The app itself:** a new version shows the "Update available" banner. Without tapping Refresh, it updates on its own within about 10 minutes, or the next time the app starts fresh.
+- **Your choices** (likes, Not for me, watched, watchlist, genres, services) are saved on the phone instantly and never leave it, except in a backup file.
+
 **Which titles are tracked.** For each service, movies and TV separately, from TMDB:
 
 | List | How many |
