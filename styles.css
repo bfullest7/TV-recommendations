@@ -245,9 +245,9 @@ body:has(dialog[open]) { overflow: hidden; }
 .score.linked {
   position: relative; display: block; color: inherit; text-decoration: none; padding-right: 22px;
   /* a soft light glow from the arrow's corner marks the tiles that open a website */
-  background: radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 70%), var(--surface-2);
+  background: radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 70%), var(--surface-2);
 }
-.score .open-arrow { position: absolute; bottom: 8px; right: 8px; color: var(--muted); }
+.score .open-arrow { position: absolute; bottom: 8px; right: 8px; color: #c6cad1; } /* between --muted and --text */
 .overview { margin: 14px 0 0; font-size: 14px; line-height: 1.5; }
 
 .list-btns { display: flex; gap: 10px; margin-top: 18px; }
