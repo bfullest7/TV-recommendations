@@ -157,10 +157,24 @@
   // ---------------------------------------------------------------- ranking
   const hasTaste = () => Object.keys(thumbs).length > 0 || Object.keys(genrePrefs).length > 0;
   const GENRE_PREF_VOTES = 2; // a genre set in Settings counts like two title thumbs
+  /* A liked title's genres count less the more common the genre is, so liking one drama
+     doesn't fill Top Picks with dramas: each counts (1 - share of titles in it)^3, about
+     25% for Drama, 45% for Comedy, 60% for Crime and nearly fully for rarer genres. */
+  const COMMON_GENRE_SOFTENING = 3;
+  let genreShareCache = null;
+  function genreShare(g) {
+    if (!genreShareCache || genreShareCache.feed !== feed) {
+      const all = Object.values(feed.titles), counts = {};
+      for (const t of all) for (const x of t.genres || []) counts[x] = (counts[x] || 0) + 1;
+      genreShareCache = { feed, share: Object.fromEntries(Object.entries(counts).map(([x, c]) => [x, c / all.length])) };
+    }
+    return genreShareCache.share[g] || 0;
+  }
 
   /* "Your taste" score, 0-100 (50 = neutral), or null with no thumbs and no
    * genre likes.
-   * - Genres: each liked title raises its genres; a genre liked or disliked in
+   * - Genres: each liked title raises its genres (common genres like Drama less, see
+   *   COMMON_GENRE_SOFTENING); a genre liked or disliked in
    *   Settings counts as a stronger vote (smoothed either way). A title marked
    *   Not for me doesn't touch genres: it's usually about that title, not about
    *   all dramas (the genre 👎 in Settings is for that).
@@ -171,7 +185,7 @@
     const aff = {}, n = {};
     const recs = {};
     for (const r of Object.values(thumbs)) {
-      if (r.v > 0) for (const g of r.genres || []) { aff[g] = (aff[g] || 0) + r.v; n[g] = (n[g] || 0) + 1; }
+      if (r.v > 0) for (const g of r.genres || []) { aff[g] = (aff[g] || 0) + (1 - genreShare(g)) ** COMMON_GENRE_SOFTENING; n[g] = (n[g] || 0) + 1; }
       for (const id of r.recs || []) recs[id] = (recs[id] || 0) + r.v;
     }
     for (const [g, v] of Object.entries(genrePrefs)) {
@@ -1421,7 +1435,7 @@
       ["Keeping rows fresh", `
         <p>Titles you keep scrolling past make room for others. From the 4th day a title is on your screen without you opening it, it moves 4 places down its row each day. After 2 weeks out of sight, it's back in its usual spot. Titles you open, like, save or mark watched keep their place. Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: Your taste", `
-        <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres. A 👎 (Not for me) on a title doesn't lower its genres, since it's usually about that title, not the whole genre; use <b>Genres</b> for that. A genre you set in <b>Genres</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you marked Not for me a drop.</p>
+        <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres, common ones less (Drama about a quarter as much as a rare genre), so one liked drama doesn't fill Top Picks with dramas. A 👎 (Not for me) on a title doesn't lower its genres, since it's usually about that title, not the whole genre; use <b>Genres</b> for that. A genre you set in <b>Genres</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you marked Not for me a drop.</p>
         <p>Not counted until you rate something or pick a genre.</p>
         <p>Genres you 👎 in <b>Genres</b> apply to every row: titles in those genres move to the end, after everything else (unless they're also in a genre you 👍). Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: New & recent", `
