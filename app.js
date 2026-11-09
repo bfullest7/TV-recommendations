@@ -24,6 +24,9 @@
   let libTab = "list"; // which pill the "Your library" row shows: "list" (Watchlist), "liked" or "watched"
 
   const $ = (sel) => document.querySelector(sel);
+  /* No orphans: the last two words always share a line (joined by a no-break space), so a
+     heading that wraps never leaves one word on its own ("…of Hill / House" becomes "…of / Hill House"). */
+  const noOrphan = (s) => String(s ?? "").replace(/ (\S+)\s*$/, "\u00a0$1");
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   // ---------------------------------------------------------------- storage
@@ -534,8 +537,8 @@
     return `
       <section class="row" data-row="${def.key}" aria-labelledby="row-${def.key}">
         <div class="row-head">
-          <div class="row-title-line"><h2 id="row-${def.key}">${esc(def.title)}</h2>${def.key === "picks" ? `<button class="see-all" data-how-picks>How it works ›</button>` : ""}</div>
-          ${def.library ? listPills() : `<p class="source">${esc(def.source)}</p>`}
+          <div class="row-title-line"><h2 id="row-${def.key}">${esc(noOrphan(def.title))}</h2>${def.key === "picks" ? `<button class="see-all" data-how-picks>How it works ›</button>` : ""}</div>
+          ${def.library ? listPills() : `<p class="source">${esc(noOrphan(def.source))}</p>`}
         </div>
         ${def.library ? libraryBody(def) : def.items.length
           ? `<div class="scroller">${def.items.slice(0, n).map((t) => cardHtml(t, def)).join("")}${def.items.length > n ? `<button class="see-all-tile" data-open-row="${def.key}"><span class="ghost-poster">See all ›</span></button>` : ""}</div>`
@@ -686,7 +689,7 @@
       <div class="d-top">
         <div class="poster">${t.poster ? `<img src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}</div>
         <div class="d-info">
-          <h2 id="d-title">${esc(t.title)}</h2>
+          <h2 id="d-title">${esc(noOrphan(t.title))}</h2>
           <div class="d-sub">${[yearRange(t), ...lengthBits(t), t.genres.slice(0, 3).join(", ")].filter(Boolean).map(esc).join(" · ")}</div>
           ${services.length ? `<div class="d-services">${services.map((s) => `<span class="svc ${myServices.includes(s.key) ? "" : "not-mine"}" style="background:${esc(s.color)}">${esc(s.name)}</span>`).join("")}</div>` : ""}
           ${isAway(t) ? `<p class="d-away">No longer available</p>` : ""}
@@ -907,7 +910,7 @@
     const rows = $("#rows");
     const old = rows.querySelector('[data-row="because"]');
     const def = myServices.length && rowDefs().find((d) => d.key === "because");
-    if ((old?.querySelector("h2")?.textContent || null) === (def?.title || null)) return;
+    if ((old?.querySelector("h2")?.textContent || null) === (def?.title ? noOrphan(def.title) : null)) return;
     const anchor = (lastCardRow?.isConnected && !["because", "watchlist"].includes(lastCardRow.dataset.row) && lastCardRow)
       || [...rows.querySelectorAll('.row:not([data-row="because"]):not([data-row="watchlist"])')].find((r) => r.getBoundingClientRect().bottom > 0);
     const before = anchor && anchor.getBoundingClientRect().top;
@@ -1111,8 +1114,8 @@
     if (rp.service !== "all" && !myServices.includes(rp.service)) rp.service = "all";
     const def = rowWith(rp.key, rp.service, rp.kind);
     if (!def) return;
-    $("#rp-title").textContent = def.title;
-    $("#rp-sub").textContent = def.source;
+    $("#rp-title").textContent = noOrphan(def.title);
+    $("#rp-sub").textContent = noOrphan(def.source);
     const sorts = [["row", RP_FIRST[rp.key] || "Default"], ["imdb", "IMDb rating"], ["newest", "Newest release"], ["az", "A–Z"]];
     $("#rp-sort").innerHTML = sorts.map(([k, l]) => `<option value="${k}" ${rp.sort === k ? "selected" : ""}>${l}</option>`).join("");
     $("#rp-kind").value = rp.kind;
