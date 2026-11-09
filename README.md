@@ -21,12 +21,14 @@ Each home row shows its best 20 titles; when there are more, a **See all ›** t
 - **＋ Add to list** on any title adds it to a "Your library" row right below Top Picks, newest first. Posters show small status icons in the corner: a thumb for titles you liked, a bookmark for titles in your list and a ✓ (on a dimmed poster) for titles you watched.
 - **Mark watched** hides a title from every row except "Your library" and the Netflix Top 10, where it shows the ✓. It doesn't take the title off your list. A watched series comes back to the rows when a new season premieres after you marked it.
 - **👎 Not for me** hides a title from the same rows. Titles you like get a thumb on their poster; Not for me titles aren't marked.
-- Nothing moves while you browse: a title you like, mark Not for me or mark watched stays where it is (dimmed if it's going to leave the row), and the rows update the next time you open the app, change a filter or close Settings. Adding to your list updates "Your library" right away without moving what's on screen.
+- Mark watched and Not for me take effect when you close the title: it fades out of its rows and a banner offers Undo for 5 seconds. Otherwise nothing moves while you browse: a title you like stays where it is, and the rows update the next time you open the app, change a filter or close Settings. Adding to your list updates "Your library" right away without moving what's on screen.
 - To undo any of these, open the title (search finds every title) and tap the button again.
 - The "Your library" row has **Watchlist**, **Liked** and **Watched** pills that switch what the row shows; the **See all ›** tile at the end opens the **Your library** page: posters three across, with three tabs. **Watchlist** shows titles you've added and haven't watched; **Liked** shows every title you've liked; **Watched** shows everything you've marked watched. Sort (recently added, liked or watched, best match, IMDb rating, newest release, A–Z) and filter by service or TV & movies.
 - **Search** (magnifying glass) opens full screen and starts empty each time. It finds any title the app tracks, across all services. Words can be in any order, and words that describe the title (its genre, "documentary", "movie", a service name) narrow the match instead of breaking it, so "mike tyson documentary" or "tyson netflix" find Mike Tyson's special, and "documentary" or "crime netflix" list matching titles; titles on your services come first, with "In your list" and "✓ Watched" labels.
 
 ## How it works
+
+**[ALGORITHM.md](ALGORITHM.md) is the full reference for how titles are picked and ordered** (rows, scores, your choices, rotation, and a log of changes and why). The summary below gives the setup side.
 
 - `pipeline/build_feed.py` runs on GitHub Actions every 2 hours. It refreshes the trending numbers (Trakt and TMDB) each time and everything else (what's on each service, IMDb ratings, critic scores, Netflix Top 10) once a day, early each morning (the first run after 10:00 UTC, 5:17 AM Eastern in winter; `full_refresh_utc_hour`). It writes `data/feed.json`.
 - Which titles the app tracks: for each service, movies and TV separately, TMDB's top 40 highest rated, top 40 popular right now, top 40 new in the last 30 days (`discover_pages_per_list`, 20 per page) and top 100 most well known, meaning the most-rated titles such as Squid Game (`well_known_pages`; top 200 for Netflix and Hulu TV, `well_known_pages_by_service`), plus the top 40 most-rated documentaries and (TV only) reality shows, which get fewer ratings than dramas (`genre_lists`), plus everything trending and the Netflix Top 10.
@@ -35,6 +37,8 @@ Each home row shows its best 20 titles; when there are more, a **See all ›** t
 - The Top Picks ranking happens on the phone, so each person's thumbs only affect their own picks.
 
 ### Top Picks ranking
+
+(Summary; [ALGORITHM.md](ALGORITHM.md) has the details.)
 
 Each signal is scored 0–100 and combined with these weights (edit them in `config.json`):
 
