@@ -712,7 +712,7 @@
     const newTitle = $("#details").dataset.id !== id;
     $("#details").dataset.id = id;
     const firstOpen = !$("#details").open;
-    if (firstOpen || newTitle) openedThumb = { id, before: thumbs[id] ? { ...thumbs[id] } : null };
+    if (firstOpen || newTitle) opened = { id, thumb: thumbs[id] ? { ...thumbs[id] } : null, watched: watched[id] ? { ...watched[id] } : null, wasWatched: isWatched(t) };
     showSheet($("#details"));
     if (firstOpen || newTitle) $("#details").scrollTop = 0; // a title always opens at the top (redraws after a tap keep their place)
     if (firstOpen) showRateTip();
@@ -878,8 +878,8 @@
     d.scrollTop = y;
     placeRateTip(); // buttons can shift when the screen is redrawn
   }
-  /* Like and Mark watched never move titles while browsing (Not for me does, when the
-     title's screen closes: see removeDisliked). The poster
+  /* Like never moves titles while browsing (Not for me and Mark watched do, when the
+     title's screen closes: see removeOnClose). The poster
      changes in place (dimmed, "✓ Watched", bookmark) and the rows update at the next
      natural moment: reopening the app, changing a filter or closing Settings. */
   let homeStale = false;
@@ -970,14 +970,18 @@
     if ($("#search").open) renderSearch();
   }
 
-  /* Not for me: when the title's screen closes, a title newly marked Not for me fades out of
-     every row it would leave (not Your library or the Netflix Top 10) and a banner offers
-     Undo for 5 seconds. Undo puts it back where it was, with its earlier rating. */
-  let openedThumb = null, undoTimer = null, undoState = null;
+  /* Not for me and Mark watched: when the title's screen closes, a title newly marked Not
+     for me or watched fades out of every row it leaves (not Your library or the Netflix
+     Top 10) and a banner offers Undo for 5 seconds. Undo puts it back where it was, as it
+     was when its screen opened (rating and watched). */
+  let opened = null, undoTimer = null, undoState = null;
   const LIBRARY_ROWS = ["mylist", "myliked", "mywatched"];
-  function removeDisliked() {
-    const o = openedThumb, id = o?.id;
-    if (!id || !(thumbs[id]?.v < 0) || o.before?.v < 0 || document.visibilityState !== "visible") return;
+  function removeOnClose() {
+    const o = opened, id = o?.id, t = id && titleOf(id);
+    if (!t || document.visibilityState !== "visible") return;
+    const disliked = thumbs[id]?.v < 0 && !(o.thumb?.v < 0);
+    const nowWatched = isWatched(t) && !o.wasWatched;
+    if (!disliked && !nowWatched) return;
     const cards = [...document.querySelectorAll(`#rows .card[data-id="${CSS.escape(id)}"], #rp-grid .card[data-id="${CSS.escape(id)}"]`)]
       .filter((c) => { const row = c.closest("[data-row]")?.dataset.row; return row && !KEEPS.includes(row) && !LIBRARY_ROWS.includes(row); })
       .filter((c) => !c.classList.contains("removed"));
@@ -995,7 +999,8 @@
         } else c.classList.add("removed");
       }, 200);
     }
-    showUndo({ id, before: o.before, cards });
+    $("#undo-text").textContent = disliked ? "Removed from recommendations" : "Marked as watched";
+    showUndo({ ...o, cards });
   }
   function showUndo(state) {
     undoState = state;
@@ -1016,15 +1021,17 @@
     const s = undoState;
     if (!s) return;
     hideUndo();
-    if (s.before) thumbs[s.id] = s.before; else delete thumbs[s.id];
+    if (s.thumb) thumbs[s.id] = s.thumb; else delete thumbs[s.id];
+    if (s.watched) watched[s.id] = s.watched; else delete watched[s.id];
     save(STORE.thumbs, thumbs);
+    save(STORE.watched, watched);
     for (const c of s.cards) {
       c.classList.remove("removed", "collapsing");
       c.style.width = "";
       requestAnimationFrame(() => c.classList.remove("removing")); // fades back in
     }
     patchCards(s.id);
-    updateWatchlistRow(false, "liked");
+    updateWatchlistRow();
     updateBecauseRow();
     homeStale = true;
   }
@@ -1630,7 +1637,7 @@
       if (e.target.closest("[data-tip-ok]")) dismissRateTip();
     });
     $("#details").addEventListener("close", () => $("#rate-tip")?.remove()); // not dismissed: it comes back next time
-    $("#details").addEventListener("close", removeDisliked);
+    $("#details").addEventListener("close", removeOnClose);
     $("#undo-btn").addEventListener("click", undoRemoval);
     $("#mylist").addEventListener("click", (e) => {
       const tab = e.target.closest("[data-tab]");
