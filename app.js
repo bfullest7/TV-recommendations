@@ -657,6 +657,12 @@
   }
 
   // ---------------------------------------------------------------- details
+  // "Movie · 2h 15m", or "2 seasons" for a show (says it's a show, and how much there is to watch)
+  function lengthBits(t) {
+    if (t.type === "tv") return [t.season_count ? `${t.season_count} season${t.season_count === 1 ? "" : "s"}` : "TV series"];
+    const m = t.runtime;
+    return ["Movie", m ? (m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? ` ${m % 60}m` : ""}` : `${m}m`) : ""];
+  }
   function openDetails(id) {
     const t = titleOf(id);
     if (t && feed.titles[id]) markOpened(id); // you showed interest: it keeps its place
@@ -681,7 +687,7 @@
         <div class="poster">${t.poster ? `<img src="${IMG}w342${esc(t.poster)}" alt="">` : `<div class="no-img">${esc(t.title)}</div>`}</div>
         <div class="d-info">
           <h2 id="d-title">${esc(t.title)}</h2>
-          <div class="d-sub">${[yearRange(t), t.type === "tv" ? "TV series" : "Movie", t.genres.slice(0, 3).join(", ")].filter(Boolean).map(esc).join(" · ")}</div>
+          <div class="d-sub">${[yearRange(t), ...lengthBits(t), t.genres.slice(0, 3).join(", ")].filter(Boolean).map(esc).join(" · ")}</div>
           ${services.length ? `<div class="d-services">${services.map((s) => `<span class="svc ${myServices.includes(s.key) ? "" : "not-mine"}" style="background:${esc(s.color)}">${esc(s.name)}</span>`).join("")}</div>` : ""}
           ${isAway(t) ? `<p class="d-away">No longer available</p>` : ""}
         </div>

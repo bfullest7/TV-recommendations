@@ -23,14 +23,14 @@ TODAY = "2026-11-06"
 # A small fake universe: key -> facts
 # services use TMDB provider ids: 8 Netflix, 1796 Netflix w/ ads, 15 Hulu, 1899 Max, 582 Paramount+ Amazon Channel
 U = {
-    "m1": dict(title="Great Movie", prov=[8], imdb=("tt001", 8.6, 900000), rt=95, mc=88, release="2024-03-01", genres=["Drama"],
+    "m1": dict(title="Great Movie", runtime=135, prov=[8], imdb=("tt001", 8.6, 900000), rt=95, mc=88, release="2024-03-01", genres=["Drama"],
                keywords=["based on true story", "boxing", "underdog"]),  # sport + underdog -> Sports
     "m2": dict(title="Tiny Indie", prov=[15], imdb=("tt002", 9.6, 120), rt=100, mc=None, release="2025-01-10", genres=["Drama"]),
     "m3": dict(title="Fresh Release", prov=[1796], imdb=("tt003", 7.1, 40000), rt=70, mc=65, release="2026-10-30", genres=["Comedy"]),
     "m4": dict(title="Channel Only", prov=[582], imdb=("tt004", 8.0, 50000), rt=90, mc=80, release="2023-05-05", genres=["Action"]),
     "m5": dict(title="Theater Hit", prov=[], imdb=("tt005", 7.9, 200000), rt=88, mc=75, release="2026-10-01", genres=["Action"]),
     "t1": dict(title="Big Show", prov=[8, 1899], imdb=("tt101", 8.9, 500000), rt=None, mc=None, mdb_rt=91, mdb_mc=80, release="2020-01-01",
-               seasons=["2020-01-01", "2026-10-20"], genres=["Sci-Fi & Fantasy"]),
+               seasons=["2020-01-01", "2026-10-20", "2027-03-01"], genres=["Sci-Fi & Fantasy"]),
     "t2": dict(title="Cozy Show", prov=[15], imdb=("tt102", 7.4, 15000), rt=82, mc=70, release="2022-02-02",
                seasons=["2022-02-02"], genres=["Comedy"], keywords=["sitcom", "passport", "transport"]),
     "t3": dict(title="Wednesdayish", prov=[8], imdb=("tt103", 8.1, 300000), rt=None, mc=72, mdb_rt=85, mdb_mc=60, release="2022-11-23",
@@ -142,7 +142,7 @@ class FakeHttp:
         kws = [{"name": k} for k in f.get("keywords", [])]
         d["keywords"] = {"keywords": kws} if kind == "movie" else {"results": kws}
         if kind == "movie":
-            d.update(title=f["title"], release_date=f["release"])
+            d.update(title=f["title"], release_date=f["release"], runtime=f.get("runtime"))
         else:
             d.update(name=f["title"], first_air_date=f["release"],
                      seasons=[{"season_number": 0, "air_date": "2019-01-01"}] + [{"season_number": i + 1, "air_date": s} for i, s in enumerate(f["seasons"])])
@@ -191,6 +191,11 @@ class PipelineTest(unittest.TestCase):
         self.assertIn(("tv", "99"), genre_calls)
         self.assertIn(("tv", "10764"), genre_calls)
         self.assertNotIn(("movie", "10764"), genre_calls)
+        # length: movie running time, and seasons aired so far (not specials, not the announced 2027 one)
+        self.assertEqual(T["t1"]["latest_air"], "2026-10-20")
+        self.assertEqual((T["m1"]["runtime"], T["m1"]["season_count"]), (135, None))
+        self.assertEqual((T["t1"]["runtime"], T["t1"]["season_count"]), (None, 2))
+        self.assertIsNone(T["m3"]["runtime"])
         # exact Rotten Tomatoes / Metacritic pages from Wikidata
         self.assertEqual((T["m1"]["rt_id"], T["m1"]["mc_id"]), ("m/great_movie", "movie/great-movie"))  # shortest of several
         self.assertEqual((T["t1"]["rt_id"], T["t1"]["mc_id"]), ("tv/big_show", "tv/big-show"))  # season page -> show page

@@ -274,10 +274,16 @@ class Tmdb:
         if kind == "movie":
             title, date = d.get("title"), d.get("release_date")
             latest = date
+            runtime = d.get("runtime") or None  # minutes; shown as "2h 15m"
+            season_count = None
         else:
             title, date = d.get("name"), d.get("first_air_date")
-            seasons = [s for s in d.get("seasons", []) if s.get("season_number", 0) > 0 and s.get("air_date")]
+            # seasons that have aired (TMDB also lists announced ones with a future date)
+            seasons = [s for s in d.get("seasons", []) if s.get("season_number", 0) > 0 and s.get("air_date")
+                       and s["air_date"] <= today().isoformat()]
             latest = max((s["air_date"] for s in seasons), default=date)
+            runtime = None
+            season_count = len(seasons) or None
         overview = (d.get("overview") or "").strip()
         if len(overview) > 450:
             overview = overview[:447].rsplit(" ", 1)[0] + "…"
@@ -293,6 +299,8 @@ class Tmdb:
             "year": int(date[:4]) if date and date[:4].isdigit() else None,
             "release": date or None,
             "latest_air": latest or None,
+            "runtime": runtime,
+            "season_count": season_count,
             "poster": d.get("poster_path"),
             "overview": overview,
             "genres": genres,
