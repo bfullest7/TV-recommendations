@@ -999,7 +999,7 @@
         } else c.classList.add("removed");
       }, 200);
     }
-    $("#undo-text").textContent = disliked ? "Removed from recommendations" : "Marked as watched";
+    $("#undo-text").textContent = disliked ? "Marked “Not for me” and hidden" : "Marked “Watched” and hidden";
     showUndo({ ...o, cards });
   }
   function showUndo(state) {
