@@ -712,6 +712,7 @@
     const newTitle = $("#details").dataset.id !== id;
     $("#details").dataset.id = id;
     const firstOpen = !$("#details").open;
+    if (firstOpen || newTitle) openedThumb = { id, before: thumbs[id] ? { ...thumbs[id] } : null };
     showSheet($("#details"));
     if (firstOpen || newTitle) $("#details").scrollTop = 0; // a title always opens at the top (redraws after a tap keep their place)
     if (firstOpen) showRateTip();
@@ -877,7 +878,8 @@
     d.scrollTop = y;
     placeRateTip(); // buttons can shift when the screen is redrawn
   }
-  /* Like, Not for me and Mark watched never move titles while browsing. The poster
+  /* Like and Mark watched never move titles while browsing (Not for me does, when the
+     title's screen closes: see removeDisliked). The poster
      changes in place (dimmed, "✓ Watched", bookmark) and the rows update at the next
      natural moment: reopening the app, changing a filter or closing Settings. */
   let homeStale = false;
@@ -966,6 +968,65 @@
     updateBecauseRow();
     homeStale = true;
     if ($("#search").open) renderSearch();
+  }
+
+  /* Not for me: when the title's screen closes, a title newly marked Not for me fades out of
+     every row it would leave (not Your library or the Netflix Top 10) and a banner offers
+     Undo for 5 seconds. Undo puts it back where it was, with its earlier rating. */
+  let openedThumb = null, undoTimer = null, undoState = null;
+  const LIBRARY_ROWS = ["mylist", "myliked", "mywatched"];
+  function removeDisliked() {
+    const o = openedThumb, id = o?.id;
+    if (!id || !(thumbs[id]?.v < 0) || o.before?.v < 0 || document.visibilityState !== "visible") return;
+    const cards = [...document.querySelectorAll(`#rows .card[data-id="${CSS.escape(id)}"], #rp-grid .card[data-id="${CSS.escape(id)}"]`)]
+      .filter((c) => { const row = c.closest("[data-row]")?.dataset.row; return row && !KEEPS.includes(row) && !LIBRARY_ROWS.includes(row); })
+      .filter((c) => !c.classList.contains("removed"));
+    if (!cards.length) return;
+    for (const c of cards) {
+      c.classList.add("removing");
+      setTimeout(() => {
+        if (!c.classList.contains("removing")) return; // undone already
+        if (c.parentElement.classList.contains("scroller")) {
+          c.style.width = `${c.offsetWidth}px`;
+          c.offsetWidth; // start the collapse from the current width
+          c.classList.add("collapsing");
+          c.style.width = "";
+          setTimeout(() => c.classList.contains("removing") && c.classList.add("removed"), 260);
+        } else c.classList.add("removed");
+      }, 200);
+    }
+    showUndo({ id, before: o.before, cards });
+  }
+  function showUndo(state) {
+    undoState = state;
+    const b = $("#undo-banner");
+    b.hidden = false;
+    requestAnimationFrame(() => b.classList.add("in"));
+    clearTimeout(undoTimer);
+    undoTimer = setTimeout(hideUndo, 5000);
+  }
+  function hideUndo() {
+    const b = $("#undo-banner");
+    b.classList.remove("in");
+    clearTimeout(undoTimer);
+    undoTimer = setTimeout(() => { if (!b.classList.contains("in")) b.hidden = true; }, 250);
+    undoState = null;
+  }
+  function undoRemoval() {
+    const s = undoState;
+    if (!s) return;
+    hideUndo();
+    if (s.before) thumbs[s.id] = s.before; else delete thumbs[s.id];
+    save(STORE.thumbs, thumbs);
+    for (const c of s.cards) {
+      c.classList.remove("removed", "collapsing");
+      c.style.width = "";
+      requestAnimationFrame(() => c.classList.remove("removing")); // fades back in
+    }
+    patchCards(s.id);
+    updateWatchlistRow(false, "liked");
+    updateBecauseRow();
+    homeStale = true;
   }
 
   function setThumb(id, v) {
@@ -1569,6 +1630,8 @@
       if (e.target.closest("[data-tip-ok]")) dismissRateTip();
     });
     $("#details").addEventListener("close", () => $("#rate-tip")?.remove()); // not dismissed: it comes back next time
+    $("#details").addEventListener("close", removeDisliked);
+    $("#undo-btn").addEventListener("click", undoRemoval);
     $("#mylist").addEventListener("click", (e) => {
       const tab = e.target.closest("[data-tab]");
       if (tab) { ml.tab = tab.dataset.tab; renderMyList(); return; }
