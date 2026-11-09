@@ -776,11 +776,29 @@ def run(mode: str = "auto") -> dict:
     if usage.get("date") != today().isoformat():
         usage.update(date=today().isoformat(), count=0)
     oc = omdb_cache.setdefault("titles", {})
+    mc_cache = mdb_cache.setdefault("titles", {})
+
+    # Critic scores are rechecked monthly; recent releases still missing a score are
+    # rechecked every few days, since reviews (and the score services) arrive after release.
+    recent_from = (today() - dt.timedelta(days=rf.get("recent_window_days", 60))).isoformat()
+    recent_cutoff = (today() - dt.timedelta(days=rf.get("recent_recheck_days", 3))).isoformat()
+
+    def missing_score(d) -> bool:
+        o, m = oc.get(d["imdb_id"], {}), mc_cache.get(d["imdb_id"], {})
+        return (o.get("rt") is None and m.get("rt") is None) or (o.get("mc") is None and m.get("mc") is None)
+
+    def recent_missing(d) -> bool:
+        return (d.get("release") or "") >= recent_from and missing_score(d)
+
+    def due(d, cache: dict, cutoff: str) -> bool:
+        checked = cache.get(d["imdb_id"], {}).get("checked", "")
+        return checked < cutoff or (recent_missing(d) and checked < recent_cutoff)
+
     if omdb_key:
         cutoff = (today() - dt.timedelta(days=rf["omdb_recheck_days"])).isoformat()
         todo = sorted(
-            (d for d in details.values() if d.get("imdb_id") and d["services"] and (oc.get(d["imdb_id"], {}).get("checked", "") < cutoff)),
-            key=lambda d: (d["imdb_id"] in oc, -(d.get("popularity") or 0)),
+            (d for d in details.values() if d.get("imdb_id") and d["services"] and due(d, oc, cutoff)),
+            key=lambda d: (d["imdb_id"] in oc, not recent_missing(d), -(d.get("popularity") or 0)),
         )
         budget = max(0, rf["omdb_daily_limit"] - usage["count"])
         todo = todo[:budget]
@@ -806,14 +824,13 @@ def run(mode: str = "auto") -> dict:
     mu = mdb_cache.setdefault("usage", {})
     if mu.get("date") != today().isoformat():
         mu.update(date=today().isoformat(), count=0)
-    mc_cache = mdb_cache.setdefault("titles", {})
     if mdb_key:
         cutoff = (today() - dt.timedelta(days=rf["omdb_recheck_days"])).isoformat()
         todo = sorted(
             (d for d in details.values()
              if d.get("imdb_id") and d["services"] and (d["rt"] is None or d["mc"] is None)
-             and mc_cache.get(d["imdb_id"], {}).get("checked", "") < cutoff),
-            key=lambda d: (d["imdb_id"] in mc_cache, -(d.get("imdb_votes") or 0)),
+             and due(d, mc_cache, cutoff)),
+            key=lambda d: (d["imdb_id"] in mc_cache, not recent_missing(d), -(d.get("imdb_votes") or 0)),
         )
         for d in todo[:max(0, rf.get("mdblist_daily_limit", 900) - mu["count"])]:
             try:

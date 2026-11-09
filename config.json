@@ -140,6 +140,9 @@
     "tmdb_trending_pages": 5,
     "omdb_daily_limit": 900,
     "omdb_recheck_days": 30,
+    "_recent_note": "Titles released in the last recent_window_days that are still missing a critic score are rechecked every recent_recheck_days days (others monthly).",
+    "recent_window_days": 60,
+    "recent_recheck_days": 3,
     "mdblist_daily_limit": 900
   },
   "rotation": {

@@ -30,6 +30,7 @@ Each home row shows its best 20 titles; when there are more, a **See all ›** t
 
 - `pipeline/build_feed.py` runs on GitHub Actions every 2 hours. It refreshes the trending numbers (Trakt and TMDB) each time and everything else (what's on each service, IMDb ratings, critic scores, Netflix Top 10) about once a day. It writes `data/feed.json`.
 - Which titles the app tracks: for each service, movies and TV separately, TMDB's top 40 highest rated, top 40 popular right now, top 40 new in the last 30 days (`discover_pages_per_list`, 20 per page) and top 100 most well known, meaning the most-rated titles such as Squid Game (`well_known_pages`; top 200 for Netflix and Hulu TV, `well_known_pages_by_service`), plus the top 40 most-rated documentaries and (TV only) reality shows, which get fewer ratings than dramas (`genre_lists`), plus everything trending and the Netflix Top 10.
+- Critic scores (OMDb, then MDBList for gaps) are looked up for new titles on every refresh, newest first, within each service's daily limit, and rechecked monthly (`omdb_recheck_days`). Titles released in the last 60 days that are still missing a score are rechecked every 3 days instead (`recent_window_days`, `recent_recheck_days`), since reviews arrive after release.
 - The app (`index.html`, `app.js`, `styles.css`) is published with GitHub Pages and reads that file. API keys never reach the app; they stay in GitHub Secrets.
 - The Top Picks ranking happens on the phone, so each person's thumbs only affect their own picks.
 

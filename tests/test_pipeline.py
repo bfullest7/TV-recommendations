@@ -262,6 +262,25 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(feed["titles"]["t2"]["new_date"], "2026-11-08")
         self.assertEqual(feed["rows"]["new"][0], "t2")
 
+    def test_recent_release_missing_scores_rechecked_sooner(self):
+        U["m3"].update(rt=None, mc=None)  # Fresh Release (Oct 30): no reviews yet on day one
+        try:
+            bf.run("full")
+            def omdb_ids(since):
+                return [dict(urllib.parse.parse_qsl(urllib.parse.urlparse(u).query)).get("i")
+                        for u in self.fake.calls[since:] if "omdbapi" in u]
+            for day, expect in (("2026-11-08", False), ("2026-11-10", True)):
+                before = len(self.fake.calls)
+                os.environ.update(FEED_TODAY=day, FEED_NOW=f"{day}T12:00:00Z")
+                U["m3"].update(rt=72, mc=66)  # reviews are in
+                feed = bf.run("full")
+                ids = omdb_ids(before)
+                self.assertEqual("tt003" in ids, expect, (day, ids))  # 2 days: not yet; 4 days: rechecked
+                self.assertNotIn("tt002", ids)  # older title missing a score waits for the monthly recheck
+            self.assertEqual((feed["titles"]["m3"]["rt"], feed["titles"]["m3"]["mc"]), (72, 66))
+        finally:
+            U["m3"].update(rt=70, mc=65)
+
     def test_scoring_helpers(self):
         cfg = json.loads((REPO / "config.json").read_text())["ranking"]
         self.assertIsNone(bf.audience_score(None, None, "movie", 6.8, cfg))
