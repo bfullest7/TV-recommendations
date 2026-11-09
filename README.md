@@ -40,7 +40,7 @@ Each signal is scored 0–100 and combined with these weights (edit them in `con
 
 | Signal | Weight | How it's scored |
 |---|---|---|
-| Your taste | 30% | Your thumbs on titles plus genres you like or dislike in Settings (a genre set in Settings counts like two title thumbs), and TMDB's "more like this" for titles you rated |
+| Your taste | 30% | Genres of titles you liked plus genres you like or dislike in Settings (a genre set in Settings counts like two title thumbs), and TMDB's "more like this" for titles you rated. Not for me on a title doesn't lower its genres, only its similar titles |
 | Audience | 25% | IMDb weighted rating: titles with few votes are pulled toward the average (5,000 votes for movies, 2,000 for TV) |
 | New & recent | 20% | Full credit for titles released or premiered in the last 3 months, fading steadily to 0 at 3 years (`recency_full_days`, `recency_zero_days`); a new season of an older show counts a quarter (`recency_season_credit`); arriving on a service in the last 30 days counts fully |
 | Critics | 15% | Average of Rotten Tomatoes and Metacritic |

@@ -160,8 +160,10 @@
 
   /* "Your taste" score, 0-100 (50 = neutral), or null with no thumbs and no
    * genre likes.
-   * - Genres: each title thumb moves its genres up/down; a genre liked or
-   *   disliked in Settings counts as a stronger vote (smoothed either way).
+   * - Genres: each liked title raises its genres; a genre liked or disliked in
+   *   Settings counts as a stronger vote (smoothed either way). A title marked
+   *   Not for me doesn't touch genres: it's usually about that title, not about
+   *   all dramas (the genre 👎 in Settings is for that).
    * - "More like this": titles TMDB recommends from a liked title get a boost,
    *   and from a disliked title get a drop. */
   function tasteModel() {
@@ -169,7 +171,7 @@
     const aff = {}, n = {};
     const recs = {};
     for (const r of Object.values(thumbs)) {
-      for (const g of r.genres || []) { aff[g] = (aff[g] || 0) + r.v; n[g] = (n[g] || 0) + 1; }
+      if (r.v > 0) for (const g of r.genres || []) { aff[g] = (aff[g] || 0) + r.v; n[g] = (n[g] || 0) + 1; }
       for (const id of r.recs || []) recs[id] = (recs[id] || 0) + r.v;
     }
     for (const [g, v] of Object.entries(genrePrefs)) {
@@ -1419,7 +1421,7 @@
       ["Keeping rows fresh", `
         <p>Titles you keep scrolling past make room for others. From the 4th day a title is on your screen without you opening it, it moves 4 places down its row each day. After 2 weeks out of sight, it's back in its usual spot. Titles you open, like, save or mark watched keep their place. Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: Your taste", `
-        <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres and each 👎 lowers them. A genre you set in <b>Genres</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you disliked a drop.</p>
+        <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres. A 👎 (Not for me) on a title doesn't lower its genres, since it's usually about that title, not the whole genre; use <b>Genres</b> for that. A genre you set in <b>Genres</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you marked Not for me a drop.</p>
         <p>Not counted until you rate something or pick a genre.</p>
         <p>Genres you 👎 in <b>Genres</b> apply to every row: titles in those genres move to the end, after everything else (unless they're also in a genre you 👍). Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: New & recent", `
