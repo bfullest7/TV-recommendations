@@ -400,7 +400,7 @@
 
   /* "In your list" icon: a simple bookmark ribbon, drawn like the header icons. */
   // small "opens a website" arrow on score tiles that link out (IMDb; Rotten Tomatoes and Metacritic when their exact page is known)
-  const OPEN_ARROW = `<svg class="open-arrow" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16L16 8M9 8h7v7"/></svg>`;
+  const OPEN_ARROW = `<svg class="open-arrow" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16L16 8M9 8h7v7"/></svg>`;
   const BOOKMARK = `<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4.2L6 21V4a1 1 0 0 1 1-1z"/></svg>`;
 
   const THUMB = `<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M2 10.5h3.5V21H2zM7.5 21h9.2a2 2 0 0 0 1.96-1.6l1.3-6.5A2 2 0 0 0 18 10.5h-4.6l.7-3.6a2 2 0 0 0-.55-1.8L12.6 4l-5.1 5.6z"/></svg>`;
