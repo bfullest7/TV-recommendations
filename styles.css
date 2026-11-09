@@ -466,7 +466,7 @@ header.top[hidden] { display: none; }
 }
 .update-banner[hidden] { display: none; }
 .update-btn { padding: 8px 16px; border-radius: 8px; border: 0; background: var(--accent); color: #2b1a00; font-weight: 700; }
-/* "Marked “Not for me” and hidden" or "Marked “Watched” and hidden", with Undo: the same banner, sliding
+/* "Marked Not for me" or "Marked as watched", with Undo: the same banner, sliding
    up for 5 seconds after a title marked Not for me or watched leaves the rows (above the update banner if that's showing) */
 .undo-banner { transform: translateY(12px); opacity: 0; transition: transform .25s ease, opacity .25s ease; }
 .undo-banner.in { transform: none; opacity: 1; }
