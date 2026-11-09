@@ -2,7 +2,7 @@ name: Refresh data and publish app
 
 on:
   schedule:
-    - cron: "17 */2 * * *"   # every 2 hours; full refresh about once a day
+    - cron: "17 */2 * * *"   # every 2 hours; full refresh on the first run after 10:00 UTC each day
   workflow_dispatch:
     inputs:
       mode:

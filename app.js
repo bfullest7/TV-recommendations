@@ -615,9 +615,15 @@
   /* "When data updates" at the bottom of Profile. Under each kind of data from the
      internet: when it last updated and when the next update is due. The refresh job is
      scheduled at :17 past every even hour (UTC), and a full refresh runs on the first of
-     those at least 20 hours after the last one. GitHub often starts it late, so the next
-     time is when it's due, not a promise. */
-  const FULL_EVERY_H = 20; // config.json refresh.full_refresh_every_hours
+     those at or after 10:00 UTC each morning (5:17 AM Eastern in winter). GitHub often
+     starts it late, so the next time is when it's due, not a promise. */
+  const FULL_UTC_HOUR = 10; // config.json refresh.full_refresh_utc_hour
+  function nextMorning(after) { // the first FULL_UTC_HOUR:00 UTC after this time
+    const t = new Date(after);
+    t.setUTCHours(FULL_UTC_HOUR, 0, 0, 0);
+    if (t <= after) t.setUTCDate(t.getUTCDate() + 1);
+    return t;
+  }
   function nextSlot(after) { // the first scheduled run at or after this time
     const t = new Date(after);
     t.setUTCMinutes(17, 0, 0);
@@ -638,7 +644,7 @@
     const line = (iso, next) => `Updated ${timeAgo(iso)}\n${dueText(next)}`; // two short lines
     const trend = feed?.trending_updated_at, full = feed?.full_refreshed_at;
     $("#upd-trending").textContent = trend ? line(trend, nextSlot(new Date(new Date(trend).getTime() + 60000))) : "";
-    $("#upd-full").textContent = full ? line(full, nextSlot(new Date(new Date(full).getTime() + FULL_EVERY_H * 3600000))) : "";
+    $("#upd-full").textContent = full ? line(full, nextSlot(nextMorning(new Date(full)))) : "";
     $("#upd-netflix").textContent = feed?.netflix_week ? `Latest: the week ending ${fmtDate(feed.netflix_week)}` : "";
   }
 

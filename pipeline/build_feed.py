@@ -6,8 +6,9 @@ Runs on GitHub Actions every couple of hours (see .github/workflows/refresh.yml)
   --mode full      Rebuild everything: what's on each service (TMDB), IMDb
                    ratings, critic scores (OMDb), Netflix Top 10, Trakt trending.
   --mode trending  Only refresh Trakt's "watching now" numbers, reusing the rest.
-  --mode auto      (default) full if the last full refresh is older than
-                   config.refresh.full_refresh_every_hours, otherwise trending.
+  --mode auto      (default) full on the first run at or after
+                   config.refresh.full_refresh_utc_hour each day (UTC; 10 = 5 AM Eastern
+                   in winter, 6 AM in summer), otherwise trending.
 
 API keys come from environment variables (GitHub Secrets):
   TMDB_API_KEY      TMDB "API Key" or "API Read Access Token"
@@ -614,6 +615,20 @@ def build_rows(titles: dict, netflix: list[dict], cfg) -> dict:
 # Main
 
 
+def full_refresh_due(last: str | None, now: str, utc_hour: int) -> bool:
+    """A full refresh runs once a day: on the first run at or after utc_hour (UTC). A missed
+    or late morning run is caught up by the next run, and a manual full refresh earlier in
+    the day doesn't stop the next morning's."""
+    if not last:
+        return True
+    parse = lambda s: dt.datetime.fromisoformat(s.replace("Z", "+00:00"))
+    now_dt = parse(now)
+    slot = now_dt.replace(hour=utc_hour, minute=0, second=0, microsecond=0)
+    if now_dt < slot:
+        slot -= dt.timedelta(days=1)
+    return parse(last) < slot
+
+
 def run(mode: str = "auto") -> dict:
     cfg = load_json(ROOT / "config.json", None)
     if cfg is None:
@@ -637,9 +652,7 @@ def run(mode: str = "auto") -> dict:
     nf_map = load_json(CACHE / "netflix_map.json", {})
 
     if mode == "auto":
-        last = old.get("full_refreshed_at")
-        age_h = (dt.datetime.fromisoformat(now_iso().replace("Z", "+00:00")) - dt.datetime.fromisoformat(last.replace("Z", "+00:00"))).total_seconds() / 3600 if last else None
-        mode = "full" if age_h is None or age_h >= rf["full_refresh_every_hours"] else "trending"
+        mode = "full" if full_refresh_due(old.get("full_refreshed_at"), now_iso(), rf.get("full_refresh_utc_hour", 10)) else "trending"
     log(f"mode: {mode}")
 
     tmdb = Tmdb(tmdb_key, region)

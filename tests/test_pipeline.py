@@ -281,6 +281,14 @@ class PipelineTest(unittest.TestCase):
         finally:
             U["m3"].update(rt=70, mc=65)
 
+    def test_full_refresh_every_morning(self):
+        due = lambda last, now: bf.full_refresh_due(last, now, 10)
+        self.assertTrue(due(None, "2026-11-09T03:00:00Z"))
+        self.assertFalse(due("2026-11-09T01:02:00Z", "2026-11-09T08:17:00Z"))  # manual rebuild at night; morning not yet
+        self.assertTrue(due("2026-11-09T01:02:00Z", "2026-11-09T10:17:00Z"))   # ...the morning one still runs
+        self.assertFalse(due("2026-11-09T10:20:00Z", "2026-11-09T22:17:00Z"))  # done for today
+        self.assertTrue(due("2026-11-08T10:20:00Z", "2026-11-09T12:17:00Z"))   # morning run missed: next run catches up
+
     def test_scoring_helpers(self):
         cfg = json.loads((REPO / "config.json").read_text())["ranking"]
         self.assertIsNone(bf.audience_score(None, None, "movie", 6.8, cfg))

@@ -126,7 +126,8 @@
     "row_length": 20
   },
   "refresh": {
-    "full_refresh_every_hours": 20,
+    "_full_refresh_note": "Full rebuild on the first scheduled run at or after this hour each day (UTC: 10 = 5:17 AM Eastern in winter, 6:17 AM in summer). Also read by app.js (FULL_UTC_HOUR).",
+    "full_refresh_utc_hour": 10,
     "discover_pages_per_list": 2,
     "well_known_pages": 5,
     "_well_known_pages_by_service_note": "Big catalogs go deeper: top 200 most-rated TV shows on Netflix and Hulu (20 per page).",
