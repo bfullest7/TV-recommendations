@@ -686,7 +686,12 @@ def run(mode: str = "auto") -> dict:
                     {"sort_by": "popularity.desc"},
                     {"sort_by": "popularity.desc", ("primary_release_date.gte" if kind == "movie" else "air_date.gte"): start},
                 ]
-                lists.append({"sort_by": "vote_count.desc", "_pages": rf.get("well_known_pages", p)})
+                deep = (rf.get("well_known_pages_by_service") or {}).get(s["key"], {}).get(kind)
+                lists.append({"sort_by": "vote_count.desc", "_pages": deep or rf.get("well_known_pages", p)})
+                # genres that get fewer ratings (documentaries, reality) get their own most-rated list
+                for g in rf.get("genre_lists") or []:
+                    if kind in g.get("kinds", ("movie", "tv")):
+                        lists.append({"sort_by": "vote_count.desc", "with_genres": g["genres"], "_pages": g.get("pages", p)})
                 for params in lists:
                     params = dict(params)
                     pages = params.pop("_pages", p)

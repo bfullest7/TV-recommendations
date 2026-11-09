@@ -184,6 +184,13 @@ class PipelineTest(unittest.TestCase):
         # Sports comes from keywords; "transport"/"passport" must not match "sport"
         self.assertEqual(T["m1"]["genres"], ["Drama", "Sports"])
         self.assertNotIn("Sports", T["t2"]["genres"])
+        # extra most-rated lists: documentaries for movies and TV, reality for TV only
+        disc = [urllib.parse.urlparse(u) for u in self.fake.calls if "/discover/" in u]
+        genre_calls = {(u.path.split("/")[-1], dict(urllib.parse.parse_qsl(u.query)).get("with_genres")) for u in disc}
+        self.assertIn(("movie", "99"), genre_calls)
+        self.assertIn(("tv", "99"), genre_calls)
+        self.assertIn(("tv", "10764"), genre_calls)
+        self.assertNotIn(("movie", "10764"), genre_calls)
         # exact Rotten Tomatoes / Metacritic pages from Wikidata
         self.assertEqual((T["m1"]["rt_id"], T["m1"]["mc_id"]), ("m/great_movie", "movie/great-movie"))  # shortest of several
         self.assertEqual((T["t1"]["rt_id"], T["t1"]["mc_id"]), ("tv/big_show", "tv/big-show"))  # season page -> show page

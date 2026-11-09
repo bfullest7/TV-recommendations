@@ -129,6 +129,13 @@
     "full_refresh_every_hours": 20,
     "discover_pages_per_list": 2,
     "well_known_pages": 5,
+    "_well_known_pages_by_service_note": "Big catalogs go deeper: top 200 most-rated TV shows on Netflix and Hulu (20 per page).",
+    "well_known_pages_by_service": { "netflix": { "tv": 10 }, "hulu": { "tv": 10 } },
+    "_genre_lists_note": "Extra most-rated lists per service for genres that get fewer ratings than dramas, so famous ones were missed (TMDB genre ids: 99 Documentary, 10764 Reality, TV only).",
+    "genre_lists": [
+      { "name": "documentaries", "genres": "99", "kinds": ["movie", "tv"], "pages": 2 },
+      { "name": "reality", "genres": "10764", "kinds": ["tv"], "pages": 2 }
+    ],
     "trakt_trending_limit": 100,
     "tmdb_trending_pages": 5,
     "omdb_daily_limit": 900,
