@@ -470,11 +470,11 @@ header.top[hidden] { display: none; }
 .update-btn { padding: 8px 16px; border-radius: 8px; border: 0; background: var(--accent); color: #2b1a00; font-weight: 700; }
 /* "Marked not for me" or "Marked as watched", with Undo: the same banner, shown for 5 seconds
    after a title marked Not for me or watched leaves the rows (above the update banner if that's showing) */
-/* Both bottom banners fade in while rising a little (8 px, 0.2 s); the Undo banner fades
+/* Both bottom banners fade in while rising a little (16 px, 0.25 s); the Undo banner fades
    out quickly where it is when it goes (0.15 s). (#id plus class: the launch screen's fade
    rule in index.html, body > :not(#splash), would otherwise override these transitions.) */
-#update-banner.update-banner, #undo-banner.undo-banner { opacity: 0; transform: translateY(8px); }
-#update-banner.in, #undo-banner.in { opacity: 1; transform: none; transition: opacity .2s ease-out, transform .2s ease-out; }
+#update-banner.update-banner, #undo-banner.undo-banner { opacity: 0; transform: translateY(16px); }
+#update-banner.in, #undo-banner.in { opacity: 1; transform: none; transition: opacity .25s ease-out, transform .25s ease-out; }
 #undo-banner.in.out { opacity: 0; transition: opacity .15s ease-out; } /* goes away with a quick fade, no slide */
 .undo-banner { padding-left: 14px; gap: 10px; }
 .undo-banner .update-btn { padding: 8px 14px; }
