@@ -465,6 +465,8 @@ header.top[hidden] { display: none; }
   box-shadow: 0 8px 24px rgba(0,0,0,.45); font-weight: 600;
 }
 .update-banner[hidden] { display: none; }
+/* Shown as popovers (above open pages): undo the browser's popover defaults */
+.update-banner[popover] { top: auto; width: auto; height: auto; overflow: visible; color: var(--text); }
 .update-btn { padding: 8px 16px; border-radius: 8px; border: 0; background: var(--accent); color: #2b1a00; font-weight: 700; }
 /* "Marked not for me" or "Marked as watched", with Undo: the same banner, shown for 5 seconds
    after a title marked Not for me or watched leaves the rows (above the update banner if that's showing) */

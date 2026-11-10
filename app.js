@@ -1129,6 +1129,7 @@
     const b = $("#undo-banner");
     b.classList.remove("in", "out"); // a banner still fading out starts over
     b.hidden = false;
+    raise(b);
     b.offsetWidth; // start from the hidden state, so it fades in
     b.classList.add("in");
     clearTimeout(undoTimer);
@@ -1138,7 +1139,7 @@
     const b = $("#undo-banner");
     b.classList.add("out"); // fades out quickly where it is
     clearTimeout(undoTimer);
-    undoTimer = setTimeout(() => { b.hidden = true; b.classList.remove("in", "out"); }, 160);
+    undoTimer = setTimeout(() => { b.hidden = true; lower(b); b.classList.remove("in", "out"); }, 160);
     undoState = null;
   }
   function undoRemoval() {
@@ -1705,15 +1706,27 @@
     openOrder = [...openOrder.filter((x) => x !== d), d];
     placeBanners();
   }
-  /* Open pages and sheets sit in a layer above the rest of the page, which would hide the
-     bottom banners ("Update available", "Marked not for me"). So the banners always live
-     inside whichever page or sheet was opened last, or the page itself when none is open. */
+  /* Open pages and sheets sit in a layer above the rest of the page, and block taps outside
+     themselves, which would hide the bottom banners ("Update available", "Marked not for
+     me") or make Undo untappable. So the banners live inside whichever page or sheet was
+     opened last (so they can be tapped), and are shown as popovers in the top layer (so they
+     stay pinned to the bottom of the screen: inside a page alone, iPhone let them scroll
+     away with the page). Browsers without popovers just get the first part. */
   let openOrder = [];
+  const CAN_POP = typeof HTMLElement !== "undefined" && typeof HTMLElement.prototype.showPopover === "function";
+  function raise(el) { // show (or bring to the front) in the top layer
+    if (!CAN_POP) return;
+    if (!el.hasAttribute("popover")) el.setAttribute("popover", "manual");
+    if (el.matches(":popover-open")) el.hidePopover();
+    el.showPopover();
+  }
+  function lower(el) { if (CAN_POP && el.matches(":popover-open")) el.hidePopover(); }
   function placeBanners() {
     openOrder = openOrder.filter((d) => d.open);
-    const host = openOrder[openOrder.length - 1] || document.body;
     const ub = $("#update-banner"), nb = $("#undo-banner");
+    const host = openOrder[openOrder.length - 1] || document.body;
     if (ub.parentElement !== host) host.append(ub, nb); // together: the Undo banner sits above the update banner
+    for (const b of [ub, nb]) if (!b.hidden) raise(b); // (moving a banner takes it out of the top layer)
   }
   function closeSheet(d) {
     if (typeof d.close === "function") d.close();
@@ -1870,7 +1883,7 @@
         // copy (kept up to 10 minutes), which updates itself, so don't ask again.
         if (load(STORE.refreshedTo, null) === version) return;
         const ub = $("#update-banner");
-        if (ub.hidden) { ub.hidden = false; ub.offsetWidth; ub.classList.add("in"); } // fades in
+        if (ub.hidden) { ub.hidden = false; raise(ub); ub.offsetWidth; ub.classList.add("in"); } // fades in, above any open page
       }
     } catch { /* offline: try again later */ }
   }
