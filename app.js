@@ -1038,6 +1038,7 @@
   function showUndo(state) {
     undoState = state;
     const b = $("#undo-banner");
+    b.classList.remove("in", "out"); // a banner still fading out starts over
     b.hidden = false;
     b.offsetWidth; // start from below the screen, so it slides up
     b.classList.add("in");
@@ -1046,9 +1047,9 @@
   }
   function hideUndo() {
     const b = $("#undo-banner");
-    b.classList.remove("in");
+    b.classList.add("out"); // fades out quickly where it is
     clearTimeout(undoTimer);
-    undoTimer = setTimeout(() => { if (!b.classList.contains("in")) b.hidden = true; }, 310); // after it slides down
+    undoTimer = setTimeout(() => { b.hidden = true; b.classList.remove("in", "out"); }, 160);
     undoState = null;
   }
   function undoRemoval() {

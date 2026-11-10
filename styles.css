@@ -470,11 +470,12 @@ header.top[hidden] { display: none; }
    after a title marked Not for me or watched leaves the rows (above the update banner if that's showing) */
 /* Both bottom banners slide up from below the bottom edge of the screen (0.2 s, evenly
    paced with a tiny settle at the top, so the movement is easy to see); the Undo banner
-   slides back down when it goes (0.3 s). (#id plus class:
+   fades out quickly where it is when it goes (0.15 s). (#id plus class:
    the launch screen's fade rule in index.html, body > :not(#splash), would otherwise
    override these transitions.) */
 #update-banner.update-banner, #undo-banner.undo-banner { transform: translateY(calc(100% + 24px + env(safe-area-inset-bottom))); transition: transform .3s cubic-bezier(.5, 0, .75, 0), opacity .15s ease-out; }
 #update-banner.in, #undo-banner.in { transform: none; transition: transform .2s cubic-bezier(.35, .6, .3, 1.15), opacity .15s ease-out; }
+#undo-banner.in.out { opacity: 0; transition: opacity .15s ease-out; } /* goes away with a quick fade, no slide */
 .undo-banner { padding-left: 14px; gap: 10px; }
 .undo-banner .update-btn { padding: 8px 14px; }
 @media (min-width: 370px) { .undo-banner span { white-space: nowrap; } } /* one line on every current iPhone */
