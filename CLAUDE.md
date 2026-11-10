@@ -14,6 +14,7 @@
 - Data: `pipeline/build_feed.py` (Python standard library only) builds `data/feed.json` from TMDB, Trakt, IMDb, OMDb, MDBList and Netflix Top 10. Tests: `python3 -m unittest discover -s tests`.
 - `README.md` explains the rows, scoring and setup.
 - `ALGORITHM.md` is the single reference for how titles are picked and ordered (data, rows, Top Picks, likes and dislikes, rotation). Update it, including its "Changes and why" log, whenever an algorithm rule or number changes.
+- `APP_STORE.md` covers what it would take to publish Tivvy on the iOS App Store (conversion, Apple review, data-source licensing). Re-check the terms before acting.
 - `DESIGN.md` is the design system: text sizes, colors, buttons, spacing and wording rules. Follow it for visual or wording changes, and update it when Beth approves a new rule.
 
 ## Publishing
