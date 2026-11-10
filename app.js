@@ -1750,7 +1750,8 @@
         // Already refreshed for this version: this is just the phone's saved
         // copy (kept up to 10 minutes), which updates itself, so don't ask again.
         if (load(STORE.refreshedTo, null) === version) return;
-        $("#update-banner").hidden = false;
+        const ub = $("#update-banner");
+        if (ub.hidden) { ub.hidden = false; ub.offsetWidth; ub.classList.add("in"); } // slides up from below the screen
       }
     } catch { /* offline: try again later */ }
   }
