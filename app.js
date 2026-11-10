@@ -1022,7 +1022,7 @@
     undoState = state;
     const b = $("#undo-banner");
     b.hidden = false;
-    b.offsetWidth; // start from below the screen, so it slides up
+    b.offsetWidth; // start from the hidden state, so it fades in
     b.classList.add("in");
     clearTimeout(undoTimer);
     undoTimer = setTimeout(hideUndo, 5000);
@@ -1031,7 +1031,7 @@
     const b = $("#undo-banner");
     b.classList.remove("in");
     clearTimeout(undoTimer);
-    undoTimer = setTimeout(() => { if (!b.classList.contains("in")) b.hidden = true; }, 260); // after it slides down
+    undoTimer = setTimeout(() => { if (!b.classList.contains("in")) b.hidden = true; }, 260); // after it fades out
     undoState = null;
   }
   function undoRemoval() {
@@ -1751,7 +1751,7 @@
         // copy (kept up to 10 minutes), which updates itself, so don't ask again.
         if (load(STORE.refreshedTo, null) === version) return;
         const ub = $("#update-banner");
-        if (ub.hidden) { ub.hidden = false; ub.offsetWidth; ub.classList.add("in"); } // slides up from below the screen
+        if (ub.hidden) { ub.hidden = false; ub.offsetWidth; ub.classList.add("in"); } // fades in
       }
     } catch { /* offline: try again later */ }
   }
