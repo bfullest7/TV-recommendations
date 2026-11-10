@@ -470,11 +470,11 @@ header.top[hidden] { display: none; }
    up for 5 seconds after a title marked Not for me or watched leaves the rows (above the update banner if that's showing) */
 /* Both bottom banners slide up from below the bottom edge of the screen (0.3 s, easing to
    a gentle stop); the Undo banner slides back down when it goes (0.25 s)
-   (#id selectors: the launch screen's fade rule in index.html, body > :not(#splash), would
+   (#id plus class: the launch screen's fade rule in index.html, body > :not(#splash), would
    otherwise override these transitions) */
-#update-banner { transform: translateY(calc(100% + 24px + env(safe-area-inset-bottom))); transition: transform .3s cubic-bezier(.2, .8, .2, 1), opacity .15s ease-out; }
+#update-banner.update-banner { transform: translateY(calc(100% + 24px + env(safe-area-inset-bottom))); transition: transform .3s cubic-bezier(.2, .8, .2, 1), opacity .15s ease-out; }
 #update-banner.in { transform: none; }
-#undo-banner { transform: translateY(calc(100% + 24px + env(safe-area-inset-bottom))); transition: transform .25s cubic-bezier(.4, 0, 1, 1), opacity .15s ease-out; }
+#undo-banner.undo-banner { transform: translateY(calc(100% + 24px + env(safe-area-inset-bottom))); transition: transform .25s cubic-bezier(.4, 0, 1, 1), opacity .15s ease-out; }
 #undo-banner.in { transform: none; transition: transform .3s cubic-bezier(.2, .8, .2, 1), opacity .15s ease-out; }
 .undo-banner { padding-left: 14px; gap: 10px; }
 .undo-banner .update-btn { padding: 8px 14px; }
