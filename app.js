@@ -1031,7 +1031,7 @@
     const b = $("#undo-banner");
     b.classList.remove("in");
     clearTimeout(undoTimer);
-    undoTimer = setTimeout(() => { if (!b.classList.contains("in")) b.hidden = true; }, 260); // after it slides down
+    undoTimer = setTimeout(() => { if (!b.classList.contains("in")) b.hidden = true; }, 310); // after it slides down
     undoState = null;
   }
   function undoRemoval() {
