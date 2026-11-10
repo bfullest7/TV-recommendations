@@ -1040,6 +1040,7 @@
   }
   function showUndo(state) {
     undoState = state;
+    placeBanners(); // over whatever page is open
     const b = $("#undo-banner");
     b.classList.remove("in", "out"); // a banner still fading out starts over
     b.hidden = false;
@@ -1611,6 +1612,18 @@
     if (d.open) return;
     if (typeof d.showModal === "function") d.showModal();
     else d.setAttribute("open", "");
+    openOrder = [...openOrder.filter((x) => x !== d), d];
+    placeBanners();
+  }
+  /* Open pages and sheets sit in a layer above the rest of the page, which would hide the
+     bottom banners ("Update available", "Marked not for me"). So the banners always live
+     inside whichever page or sheet was opened last, or the page itself when none is open. */
+  let openOrder = [];
+  function placeBanners() {
+    openOrder = openOrder.filter((d) => d.open);
+    const host = openOrder[openOrder.length - 1] || document.body;
+    const ub = $("#update-banner"), nb = $("#undo-banner");
+    if (ub.parentElement !== host) host.append(ub, nb); // together: the Undo banner sits above the update banner
   }
   function closeSheet(d) {
     if (typeof d.close === "function") d.close();
@@ -1675,6 +1688,7 @@
       if (e.target.closest("[data-tip-ok]")) dismissRateTip();
     });
     $("#details").addEventListener("close", () => $("#rate-tip")?.remove()); // not dismissed: it comes back next time
+    for (const d of document.querySelectorAll("dialog")) d.addEventListener("close", placeBanners);
     $("#details").addEventListener("close", removeOnClose);
     $("#undo-btn").addEventListener("click", undoRemoval);
     $("#mylist").addEventListener("click", (e) => {
