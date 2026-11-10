@@ -990,7 +990,7 @@
      for me or watched fades out of every row it leaves (not Your library or the Netflix
      Top 10) and a banner offers Undo for 5 seconds. Undo puts it back where it was, as it
      was when its screen opened (rating and watched). */
-  let opened = null, undoTimer = null, undoState = null, undoShowTimer = null;
+  let opened = null, undoTimer = null, undoState = null, undoShowTimer = null, undoRun = 0;
   const LIBRARY_ROWS = ["mylist", "myliked", "mywatched"];
   function removeOnClose() {
     const o = opened, id = o?.id, t = id && titleOf(id);
@@ -1002,27 +1002,38 @@
       .filter((c) => { const row = c.closest("[data-row]")?.dataset.row; return row && !KEEPS.includes(row) && !LIBRARY_ROWS.includes(row); })
       .filter((c) => !c.classList.contains("removed"));
     if (!cards.length) return;
-    for (const c of cards) {
-      c.classList.add("removing");
-      setTimeout(() => {
-        if (!c.classList.contains("removing")) return; // undone already
-        if (c.parentElement.classList.contains("scroller")) {
-          c.style.width = `${c.offsetWidth}px`;
-          c.offsetWidth; // start the collapse from the current width
-          c.classList.add("collapsing");
-          c.style.width = "";
-          setTimeout(() => c.classList.contains("removing") && c.classList.add("removed"), 260);
-        } else c.classList.add("removed");
-      }, 200);
-    }
-    // The banner follows the row: it starts sliding up just as the gap finishes closing
-    // (fade 0.2 s + close 0.25 s, less 0.1 s of overlap), or right after the fade in a grid.
-    const inRow = cards.some((c) => c.parentElement.classList.contains("scroller"));
+    // One step at a time, each waiting for the last to actually finish (fixed timers drifted
+    // on the phone, where closing the screen can delay the first frames): the poster fades,
+    // then the row closes the gap, then the banner slides up. Each wait has a fallback.
+    const after = (el, prop, fallback) => new Promise((done) => {
+      const t = setTimeout(done, fallback);
+      el.addEventListener("transitionend", function end(e) {
+        if (e.target !== el || e.propertyName !== prop) return;
+        el.removeEventListener("transitionend", end); clearTimeout(t); done();
+      });
+    });
+    const steps = cards.map(async (c) => {
+      requestAnimationFrame(() => c.classList.add("removing")); // after the screen has closed
+      await after(c, "opacity", 600);
+      if (!c.classList.contains("removing")) return; // undone already
+      if (c.parentElement.classList.contains("scroller")) {
+        c.style.width = `${c.offsetWidth}px`;
+        c.offsetWidth; // start the collapse from the current width
+        c.classList.add("collapsing");
+        c.style.width = "";
+        await after(c, "width", 700);
+      }
+      if (c.classList.contains("removing")) c.classList.add("removed");
+    });
+    const run = ++undoRun;
     clearTimeout(undoShowTimer);
-    undoShowTimer = setTimeout(() => {
-      $("#undo-text").textContent = disliked ? "Marked not for me" : "Marked as watched";
-      showUndo({ ...o, cards });
-    }, inRow ? 350 : 200);
+    Promise.all(steps).then(() => {
+      if (run !== undoRun) return; // a newer removal took over
+      undoShowTimer = setTimeout(() => { // a short beat after the row settles
+        $("#undo-text").textContent = disliked ? "Marked not for me" : "Marked as watched";
+        showUndo({ ...o, cards });
+      }, 80);
+    });
   }
   function showUndo(state) {
     undoState = state;
