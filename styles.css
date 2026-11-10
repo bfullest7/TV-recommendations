@@ -481,6 +481,6 @@ header.top[hidden] { display: none; }
 @media (min-width: 370px) { .undo-banner span { white-space: nowrap; } } /* one line on every current iPhone */
 .update-banner:not([hidden]) ~ .undo-banner { bottom: calc(80px + env(safe-area-inset-bottom)); }
 /* A title marked Not for me or watched fades out of its row, then the row closes the gap */
-.card.removing { opacity: 0; transition: opacity .2s ease; }
-.scroller > .card.collapsing { width: 0; margin-right: -10px; overflow: hidden; transition: width .25s ease, margin-right .25s ease; }
+.card.removing { opacity: 0; transition: opacity .15s ease; }
+.scroller > .card.collapsing { width: 0; margin-right: -10px; overflow: hidden; transition: width .2s ease, margin-right .2s ease; }
 .card.removed { display: none; }

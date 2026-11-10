@@ -1029,10 +1029,10 @@
     clearTimeout(undoShowTimer);
     Promise.all(steps).then(() => {
       if (run !== undoRun) return; // a newer removal took over
-      undoShowTimer = setTimeout(() => { // a short beat after the row settles
+      undoShowTimer = setTimeout(() => { // right after the row settles
         $("#undo-text").textContent = disliked ? "Marked not for me" : "Marked as watched";
         showUndo({ ...o, cards });
-      }, 80);
+      }, 0);
     });
   }
   function showUndo(state) {
