@@ -137,7 +137,7 @@ So titles you keep scrolling past make room for others. Applies to Top Picks, Be
 Rows don't reshuffle while you browse, except:
 
 - **Your library row** updates right away.
-- **Not for me and Mark watched:** the title fades out of its rows when its screen closes, with a 5-second "Marked not for me" or "Marked as watched" banner and Undo.
+- **Not for me and Mark watched:** the title fades out of its rows when its screen closes, then a 5-second "Marked not for me" or "Marked as watched" banner with Undo appears. Not for me always shows its banner, even when the title only stays in Your library (it has no poster mark); Mark watched doesn't when the title only stays in Your library, where it shows the ✓.
 - Everything else waits for a natural moment: reopening or coming back to the app, changing a filter, or closing Profile.
 
 ## Changes and why

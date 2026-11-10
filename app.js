@@ -1001,7 +1001,10 @@
     const cards = [...document.querySelectorAll(`#rows .card[data-id="${CSS.escape(id)}"], #rp-grid .card[data-id="${CSS.escape(id)}"]`)]
       .filter((c) => { const row = c.closest("[data-row]")?.dataset.row; return row && !KEEPS.includes(row) && !LIBRARY_ROWS.includes(row); })
       .filter((c) => !c.classList.contains("removed"));
-    if (!cards.length) return;
+    // Feedback rule: a banner when the title disappears or nothing on screen shows the change.
+    // Not for me is never marked on posters, so it always gets one; watched titles that stay
+    // (Your library) show the ✓ instead.
+    if (!cards.length && !disliked) return;
     // One step at a time, each waiting for the last to actually finish (fixed timers drifted
     // on the phone, where closing the screen can delay the first frames): the poster fades,
     // then the row closes the gap, then the banner slides up. Each wait has a fallback.
