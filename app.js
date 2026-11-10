@@ -1025,8 +1025,10 @@
         c.classList.add("collapsing");
         c.style.width = "";
         await after(c, "width", 700);
+        if (c.classList.contains("removing")) c.classList.add("removed");
+      } else if (c.classList.contains("removing")) {
+        await glideGrid(c.parentElement, () => c.classList.add("removed")); // the posters after it glide up
       }
-      if (c.classList.contains("removing")) c.classList.add("removed");
     });
     const run = ++undoRun;
     clearTimeout(undoShowTimer);
@@ -1038,6 +1040,63 @@
       }, 0);
     });
   }
+  /* Grids (Your library, "See all"): when posters leave, the ones after them glide into their
+     new places (0.2 s, like a row closing its gap) instead of jumping. `change` updates the
+     grid; posters that stay start where they were and move to where they are now. */
+  function glideGrid(grid, change) {
+    const before = new Map([...grid.querySelectorAll(".card:not(.removed)")].map((c) => [c.dataset.id, c.getBoundingClientRect()]));
+    change();
+    const moving = [];
+    for (const c of grid.querySelectorAll(".card:not(.removed)")) {
+      const was = before.get(c.dataset.id);
+      if (!was) continue;
+      const now = c.getBoundingClientRect();
+      const dx = was.left - now.left, dy = was.top - now.top;
+      if (!dx && !dy) continue;
+      c.style.transition = "none";
+      c.style.transform = `translate(${dx}px, ${dy}px)`;
+      moving.push(c);
+    }
+    if (!moving.length) return Promise.resolve();
+    grid.offsetWidth; // start from the old places
+    for (const c of moving) { c.style.transition = "transform .2s ease"; c.style.transform = ""; }
+    return new Promise((done) => setTimeout(() => { for (const c of moving) c.style.transition = ""; done(); }, 220));
+  }
+  /* Your library page: closing a title redraws the grid. Posters that leave (e.g. marked
+     watched from Watchlist) fade out first (0.15 s), then the rest glide into place. */
+  function redrawLibraryGrid() {
+    const page = $("#mylist"), grid = $("#ml-grid"), y = page.scrollTop;
+    const old = [...grid.querySelectorAll(".card")];
+    const spots = new Map(old.map((c) => [c.dataset.id, c.getBoundingClientRect()]));
+    renderMyList(true);
+    page.scrollTop = y;
+    const stays = new Set([...grid.querySelectorAll(".card")].map((c) => c.dataset.id));
+    const leaving = old.filter((c) => !stays.has(c.dataset.id));
+    if (!leaving.length) return;
+    // the leaving posters fade out where they were, with the others held in their old places
+    const now = grid.getBoundingClientRect();
+    const ghosts = leaving.map((c) => {
+      const r = spots.get(c.dataset.id);
+      Object.assign(c.style, { position: "absolute", left: `${r.left - now.left}px`, top: `${r.top - now.top}px`, width: `${r.width}px`, margin: "0", pointerEvents: "none" });
+      grid.append(c);
+      return c;
+    });
+    const held = [];
+    for (const c of grid.querySelectorAll(".card")) {
+      if (ghosts.includes(c)) continue;
+      const was = spots.get(c.dataset.id), r = c.getBoundingClientRect();
+      if (!was) continue;
+      const dx = was.left - r.left, dy = was.top - r.top;
+      if (dx || dy) { c.style.transform = `translate(${dx}px, ${dy}px)`; held.push(c); }
+    }
+    requestAnimationFrame(() => { for (const g of ghosts) { g.style.transition = "opacity .15s ease"; g.style.opacity = "0"; } });
+    setTimeout(() => {
+      for (const g of ghosts) g.remove();
+      for (const c of held) { c.style.transition = "transform .2s ease"; c.style.transform = ""; }
+      setTimeout(() => { for (const c of held) c.style.transition = ""; }, 220);
+    }, 160);
+  }
+
   function showUndo(state) {
     undoState = state;
     placeBanners(); // over whatever page is open
@@ -1065,8 +1124,9 @@
     save(STORE.thumbs, thumbs);
     save(STORE.watched, watched);
     for (const c of s.cards) {
-      c.classList.remove("removed", "collapsing");
-      c.style.width = "";
+      const back = () => { c.classList.remove("removed", "collapsing"); c.style.width = ""; };
+      if (c.parentElement.classList.contains("scroller")) back();
+      else glideGrid(c.parentElement, back); // in a grid, the others glide aside to make room
       requestAnimationFrame(() => c.classList.remove("removing")); // fades back in
     }
     patchCards(s.id);
@@ -1703,11 +1763,7 @@
     // shows exactly what belongs there: removed titles leave "In your list", titles
     // marked watched move to Watched, and un-marked ones go back to the list (if listed).
     $("#details").addEventListener("close", () => {
-      const page = $("#mylist");
-      if (!page.open) return;
-      const y = page.scrollTop;
-      renderMyList(true);
-      page.scrollTop = y;
+      if ($("#mylist").open) redrawLibraryGrid();
     });
     $("#ml-sort").addEventListener("change", (e) => { ml.sort[ml.tab] = e.target.value; renderMyList(); });
     $("#rowpage").addEventListener("click", (e) => {
