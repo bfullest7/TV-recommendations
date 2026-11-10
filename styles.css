@@ -145,7 +145,7 @@ h1 .logo { width: 28px; height: 27px; margin-right: 10px; vertical-align: -3.5px
 }
 .marks { position: absolute; right: 6px; top: 6px; display: flex; gap: 4px; }
 .mark { font-size: 13px; background: rgba(0,0,0,.7); border-radius: 50%; width: 24px; height: 24px; display: grid; place-items: center; }
-.card.is-watched .poster img, .card.is-watched .poster .no-img,
+/* Watched titles aren't dimmed (the ✓ circle marks them): dimming means "no longer available" */
 .card.is-passed .poster img, .card.is-passed .poster .no-img { opacity: .35; }
 /* A saved title that left your services: dimmed, with a note where the service badge goes */
 .card.is-away .poster img, .card.is-away .poster img.in, .card.is-away .poster .no-img { opacity: .35; }

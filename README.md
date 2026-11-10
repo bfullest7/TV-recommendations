@@ -18,7 +18,7 @@ A filter at the top limits every row to one service. Your services and thumbs ar
 Each home row shows its best 20 titles; when there are more, a **See all ›** tile at the end opens the row in full (three across, 100 at a time, with more added as you near the end) with its own sort and filters.
 
 **Your lists and search:**
-- **＋ Add to list** on any title adds it to a "Your library" row right below Top Picks, newest first. Posters show small status icons in the corner: a thumb for titles you liked, a bookmark for titles in your list and a ✓ (on a dimmed poster) for titles you watched.
+- **＋ Add to list** on any title adds it to a "Your library" row right below Top Picks, newest first. Posters show small status icons in the corner: a thumb for titles you liked, a bookmark for titles in your list and a ✓ for titles you watched (posters are only dimmed when a title is no longer on your services).
 - **Mark watched** hides a title from every row except "Your library" and the Netflix Top 10, where it shows the ✓. It doesn't take the title off your list. A watched series comes back to the rows when a new season premieres after you marked it.
 - **👎 Not for me** hides a title from the same rows. Titles you like get a thumb on their poster; Not for me titles aren't marked.
 - Mark watched and Not for me take effect when you close the title: it fades out of its rows and a banner offers Undo for 5 seconds. Otherwise nothing moves while you browse: a title you like stays where it is, and the rows update the next time you open the app, change a filter or close Settings. Adding to your list updates "Your library" right away without moving what's on screen.

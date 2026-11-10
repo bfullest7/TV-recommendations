@@ -108,7 +108,7 @@ Liked titles stay in Top Picks and are re-ranked. "Why this pick" on a title's s
 |---|---|---|
 | **Like** | Stays in every row; never moved down by rotation; shows in Your library (Liked). | Top Picks: its genres go up (common genres less) and its similar titles go up. Starts a "Because you liked" row. Other rows: no change. |
 | **Not for me** | Leaves every row when its screen closes (with an Undo banner). Stays in Your library, the Netflix Top 10 and search. | Top Picks: its similar titles go down. Genres: no change. Other rows: no change. |
-| **Mark watched** | Leaves every row when its screen closes (with an Undo banner). Stays in Your library (dimmed) and the Netflix Top 10. A series comes back once a new season premieres after it was marked. | None. |
+| **Mark watched** | Leaves every row when its screen closes (with an Undo banner). Stays in Your library (with the ✓) and the Netflix Top 10. A series comes back once a new season premieres after it was marked. | None. |
 | **Add to watchlist** | Never moved down by rotation; shows in Your library. | Seeds "More like…" rows after your likes. No effect on Top Picks scores. |
 | **Genre 👍 in Profile** | | Top Picks: counts like two likes. Protects its titles from sinking if they're also in a disliked genre. |
 | **Genre 👎 in Profile** | | Top Picks: counts like two dislikes. Every row (except Your library and the Netflix Top 10): its titles move to the end, keeping their order, unless they're also in a liked genre. |
