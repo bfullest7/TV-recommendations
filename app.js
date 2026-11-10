@@ -553,7 +553,8 @@
     return `
       <section class="row" data-row="${def.key}" aria-labelledby="row-${def.key}">
         <div class="row-head">
-          <div class="row-title-line"><h2 id="row-${def.key}">${esc(noOrphan(def.title))}</h2>${def.key === "picks" ? `<button class="see-all" data-how-picks>How it works ›</button>` : ""}</div>
+          <div class="row-title-line"><h2 id="row-${def.key}">${esc(noOrphan(def.title))}</h2>${def.key === "picks" ? `<button class="see-all" data-how-picks>How it works ›</button>`
+            : def.library && !libAllEmpty() ? `<button class="see-all" data-open-mylist="${libTab}">See all ›</button>` /* opens Your library at the selected pill, no scrolling needed */ : ""}</div>
           ${def.library ? listPills() : `<p class="source">${esc(noOrphan(def.source))}</p>`}
         </div>
         ${def.library ? libraryBody(def) : def.items.length
