@@ -728,7 +728,7 @@
     const newTitle = $("#details").dataset.id !== id;
     $("#details").dataset.id = id;
     const firstOpen = !$("#details").open;
-    if (firstOpen || newTitle) opened = { id, thumb: thumbs[id] ? { ...thumbs[id] } : null, watched: watched[id] ? { ...watched[id] } : null, wasWatched: isWatched(t) };
+    if (firstOpen || newTitle) opened = { id, thumb: thumbs[id] ? { ...thumbs[id] } : null, watched: watched[id] ? { ...watched[id] } : null, listed: watchlist[id] ? { ...watchlist[id] } : null, wasWatched: isWatched(t) };
     showSheet($("#details"));
     if (firstOpen || newTitle) $("#details").scrollTop = 0; // a title always opens at the top (redraws after a tap keep their place)
     if (firstOpen) showRateTip();
@@ -895,7 +895,7 @@
     placeRateTip(); // buttons can shift when the screen is redrawn
   }
   /* Like never moves titles while browsing (Not for me and Mark watched do, when the
-     title's screen closes: see removeOnClose). The poster
+     title's screen closes: see leaveOnClose). The poster
      changes in place (dimmed, "✓ Watched", bookmark) and the rows update at the next
      natural moment: reopening the app, changing a filter or closing Settings. */
   let homeStale = false;
@@ -970,7 +970,7 @@
     save(STORE.watchlist, watchlist);
     redrawDetails(id);
     patchCards(id);
-    updateWatchlistRow(false, "list");
+    libChanged("list");
     updateBecauseRow();
     if ($("#search").open) renderSearch();
   }
@@ -980,31 +980,55 @@
     save(STORE.watched, watched);
     redrawDetails(id);
     patchCards(id);
-    updateWatchlistRow(false, "watched");
+    libChanged("watched");
     updateBecauseRow();
     homeStale = true;
     if ($("#search").open) renderSearch();
   }
 
-  /* Not for me and Mark watched: when the title's screen closes, a title newly marked Not
-     for me or watched fades out of every row it leaves (not Your library or the Netflix
-     Top 10) and a banner offers Undo for 5 seconds. Undo puts it back where it was, as it
-     was when its screen opened (rating and watched). */
+  /* Leaving what you're looking at: when a title's screen closes, every poster of it that no
+     longer belongs where it is fades out, the gap closes (or the grid glides together), and a
+     banner says what you did, with Undo for 5 seconds. Undo puts the title back exactly as it
+     was when its screen opened (rating, watched and watchlist).
+     - Home rows and "See all" pages: titles marked watched or Not for me leave.
+     - Your library (row and page): a title leaves the pill or tab it no longer belongs to
+       (removed from the list, marked watched from Watchlist, unliked or Not for me from
+       Liked, un-marked from Watched).
+     Feedback rule: a banner when the title disappears or nothing on screen shows the change;
+     Not for me always gets one, since it's never marked on posters. */
   let opened = null, undoTimer = null, undoState = null, undoShowTimer = null, undoRun = 0;
+  let libPending = null; // the Your library row waits for the title's screen to close
   const LIBRARY_ROWS = ["mylist", "myliked", "mywatched"];
-  function removeOnClose() {
+  function libChanged(pill) { // a save, like or watched mark: update the Your library row now, or on close
+    if ($("#details").open) libPending = libPending || pill;
+    else updateWatchlistRow(false, pill);
+  }
+  function flushLibrary() {
+    if (libPending === null) return;
+    const pill = libPending; libPending = null;
+    updateWatchlistRow(false, pill);
+  }
+  function leaveOnClose() {
     const o = opened, id = o?.id, t = id && titleOf(id);
-    if (!t || document.visibilityState !== "visible") return;
-    const disliked = thumbs[id]?.v < 0 && !(o.thumb?.v < 0);
-    const nowWatched = isWatched(t) && !o.wasWatched;
-    if (!disliked && !nowWatched) return;
-    const cards = [...document.querySelectorAll(`#rows .card[data-id="${CSS.escape(id)}"], #rp-grid .card[data-id="${CSS.escape(id)}"]`)]
-      .filter((c) => { const row = c.closest("[data-row]")?.dataset.row; return row && !KEEPS.includes(row) && !LIBRARY_ROWS.includes(row); })
-      .filter((c) => !c.classList.contains("removed"));
-    // Feedback rule: a banner when the title disappears or nothing on screen shows the change.
-    // Not for me is never marked on posters, so it always gets one; watched titles that stay
-    // (Your library) show the ✓ instead.
-    if (!cards.length && !disliked) return;
+    const page = $("#mylist").open ? redrawLibraryGrid() : { left: false, done: Promise.resolve() };
+    if (!t || document.visibilityState !== "visible") { flushLibrary(); return; }
+    const ch = {
+      disliked: thumbs[id]?.v < 0 && !(o.thumb?.v < 0),
+      watched: isWatched(t) && !o.wasWatched,
+      unlisted: !!o.listed && !watchlist[id],
+      unliked: o.thumb?.v > 0 && !(thumbs[id]?.v > 0) && !(thumbs[id]?.v < 0),
+      unwatched: o.wasWatched && !isWatched(t),
+    };
+    const what = ch.disliked ? "Marked not for me" : ch.watched ? "Marked as watched" : ch.unlisted ? "Removed from your list"
+      : ch.unliked ? "Like removed" : ch.unwatched ? "Marked as not watched" : null;
+    const q = CSS.escape(id), live = (sel) => [...document.querySelectorAll(sel)].filter((c) => !c.classList.contains("removed"));
+    const cards = ch.disliked || ch.watched
+      ? live(`#rows .card[data-id="${q}"], #rp-grid .card[data-id="${q}"]`)
+        .filter((c) => { const row = c.closest("[data-row]")?.dataset.row; return row && !KEEPS.includes(row) && !LIBRARY_ROWS.includes(row); })
+      : [];
+    if (!libTitles(libTab).some((x) => x.id === id)) cards.push(...live(`#rows [data-row="watchlist"] .scroller > .card[data-id="${q}"]`));
+    if (!what || (!cards.length && !page.left && !ch.disliked)) { page.done.then(flushLibrary); return; }
+    const disliked = ch.disliked;
     // One step at a time, each waiting for the last to actually finish (fixed timers drifted
     // on the phone, where closing the screen can delay the first frames): the poster fades,
     // then the row closes the gap, then the banner slides up. Each wait has a fallback.
@@ -1032,10 +1056,11 @@
     });
     const run = ++undoRun;
     clearTimeout(undoShowTimer);
-    Promise.all(steps).then(() => {
+    Promise.all([...steps, page.done]).then(() => {
+      flushLibrary(); // the Your library row catches up once its poster has gone
       if (run !== undoRun) return; // a newer removal took over
-      undoShowTimer = setTimeout(() => { // right after the row settles
-        $("#undo-text").textContent = disliked ? "Marked not for me" : "Marked as watched";
+      undoShowTimer = setTimeout(() => { // right after everything settles
+        $("#undo-text").textContent = what;
         showUndo({ ...o, cards });
       }, 0);
     });
@@ -1072,7 +1097,7 @@
     page.scrollTop = y;
     const stays = new Set([...grid.querySelectorAll(".card")].map((c) => c.dataset.id));
     const leaving = old.filter((c) => !stays.has(c.dataset.id));
-    if (!leaving.length) return;
+    if (!leaving.length) return { left: false, done: Promise.resolve() };
     // the leaving posters fade out where they were, with the others held in their old places
     const now = grid.getBoundingClientRect();
     const ghosts = leaving.map((c) => {
@@ -1090,11 +1115,12 @@
       if (dx || dy) { c.style.transform = `translate(${dx}px, ${dy}px)`; held.push(c); }
     }
     requestAnimationFrame(() => { for (const g of ghosts) { g.style.transition = "opacity .15s ease"; g.style.opacity = "0"; } });
-    setTimeout(() => {
+    const done = new Promise((finish) => setTimeout(() => {
       for (const g of ghosts) g.remove();
       for (const c of held) { c.style.transition = "transform .2s ease"; c.style.transform = ""; }
-      setTimeout(() => { for (const c of held) c.style.transition = ""; }, 220);
-    }, 160);
+      setTimeout(() => { for (const c of held) c.style.transition = ""; finish(); }, 220);
+    }, 160));
+    return { left: true, done };
   }
 
   function showUndo(state) {
@@ -1121,9 +1147,12 @@
     hideUndo();
     if (s.thumb) thumbs[s.id] = s.thumb; else delete thumbs[s.id];
     if (s.watched) watched[s.id] = s.watched; else delete watched[s.id];
+    if (s.listed) watchlist[s.id] = s.listed; else delete watchlist[s.id];
     save(STORE.thumbs, thumbs);
     save(STORE.watched, watched);
+    save(STORE.watchlist, watchlist);
     for (const c of s.cards) {
+      if (!c.isConnected) continue; // its row was redrawn (Your library): updateWatchlistRow brings it back
       const back = () => { c.classList.remove("removed", "collapsing"); c.style.width = ""; };
       if (c.parentElement.classList.contains("scroller")) back();
       else glideGrid(c.parentElement, back); // in a grid, the others glide aside to make room
@@ -1131,6 +1160,7 @@
     }
     patchCards(s.id);
     updateWatchlistRow();
+    if ($("#mylist").open) redrawLibraryGrid(); // back on the Your library page too
     updateBecauseRow();
     homeStale = true;
   }
@@ -1144,7 +1174,7 @@
     openDetails(id); // redraw so "Why this pick" reflects the new rating
     d.scrollTop = y;
     patchCards(id);
-    updateWatchlistRow(false, "liked");
+    libChanged("liked");
     updateBecauseRow();
     homeStale = true;
     dismissRateTip(); // rating is what the tip asks for
@@ -1749,7 +1779,7 @@
     });
     $("#details").addEventListener("close", () => $("#rate-tip")?.remove()); // not dismissed: it comes back next time
     for (const d of document.querySelectorAll("dialog")) d.addEventListener("close", placeBanners);
-    $("#details").addEventListener("close", removeOnClose);
+    $("#details").addEventListener("close", leaveOnClose);
     $("#undo-btn").addEventListener("click", undoRemoval);
     $("#mylist").addEventListener("click", (e) => {
       const tab = e.target.closest("[data-tab]");
@@ -1762,9 +1792,7 @@
     // Closing a title opened from Your list updates the page right away, so each tab
     // shows exactly what belongs there: removed titles leave "In your list", titles
     // marked watched move to Watched, and un-marked ones go back to the list (if listed).
-    $("#details").addEventListener("close", () => {
-      if ($("#mylist").open) redrawLibraryGrid();
-    });
+    // (closing a title opened from the Your library page redraws it: see leaveOnClose)
     $("#ml-sort").addEventListener("change", (e) => { ml.sort[ml.tab] = e.target.value; renderMyList(); });
     $("#rowpage").addEventListener("click", (e) => {
       const svc = e.target.closest("[data-rp-service]");

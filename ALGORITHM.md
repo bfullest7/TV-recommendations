@@ -136,7 +136,7 @@ So titles you keep scrolling past make room for others. Applies to Top Picks, Be
 
 Rows don't reshuffle while you browse, except:
 
-- **Your library row** updates right away.
+- **Your library (row and page)** updates when the title's screen closes: a title that no longer belongs under the selected pill or tab fades out, with a banner and Undo ("Removed from your list", "Like removed", "Marked as not watched", and the two below).
 - **Not for me and Mark watched:** the title fades out of its rows when its screen closes, then a 5-second "Marked not for me" or "Marked as watched" banner with Undo appears. Not for me always shows its banner, even when the title only stays in Your library (it has no poster mark); Mark watched doesn't when the title only stays in Your library, where it shows the ✓.
 - Everything else waits for a natural moment: reopening or coming back to the app, changing a filter, or closing Profile.
 
