@@ -1022,7 +1022,8 @@
     undoState = state;
     const b = $("#undo-banner");
     b.hidden = false;
-    requestAnimationFrame(() => b.classList.add("in"));
+    b.offsetWidth; // start from below the screen, so it slides up
+    b.classList.add("in");
     clearTimeout(undoTimer);
     undoTimer = setTimeout(hideUndo, 5000);
   }
@@ -1030,7 +1031,7 @@
     const b = $("#undo-banner");
     b.classList.remove("in");
     clearTimeout(undoTimer);
-    undoTimer = setTimeout(() => { if (!b.classList.contains("in")) b.hidden = true; }, 250);
+    undoTimer = setTimeout(() => { if (!b.classList.contains("in")) b.hidden = true; }, 260); // after it slides down
     undoState = null;
   }
   function undoRemoval() {
