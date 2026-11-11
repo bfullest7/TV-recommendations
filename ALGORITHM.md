@@ -128,7 +128,7 @@ Everything is recalculated from your saved choices each time the rows are drawn,
 So titles you keep scrolling past make room for others. Applies to Top Picks, Because you liked, Trending, Top rated, Critics' favorites and New (and their "See all" pages), not Your library or the Netflix Top 10.
 
 - **Seen:** a home-row poster mostly (60%) on screen for about a second, with nothing open on top. Counts once per day, however many visits.
-- **Moving:** from the 4th day a title is seen (any days, not necessarily in a row) without being opened, liked, saved or marked watched, it moves 4 places down its row per day seen (`start_day` = 4, `places_per_day` = 4). It goes behind the title already in that spot and never disappears. A title seen daily from #1 is at #5 on day 4, #9 on day 5, and leaves the first 20 after about 8 days.
+- **Moving:** from the 2nd day a title is seen (any days, not necessarily in a row) without being opened, liked, saved or marked watched, it moves 4 places down its row per day seen (`start_day` = 2, `places_per_day` = 4). It goes behind the title already in that spot and never disappears. A title seen daily from #1 is at #5 on day 2, #9 on day 3, and leaves the first 20 after about 6 days. Since a row shows about 3 posters before swiping, the first screen of each row changes every day.
 - **Reset:** not seen for 2 weeks (`reset_days` = 14) puts it back with a fresh count. Opening it clears its count and keeps it in place for 2 weeks.
 - **When it shows:** only when rows are drawn (opening or coming back to the app, changing a filter), never during a visit. Today's sighting counts from tomorrow.
 
@@ -146,6 +146,7 @@ Newest first. Record each change to a rule or number here, with what was tried a
 
 - **Nov 9, 2026. Common genres count less for likes.** One liked drama took Top Picks from 11 to 17–18 dramas out of 20. Now each genre of a liked title counts (1 − its share of titles)³, so Drama about 25%, and liking Breaking Bad gives 13 dramas. Tried: 40% for Drama (14–15) and 15% (drama likes barely mattered).
 - **Nov 9, 2026. Not for me no longer lowers genres.** One disliked drama pushed every drama down. It's usually about the title; the genre 👎 in Profile is for whole genres. Tried: half and a quarter strength, and counting genres only after a pattern of dislikes (harder to predict).
+- **Nov 11, 2026. Rotation starts on the 2nd day seen** (was the 4th), so people don't see the same first three tiles in a row day after day. Within a day the rows stay the same.
 - **Nov 9, 2026. Rotation starts on the 4th day seen** (was the 3rd), so people get a few days to consider a title before it moves. Places per day stay at 4 (about one screen width); 3 is the gentler option if it feels too fast.
 - **Nov 9, 2026. Not for me and Mark watched remove the title on close, with Undo** (before, the title dimmed and left at the next natural moment).
 - **Nov 9, 2026. Announced seasons ignored** until they air (they showed future years like 2027 and took away a recent season's New & recent credit).
