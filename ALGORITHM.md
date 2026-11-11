@@ -28,7 +28,7 @@ The daily lookup limits reset at midnight UTC (7 PM Eastern in winter). A big ba
 
 **On the phone.**
 - **The data:** the app checks for new data each time it's opened or brought back to the screen, and redraws only if the data changed.
-- **The settings:** `config.json` (weights, rotation and so on) is read each time the app starts, so a change applies the next time the app opens.
+- **The settings:** `config.json` (weights, rotation and so on) is read when the app starts and whenever new data arrives, so a change applies the next time the app opens or within about 2 hours, whichever comes first. No "Update available" banner.
 - **The app itself:** a new version shows the "Update available" banner. Without tapping Refresh, it updates on its own within about 10 minutes, or the next time the app starts fresh.
 - **Your choices** (likes, Not for me, watched, watchlist, genres, services) are saved on the phone instantly and never leave it, except in a backup file.
 
