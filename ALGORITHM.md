@@ -42,7 +42,8 @@ The daily lookup limits reset at midnight UTC (7 PM Eastern in winter). A big ba
 | Most popular right now | top 40 |
 | New in the last 30 days | top 40 |
 | Most well known (most-rated, e.g. Squid Game) | top 100 (`well_known_pages` = 5); top 200 for Netflix and Hulu TV (`well_known_pages_by_service`) |
-| Best-known recent releases (last 5 years, most-rated) | top 60 movies (top 100 on Netflix and Prime Video, the biggest catalogs), top 40 TV (`recent_lists`) |
+| Best-known recent releases (last 3 years, most-rated) | top 60 movies (top 100 on Netflix and Prime Video, the biggest catalogs), top 40 TV (`recent_lists`) |
+| Best-known releases from 3–5 years ago (most-rated) | top 40 movies, top 20 TV (`recent_lists`, a separate band so they don't push newer titles out) |
 | Most-rated documentaries | top 40, movies and TV (`genre_lists`) |
 | Most-rated reality shows | top 40, TV only (`genre_lists`) |
 
@@ -169,6 +170,7 @@ Newest first. Record each change to a rule or number here, with what was tried a
 
 - **Nov 9, 2026. Common genres count less for likes.** One liked drama took Top Picks from 11 to 17–18 dramas out of 20. Now each genre of a liked title counts (1 − its share of titles)³, so Drama about 25%, and liking Breaking Bad gives 13 dramas. Tried: 40% for Drama (14–15) and 15% (drama likes barely mattered).
 - **Nov 9, 2026. Not for me no longer lowers genres.** One disliked drama pushed every drama down. It's usually about the title; the genre 👎 in Profile is for whole genres. Tried: half and a quarter strength, and counting genres only after a pattern of dislikes (harder to predict).
+- **Nov 12, 2026. Recent releases: back to 3 years, plus a separate 3–5 years band.** Widening the one list to 5 years let older titles take the same 60 spots: 2024–2025 movies fell from about 190 a year to 120, and Happy Gilmore 2 and Wicked: For Good dropped out again. Two separate lists keep both.
 - **Nov 12, 2026. Added Starz and Tubi.** Starz filled gaps found in the movie checks (e.g. Conclave, Jurassic World, Knives Out); Tubi is a big free option. Considered and skipped for now: AMC+ and MGM+ (their best-known shows also stream on Netflix, Hulu or Prime), The Roku Channel (next free option if wanted), Pluto TV, Crunchyroll, Discovery+, and live-TV services.
 - **Nov 12, 2026. "Recent" widened from 3 years to 5.** A check of 78 well-known 2015–2023 movies found 49; of the 29 missing, 13 stream on a tracked service (Encanto, Turning Red, Elemental, Free Guy, Wakanda Forever on Disney+; The Power of the Dog, Nope, Nimona, The Trial of the Chicago 7 on Netflix; Anatomy of a Fall, Crazy Rich Asians on HBO Max; The Fabelmans, Asteroid City on Peacock), mostly 2021–2023: aged out of the 3-year window but not yet among the all-time most-rated. The other 15 aren't on a tracked service.
 - **Nov 12, 2026. Recent movies: top 100 on Netflix and Prime Video** (was 60). Happy Gilmore 2, a Netflix original, was #63 on Netflix's list. (Conclave, also missing, is only on Starz in the US, which Tivvy doesn't track.)

@@ -200,6 +200,8 @@ class PipelineTest(unittest.TestCase):
         recent = {(u.path.split("/")[-1], k) for u in disc for k in dict(urllib.parse.parse_qsl(u.query))
                   if dict(urllib.parse.parse_qsl(u.query)).get("sort_by") == "vote_count.desc" and k in ("primary_release_date.gte", "first_air_date.gte")}
         self.assertEqual(recent, {("movie", "primary_release_date.gte"), ("tv", "first_air_date.gte")})
+        bands = {u.path.split("/")[-1] for u in disc if "primary_release_date.lte" in u.query or "first_air_date.lte" in u.query}
+        self.assertEqual(bands, {"movie", "tv"})  # the 3-5 years ago band
         # length: movie running time, and seasons aired so far (not specials, not the announced 2027 one)
         self.assertEqual(T["t1"]["latest_air"], "2026-10-20")
         self.assertEqual((T["m1"]["runtime"], T["m1"]["season_count"]), (135, None))

@@ -149,10 +149,12 @@
     "_well_known_pages_by_service_note": "Big catalogs go deeper: top 200 most-rated TV shows on Netflix and Hulu (20 per page).",
     "well_known_pages_by_service": { "netflix": { "tv": 10 }, "hulu": { "tv": 10 } },
     "_genre_lists_note": "Extra most-rated lists per service for genres that get fewer ratings than dramas, so famous ones were missed (TMDB genre ids: 99 Documentary, 10764 Reality, TV only).",
-    "_recent_lists_note": "Best-known recent releases per service (released in the last `years` years, most-rated first). Recent movies were falling between the other lists: no longer new, not in this week's top 40, and not yet as rated as older classics.",
+    "_recent_lists_note": "Best-known recent releases per service (released in the last `years` years, or between `years` and `after_years` years ago, most-rated first; separate lists so older titles don't push newer ones out). Recent movies were falling between the other lists: no longer new, not in this week's top 40, and not yet as rated as older classics.",
     "recent_lists": [
-      { "kinds": ["movie"], "years": 5, "pages": 3, "pages_by_service": { "netflix": 5, "prime": 5 } },
-      { "kinds": ["tv"], "years": 5, "pages": 2 }
+      { "kinds": ["movie"], "years": 3, "pages": 3, "pages_by_service": { "netflix": 5, "prime": 5 } },
+      { "kinds": ["movie"], "years": 5, "after_years": 3, "pages": 2 },
+      { "kinds": ["tv"], "years": 3, "pages": 2 },
+      { "kinds": ["tv"], "years": 5, "after_years": 3, "pages": 1 }
     ],
     "genre_lists": [
       { "name": "documentaries", "genres": "99", "kinds": ["movie", "tv"], "pages": 2 },
