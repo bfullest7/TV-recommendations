@@ -335,6 +335,70 @@
 
 
   // ---------------------------------------------------------------- rows
+  /* Genre rows: one or two rows from genres you like ("Crime picks for you"), different
+     genres each day. Genres come from your 👍 in Profile, or else from titles you've liked
+     (most liked first). Very broad genres (a third or more of all titles, e.g. Drama) are
+     skipped when you like others. Ordered by your match score, like Top Picks, among titles
+     with enough IMDb votes; rotation and variety across rows apply. */
+  const GENRE_WORDS = { Documentary: "documentaries", Reality: "reality TV", Talk: "talk shows", Kids: "kids' titles", Soap: "soaps", "TV Movie": "TV movies", Western: "westerns", News: "news" };
+  const genreWord = (g) => GENRE_WORDS[g] || g.toLowerCase();
+  const genreKey = (g) => "g-" + g.toLowerCase().replace(/[^a-z]+/g, "-");
+  function genreRowDefs() {
+    let likes = Object.keys(genrePrefs).filter((g) => genrePrefs[g] > 0);
+    if (!likes.length) {
+      const n = {};
+      for (const r of Object.values(thumbs)) if (r.v > 0) for (const g of r.genres || []) n[g] = (n[g] || 0) + 1;
+      likes = Object.keys(n).sort((a, b) => n[b] - n[a] || a.localeCompare(b));
+    } else likes.sort();
+    likes = likes.filter((g) => !(genrePrefs[g] < 0));
+    const specific = likes.filter((g) => genreShare(g) < 1 / 3);
+    if (specific.length) likes = specific;
+    const taste = tasteModel(), min = picksMinVotes();
+    const rowsFor = likes.map((g) => ({ g, items: Object.values(feed.titles).filter((t) => visible(t) && (t.genres || []).includes(g) && (t.imdb_votes || 0) >= min) }))
+      .filter((r) => r.items.length >= 8);
+    if (!rowsFor.length) return [];
+    const day = Math.floor(new Date(today()) / 86400000); // a different pair of genres each day
+    const picked = [rowsFor[day % rowsFor.length], rowsFor[(day + 1) % rowsFor.length]].filter((r, i, a) => a.indexOf(r) === i);
+    return picked.map(({ g, items }) => {
+      const key = genreKey(g);
+      const ranked = items.map((t) => ({ t, s: pickScore(t, taste) })).sort((a, b) => b.s - a.s).map((x) => x.t);
+      return { key, title: `${g} picks for you`, source: `Highly rated ${genreWord(g)}, tuned to your likes`, items: sinkDisliked(rotate(ranked, key)), genre: g };
+    });
+  }
+  /* Hidden gems in Top Picks: one at the 10th spot (the only one in the home row's 20), then
+     every 10th from #30 on its "See all" page, a title
+     critics and audiences rate very highly that isn't trending or widely watched, to mix things
+     up. Only once you've liked something or picked genres. Never in a genre you 👎, never one
+     you've liked, saved or marked Not for me. The #10 spot always holds a gem: a gem you keep
+     seeing moves down the list of gems (like any title rotating), and the next one takes #10. */
+  const GEM_EVERY = 10;
+  const gemSpot = (n) => n === GEM_EVERY || (n >= 3 * GEM_EVERY && n % GEM_EVERY === 0); // #10, then #30, #40…
+  let gemIds = new Set();
+  function hiddenGems(exclude) {
+    const pops = Object.values(feed.titles).map((t) => t.popularity || 0).sort((a, b) => a - b);
+    const midPop = pops[Math.floor(pops.length / 2)] || 0;
+    const gems = Object.values(feed.titles).filter((t) => {
+      if (!visible(t) || exclude.has(t.id) || thumbs[t.id] || watchlist[t.id] || genreSunk(t)) return false;
+      const sc = t.scores || {}, votes = t.imdb_votes || 0;
+      const quality = sc.critic != null ? sc.audience >= 70 && sc.critic >= 85 : sc.audience >= 80;
+      return quality && votes >= picksMinVotes() && votes <= 150000 && (sc.buzz || 0) < 15 && (t.popularity || 0) <= midPop * 1.5;
+    }).sort((a, b) => ((b.scores.audience + (b.scores.critic ?? b.scores.audience)) - (a.scores.audience + (a.scores.critic ?? a.scores.audience))));
+    return rotate(gems, "picks");
+  }
+  function addGems(picks) {
+    gemIds = new Set();
+    if (!Object.values(thumbs).some((r) => r.v > 0) && !Object.values(genrePrefs).some((v) => v > 0)) return picks;
+    const gems = hiddenGems(new Set(picks.slice(0, GEM_EVERY - 1).map((t) => t.id)));
+    if (!gems.length) return picks;
+    const gemSet = new Set(gems.map((t) => t.id)), rest = picks.filter((t) => !gemSet.has(t.id)), out = [];
+    let g = 0;
+    for (const t of rest) {
+      if (gemSpot(out.length + 1) && g < gems.length) { out.push(gems[g]); gemIds.add(gems[g].id); g++; }
+      out.push(t);
+    }
+    return out;
+  }
+
   function rowDefs() {
     const T = feed.titles;
     const from = (ids) => ids.map((id) => T[id]).filter(visible);
@@ -352,7 +416,7 @@
       {
         key: "picks", title: "Top picks for you",
         source: "Highly rated and new, tuned to your likes",
-        items: topPicks(),
+        items: addGems(topPicks()),
       },
       { // always shown, right below Top Picks; its pills switch between Watchlist, Liked and Watched
         key: "watchlist", title: "Your library", library: true,
@@ -384,6 +448,9 @@
       },
     ];
     for (const d of defs) if (["trending", "audience", "critics", "new"].includes(d.key)) d.items = sinkDisliked(rotate(d.items, d.key)); // Top Picks does this itself
+    const [g1, g2] = genreRowDefs(); // spread out: one after Trending, one after Critics' favorites
+    if (g1) defs.splice(defs.findIndex((d) => d.key === "trending") + 1, 0, g1);
+    if (g2) defs.splice(defs.findIndex((d) => d.key === "critics") + 1, 0, g2);
     /* Variety across rows: the first 10 titles of each row are ones not already in the first
        10 of a row above it, so each row leads with something different. Titles shown higher up
        aren't dropped, just moved behind those 10. Your library and the Netflix Top 10 keep
@@ -837,10 +904,11 @@
     else if ((t.imdb_votes || 0) < picksMinVotes()) lead = `Top Picks only includes titles with ${fmtCount(picksMinVotes())}+ IMDb votes, and this has ${t.imdb_votes ? fmtCount(t.imdb_votes) : "no IMDb rating yet"}, so it's not in your Top Picks. Its match score of ${match} comes`;
     else if (!rightKind(t)) lead = `This is a ${t.type === "tv" ? "TV show" : "movie"}, and you're viewing ${kindWord()} only, so it's not in your Top Picks right now. Its match score of ${match} comes`;
     else {
-      const picks = topPicks();
+      const picks = addGems(topPicks()); // as shown on the home screen, with hidden gems
       const rank = picks.findIndex((x) => x.id === t.id) + 1;
       const shown = feed.row_length || 20;
       lead = rank <= shown ? `#${rank} in your Top Picks` : `#${rank} of ${picks.length} in your Top Picks (below the ${shown} shown)`;
+      if (gemIds.has(t.id)) lead = `A hidden gem, mixed into your Top Picks at #${rank}: critics and audiences rate it very highly, but it isn't widely watched yet. Its match score of ${match} comes`;
     }
 
     // Helped: signals scoring 60+, biggest contribution first. Held back: a weak
@@ -1328,7 +1396,7 @@
     if (!def) return;
     $("#rp-title").textContent = noOrphan(def.title);
     $("#rp-sub").textContent = noOrphan(def.source);
-    const sorts = [["row", RP_FIRST[rp.key] || "Default"], ["imdb", "IMDb rating"], ["newest", "Newest release"], ["az", "A–Z"]];
+    const sorts = [["row", RP_FIRST[rp.key] || (rp.key.startsWith("g-") ? "Best match for you" : "Default")], ["imdb", "IMDb rating"], ["newest", "Newest release"], ["az", "A–Z"]];
     $("#rp-sort").innerHTML = sorts.map(([k, l]) => `<option value="${k}" ${rp.sort === k ? "selected" : ""}>${l}</option>`).join("");
     $("#rp-kind").value = rp.kind;
     $("#rp-kind").classList.toggle("active", rp.kind !== "all");
@@ -1560,6 +1628,9 @@
         <p>Netflix's own official list of its most-watched shows and films in the US, published weekly. Shown only when the <b>Netflix</b> filter is selected, and not used in any ranking, since other services don't publish equivalent numbers.</p>`],
       ["Because you liked…", `
         <p>Once you've liked or saved a title, a row right below Your library shows similar shows and movies (from TMDB), best matches for you first. It's about one title at a time: your likes first ("Because you liked…"), newest first, then titles on your watchlist ("More like…"). It moves on to the next one the first time you open the app each day. If none has enough similar titles yet, the row is "Based on your favorites" and mixes them together. Titles you've liked, watched or marked Not for me are left out, and watched titles only count when you've liked them.</p>`],
+      ["Genre picks and hidden gems", `
+        <p><b>Genre rows</b> like "Crime picks for you" come from genres you 👍 in <b>Genres</b> (or, without any, from titles you've liked), ordered by your match score like Top Picks. You get one or two, different genres each day. Very broad genres like Drama are skipped when you like others.</p>
+        <p><b>Hidden gems:</b> the 10th spot in Top Picks (and every 10th from #30 in "See all") holds a title critics and audiences rate very highly that isn't trending or widely watched, to mix things up. Never from a genre you 👎. Once you've seen one for a couple of days, another takes its place.</p>`],
       ["Keeping rows fresh", `
         <p>Titles you keep scrolling past make room for others. Each row keeps its own count: from the 3rd day you see a title in a row, it moves 5 places down that row each day, so the first few titles change every couple of days. It only moves in rows where you've seen it, so each row keeps its own ranking until you look at it. After 2 weeks out of sight in that row, it's back in its usual spot. Every title moves along, including ones you've liked or saved (they're always in Your library). Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: Your taste", `

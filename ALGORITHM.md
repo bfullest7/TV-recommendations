@@ -69,6 +69,7 @@ Every row only shows titles on your services (and the TV & movies filter), and l
 | **Top picks for you** | Personal match score (section 4), among titles with 5,000+ IMDb votes (`top_picks_min_imdb_votes`). |
 | **Your library** | Your watchlist, likes or watched titles (pills), most recent first. Not ranked; keeps watched and Not for me titles. |
 | **Because you liked… / More like…** | Titles similar to one title (section 6), ordered by the personal match score. |
+| **[Genre] picks for you** (two rows: after Trending and after Critics' favorites) | Titles in one of your liked genres, ordered by the personal match score, among titles with 5,000+ IMDb votes. Subtitle "Highly rated [genre], tuned to your likes". See section 6b. |
 | **Trending now** | 75% Trending + 25% New & recent (`trending_recency`), among titles with 5,000+ IMDb votes (`trending_min_imdb_votes`). |
 | **Top rated by audiences** | 65% Audience + 35% New & recent (`audience_recency`), among titles with 20,000+ IMDb votes (`min_imdb_votes`). |
 | **Critics' favorites** | 65% Critics + 35% New & recent (`critics_recency`), among titles with 20,000+ IMDb votes. A title with only one of the two critic scores counts 5 points lower than one with both agreeing. |
@@ -125,6 +126,21 @@ Everything is recalculated from your saved choices each time the rows are drawn,
 - **It changes once a day**, the first time the app is opened on a new day, moving to the next title in line. During a visit it only changes if its title stops being a favorite (unliked and off the watchlist), or its wording would be wrong.
 - **No single title qualifies:** "Based on your favorites" pools similar titles from all of them (needs 4). Nothing liked or saved: no row.
 
+## 6b. Genre rows and hidden gems
+
+**Genre rows.** One or two rows, each for one genre you like:
+- **Which genres:** your 👍 genres in Profile; without any, the genres of titles you've liked (most liked first). Genres you 👎 are never used. Very broad genres (a third or more of all titles, e.g. Drama) are skipped when you like others. A genre needs at least 8 titles you can see.
+- **Different genres each day:** the day picks a pair from your liked genres, cycling through them.
+- **Order:** your personal match score (section 4), then rotation (section 7) under the row's own key, then disliked genres sink, then variety across rows.
+- **Where:** one after Trending, one after Critics' favorites. No likes or genres yet: no genre rows.
+
+**Hidden gems in Top Picks.** To mix things up, the **#10 spot** of Top Picks (the only one in the home row's 20) and every 10th from **#30** on its "See all" page hold a hidden gem:
+- **What counts:** audience score 70+ and critic score 85+ (or audience 80+ when there's no critic score), 5,000 to 150,000 IMDb votes (well rated but not a mega-hit), little trending (trending score under 15) and below-average popularity. Best-rated first.
+- **Never:** in a genre you 👎, or a title you've liked, saved, marked watched or Not for me.
+- **Always one at #10:** a gem you keep seeing rotates down the list of gems (section 7), and the next one takes #10; old gems come back after 2 weeks unseen.
+- **Only once you've liked a title or a genre** (before that, Top Picks isn't personal, so there's nothing to mix up).
+- "Why this pick" explains it: "A hidden gem, mixed into your Top Picks at #10…".
+
 ## 7. Keeping rows fresh (rotation)
 
 So titles you keep scrolling past make room for others. Applies to Top Picks, Because you liked, Trending, Top rated, Critics' favorites and New (and their "See all" pages), not Your library or the Netflix Top 10.
@@ -150,6 +166,7 @@ Newest first. Record each change to a rule or number here, with what was tried a
 
 - **Nov 9, 2026. Common genres count less for likes.** One liked drama took Top Picks from 11 to 17–18 dramas out of 20. Now each genre of a liked title counts (1 − its share of titles)³, so Drama about 25%, and liking Breaking Bad gives 13 dramas. Tried: 40% for Drama (14–15) and 15% (drama likes barely mattered).
 - **Nov 9, 2026. Not for me no longer lowers genres.** One disliked drama pushed every drama down. It's usually about the title; the genre 👎 in Profile is for whole genres. Tried: half and a quarter strength, and counting genres only after a pattern of dislikes (harder to predict).
+- **Nov 12, 2026. Genre rows and hidden gems.** Two "[Genre] picks for you" rows from your liked genres, changing daily, and a hidden gem at #10 in Top Picks. From feedback that every row felt the same, and to add discovery. Gem options considered: a genre you haven't rated (rejected), a crowd favorite outside your taste, a neighbor of what you like, the best-rated title you haven't seen. One gem in the home row, not two (#10 and #20).
 - **Nov 12, 2026. Variety across rows:** the first 10 of each row are titles not in the first 10 of a row above. Feedback: the same titles showed up across every row in a different order (about half of each row's first 10 repeated). Rotation couldn't fix that, since it only acts over days. Kept per-row rotation.
 - **Nov 12, 2026. Rotation is counted per row, and every title rotates.** Seeing a title in one row no longer moves it in the others, so each row keeps its own ranking until you look at it (existing counts started over). Liked and saved titles rotate too, since they always have a home in Your library. Top Picks rotates like the other rows; a gentler pace for Top Picks is noted in section 7 as the fallback.
 - **Nov 12, 2026. Opening a title no longer keeps it in place** (it used to for 2 weeks). People often open a title just to check it out; Like or saving to the watchlist are the ways to keep one. Opening now counts as one more day seen, with no extra push down.
