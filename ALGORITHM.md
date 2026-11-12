@@ -40,7 +40,7 @@ The daily lookup limits reset at midnight UTC (7 PM Eastern in winter). A big ba
 | Most popular right now | top 40 |
 | New in the last 30 days | top 40 |
 | Most well known (most-rated, e.g. Squid Game) | top 100 (`well_known_pages` = 5); top 200 for Netflix and Hulu TV (`well_known_pages_by_service`) |
-| Best-known recent releases (last 3 years, most-rated) | top 60 movies, top 40 TV (`recent_lists`) |
+| Best-known recent releases (last 3 years, most-rated) | top 60 movies (top 100 on Netflix and Prime Video, the biggest catalogs), top 40 TV (`recent_lists`) |
 | Most-rated documentaries | top 40, movies and TV (`genre_lists`) |
 | Most-rated reality shows | top 40, TV only (`genre_lists`) |
 
@@ -167,6 +167,7 @@ Newest first. Record each change to a rule or number here, with what was tried a
 
 - **Nov 9, 2026. Common genres count less for likes.** One liked drama took Top Picks from 11 to 17–18 dramas out of 20. Now each genre of a liked title counts (1 − its share of titles)³, so Drama about 25%, and liking Breaking Bad gives 13 dramas. Tried: 40% for Drama (14–15) and 15% (drama likes barely mattered).
 - **Nov 9, 2026. Not for me no longer lowers genres.** One disliked drama pushed every drama down. It's usually about the title; the genre 👎 in Profile is for whole genres. Tried: half and a quarter strength, and counting genres only after a pattern of dislikes (harder to predict).
+- **Nov 12, 2026. Recent movies: top 100 on Netflix and Prime Video** (was 60). Happy Gilmore 2, a Netflix original, was #63 on Netflix's list. (Conclave, also missing, is only on Starz in the US, which Tivvy doesn't track.)
 - **Nov 12, 2026. Best-known recent releases tracked:** per service, the 60 most-rated movies and 40 most-rated shows from the last 3 years. Recent movies fell between the lists (no longer new, not in this week's top 40, not yet as rated as classics): only about 55 movies each for 2024 and 2025 were tracked, and 21 of 47 popular 2024–2026 movies checked were missing (e.g. Happy Gilmore 2, Moana 2, Gladiator II). From Katie's feedback.
 - **Nov 12, 2026. Genre rows and hidden gems.** Two "[Genre] picks for you" rows from your liked genres, changing daily, and a hidden gem at #10 in Top Picks. From feedback that every row felt the same, and to add discovery. Gem options considered: a genre you haven't rated (rejected), a crowd favorite outside your taste, a neighbor of what you like, the best-rated title you haven't seen. One gem in the home row, not two (#10 and #20).
 - **Nov 12, 2026. Variety across rows:** the first 10 of each row are titles not in the first 10 of a row above. Feedback: the same titles showed up across every row in a different order (about half of each row's first 10 repeated). Rotation couldn't fix that, since it only acts over days. Kept per-row rotation.

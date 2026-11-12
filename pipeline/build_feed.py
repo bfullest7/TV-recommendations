@@ -713,7 +713,8 @@ def run(mode: str = "auto") -> dict:
                 for r in rf.get("recent_lists") or []:
                     if kind in r.get("kinds", ("movie", "tv")):
                         since = (today() - dt.timedelta(days=365 * r.get("years", 3))).isoformat()
-                        lists.append({"sort_by": "vote_count.desc", ("primary_release_date.gte" if kind == "movie" else "first_air_date.gte"): since, "_pages": r.get("pages", p)})
+                        pages = (r.get("pages_by_service") or {}).get(s["key"], r.get("pages", p))  # big catalogs go deeper
+                        lists.append({"sort_by": "vote_count.desc", ("primary_release_date.gte" if kind == "movie" else "first_air_date.gte"): since, "_pages": pages})
                 # genres that get fewer ratings (documentaries, reality) get their own most-rated list
                 for g in rf.get("genre_lists") or []:
                     if kind in g.get("kinds", ("movie", "tv")):
