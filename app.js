@@ -1435,7 +1435,12 @@
   }
 
   // ---------------------------------------------------------------- search
-  const norm = (x) => String(x || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  /* Search text, simplified the same way for titles and what you type: no accents, "²" reads as
+     "2", "&" as "and", and number words as digits, so "fantastic four" finds "The Fantastic 4"
+     and "accountant 2" finds "The Accountant²". */
+  const NUMBER_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
+  const norm = (x) => String(x || "").replace(/[\u00b2\u00b3\u00b9\u2070-\u2079]/g, (m) => " " + m).normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ").trim().split(" ").map((w) => NUMBER_WORDS[w] ?? w).join(" ");
   let searchIndex = null;
 
   /* Search. Best first:
