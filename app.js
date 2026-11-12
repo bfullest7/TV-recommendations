@@ -384,6 +384,22 @@
       },
     ];
     for (const d of defs) if (["trending", "audience", "critics", "new"].includes(d.key)) d.items = sinkDisliked(rotate(d.items, d.key)); // Top Picks does this itself
+    /* Variety across rows: the first 10 titles of each row are ones not already in the first
+       10 of a row above it, so each row leads with something different. Titles shown higher up
+       aren't dropped, just moved behind those 10. Your library and the Netflix Top 10 keep
+       their own order. */
+    const UNIQUE_FIRST = 10, shownAbove = new Set();
+    for (const d of defs) {
+      if (d.library) continue;
+      const front = [], later = [], rest = [];
+      for (const t of d.items) {
+        if (front.length >= UNIQUE_FIRST) rest.push(t);
+        else if (shownAbove.has(t.id)) later.push(t);
+        else front.push(t);
+      }
+      d.items = [...front, ...later, ...rest];
+      for (const t of front) shownAbove.add(t.id);
+    }
     // Only Netflix publishes official viewing numbers, so its Top 10 shows only when the Netflix filter is selected
     const hasNetflix = myServices.includes("netflix") && filter === "netflix";
     if (hasNetflix && feed.rows.netflix.length) {
