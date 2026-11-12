@@ -97,6 +97,22 @@
         "Paramount Plus",
         "Paramount+"
       ]
+    },
+    {
+      "key": "starz",
+      "name": "Starz",
+      "color": "#000000",
+      "provider_ids": [43],
+      "match": ["Starz"]
+    },
+    {
+      "key": "tubi",
+      "name": "Tubi",
+      "color": "#7408FF",
+      "provider_ids": [73],
+      "match": ["Tubi TV", "Tubi"],
+      "_free_note": "Free with ads: TMDB lists it under ads/free, not subscription (flatrate).",
+      "free": true
     }
   ],
   "weights": {

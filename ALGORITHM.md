@@ -32,6 +32,8 @@ The daily lookup limits reset at midnight UTC (7 PM Eastern in winter). A big ba
 - **The app itself:** a new version shows the "Update available" banner. Without tapping Refresh, it updates on its own within about 10 minutes, or the next time the app starts fresh.
 - **Your choices** (likes, Not for me, watched, watchlist, genres, services) are saved on the phone instantly and never leave it, except in a backup file.
 
+**Services:** Netflix, Prime Video, Disney+, Hulu, HBO Max, Apple TV, Peacock, Paramount+, Starz and Tubi (free with ads; TMDB lists it as ads/free rather than a subscription, so it's read from those listings).
+
 **Which titles are tracked.** For each service, movies and TV separately, from TMDB:
 
 | List | How many |
@@ -167,6 +169,7 @@ Newest first. Record each change to a rule or number here, with what was tried a
 
 - **Nov 9, 2026. Common genres count less for likes.** One liked drama took Top Picks from 11 to 17–18 dramas out of 20. Now each genre of a liked title counts (1 − its share of titles)³, so Drama about 25%, and liking Breaking Bad gives 13 dramas. Tried: 40% for Drama (14–15) and 15% (drama likes barely mattered).
 - **Nov 9, 2026. Not for me no longer lowers genres.** One disliked drama pushed every drama down. It's usually about the title; the genre 👎 in Profile is for whole genres. Tried: half and a quarter strength, and counting genres only after a pattern of dislikes (harder to predict).
+- **Nov 12, 2026. Added Starz and Tubi.** Starz filled gaps found in the movie checks (e.g. Conclave, Jurassic World, Knives Out); Tubi is a big free option. Considered and skipped for now: AMC+ and MGM+ (their best-known shows also stream on Netflix, Hulu or Prime), The Roku Channel (next free option if wanted), Pluto TV, Crunchyroll, Discovery+, and live-TV services.
 - **Nov 12, 2026. "Recent" widened from 3 years to 5.** A check of 78 well-known 2015–2023 movies found 49; of the 29 missing, 13 stream on a tracked service (Encanto, Turning Red, Elemental, Free Guy, Wakanda Forever on Disney+; The Power of the Dog, Nope, Nimona, The Trial of the Chicago 7 on Netflix; Anatomy of a Fall, Crazy Rich Asians on HBO Max; The Fabelmans, Asteroid City on Peacock), mostly 2021–2023: aged out of the 3-year window but not yet among the all-time most-rated. The other 15 aren't on a tracked service.
 - **Nov 12, 2026. Recent movies: top 100 on Netflix and Prime Video** (was 60). Happy Gilmore 2, a Netflix original, was #63 on Netflix's list. (Conclave, also missing, is only on Starz in the US, which Tivvy doesn't track.)
 - **Nov 12, 2026. Best-known recent releases tracked:** per service, the 60 most-rated movies and 40 most-rated shows from the last 3 years. Recent movies fell between the lists (no longer new, not in this week's top 40, not yet as rated as classics): only about 55 movies each for 2024 and 2025 were tracked, and 21 of 47 popular 2024–2026 movies checked were missing (e.g. Happy Gilmore 2, Moana 2, Gladiator II). From Katie's feedback.

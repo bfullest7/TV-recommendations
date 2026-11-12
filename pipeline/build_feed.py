@@ -201,8 +201,9 @@ def kind_of(key: str) -> str:
 
 
 class Tmdb:
-    def __init__(self, api_key: str, region: str):
+    def __init__(self, api_key: str, region: str, free_services: set[str] | None = None):
         self.region = region
+        self.free_services = free_services or set()  # services that are free with ads (e.g. Tubi)
         if api_key.startswith("eyJ"):  # v4 "API Read Access Token"
             self.headers = {"Authorization": f"Bearer {api_key}", "accept": "application/json"}
             self.params = {}
@@ -234,14 +235,14 @@ class Tmdb:
                             found[s["key"]].add(p["provider_id"])
         return {k: sorted(v) for k, v in found.items()}
 
-    def discover(self, kind: str, provider_ids: list[int], pages: int, **params) -> list[int]:
+    def discover(self, kind: str, provider_ids: list[int], pages: int, free: bool = False, **params) -> list[int]:
         ids = []
         for page in range(1, pages + 1):
             res = self.get(
                 f"/discover/{kind}",
                 watch_region=self.region,
                 with_watch_providers="|".join(map(str, provider_ids)),
-                with_watch_monetization_types="flatrate",
+                with_watch_monetization_types="ads|free" if free else "flatrate",  # free services (Tubi) are listed as ads/free
                 include_adult="false",
                 page=page,
                 **params,
@@ -260,7 +261,8 @@ class Tmdb:
                 return None
             raise
         wp = (d.get("watch/providers") or {}).get("results", {}).get(self.region, {})
-        services = sorted({provider_to_service[p["provider_id"]] for p in wp.get("flatrate", []) if p["provider_id"] in provider_to_service})
+        offers = wp.get("flatrate", []) + [p for p in wp.get("ads", []) + wp.get("free", []) if provider_to_service.get(p["provider_id"]) in self.free_services]
+        services = sorted({provider_to_service[p["provider_id"]] for p in offers if p["provider_id"] in provider_to_service})
         genres = []
         for g in d.get("genres", []):
             for name in GENRE_SPLIT.get(g["name"], [g["name"]]):
@@ -663,7 +665,7 @@ def run(mode: str = "auto") -> dict:
         mode = "full" if full_refresh_due(old.get("full_refreshed_at"), now_iso(), rf.get("full_refresh_utc_hour", 10)) else "trending"
     log(f"mode: {mode}")
 
-    tmdb = Tmdb(tmdb_key, region)
+    tmdb = Tmdb(tmdb_key, region, {s["key"] for s in cfg["services"] if s.get("free")})
     svc_ids = tmdb.resolve_services(cfg["services"]) if mode == "full" else old.get("provider_ids") or {s["key"]: s["provider_ids"] for s in cfg["services"]}
     provider_to_service = {pid: k for k, ids in svc_ids.items() for pid in ids}
 
@@ -723,7 +725,7 @@ def run(mode: str = "auto") -> dict:
                     params = dict(params)
                     pages = params.pop("_pages", p)
                     try:
-                        pool.update(key_for(kind, i) for i in tmdb.discover(kind, ids, pages, **params))
+                        pool.update(key_for(kind, i) for i in tmdb.discover(kind, ids, pages, free=bool(s.get("free")), **params))
                     except Exception as e:
                         log(f"warning: discover {s['key']} {kind} {params}: {e}")
         pool.update(trending_keys)

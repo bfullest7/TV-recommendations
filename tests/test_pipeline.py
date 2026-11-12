@@ -28,6 +28,7 @@ U = {
     "m2": dict(title="Tiny Indie", prov=[15], imdb=("tt002", 9.6, 120), rt=100, mc=None, release="2025-01-10", genres=["Drama"]),
     "m3": dict(title="Fresh Release", prov=[1796], imdb=("tt003", 7.1, 40000), rt=70, mc=65, release="2026-10-30", genres=["Comedy"]),
     "m4": dict(title="Channel Only", prov=[582], imdb=("tt004", 8.0, 50000), rt=90, mc=80, release="2023-05-05", genres=["Action"]),
+    "m6": dict(title="Free Classic", prov=[], ads=[73], imdb=("tt006", 7.6, 80000), rt=91, mc=80, release="1995-05-05", genres=["Western"]),
     "m5": dict(title="Theater Hit", prov=[], imdb=("tt005", 7.9, 200000), rt=88, mc=75, release="2026-10-01", genres=["Action"]),
     "t1": dict(title="Big Show", prov=[8, 1899], imdb=("tt101", 8.9, 500000), rt=None, mc=None, mdb_rt=91, mdb_mc=80, release="2020-01-01",
                seasons=["2020-01-01", "2026-10-20", "2027-03-01"], genres=["Sci-Fi & Fantasy"]),
@@ -115,7 +116,8 @@ class FakeHttp:
             kind = p.split("/")[2]
             pre = "m" if kind == "movie" else "t"
             provs = {int(x) for x in q["with_watch_providers"].split("|")}
-            ids = [int(k[1:]) for k, f in U.items() if k.startswith(pre) and provs & set(f["prov"])]
+            free = "ads" in q.get("with_watch_monetization_types", "")
+            ids = [int(k[1:]) for k, f in U.items() if k.startswith(pre) and provs & set(f.get("ads", []) if free else f["prov"])]
             return {"results": [{"id": i} for i in ids], "total_pages": 1}
         if p.startswith("/search/"):
             kind = p.split("/")[2]
@@ -128,7 +130,8 @@ class FakeHttp:
             "id": int(tid), "overview": f"About {f['title']}.", "poster_path": f"/{k}.jpg", "popularity": 10.0,
             "genres": [{"id": i, "name": g} for i, g in enumerate(f["genres"])],
             "external_ids": {"imdb_id": f["imdb"][0]},
-            "watch/providers": {"results": {"US": {"link": f"https://tmdb.example/{k}", "flatrate": [{"provider_id": x} for x in f["prov"]]}}},
+            "watch/providers": {"results": {"US": {"link": f"https://tmdb.example/{k}", "flatrate": [{"provider_id": x} for x in f["prov"]],
+                                                                     "ads": [{"provider_id": x} for x in f.get("ads", [])]}}},
             "recommendations": {"results": [{"id": 1}]},
             "similar": {"results": [{"id": 3}, {"id": 1}, {"id": 999}]},
         }
@@ -184,6 +187,8 @@ class PipelineTest(unittest.TestCase):
         # Sports comes from keywords; "transport"/"passport" must not match "sport"
         self.assertEqual(T["m1"]["genres"], ["Drama", "Sports"])
         self.assertNotIn("Sports", T["t2"]["genres"])
+        # free-with-ads services (Tubi): found through their ads/free listings
+        self.assertEqual(T["m6"]["services"], ["tubi"])
         # extra most-rated lists: documentaries for movies and TV, reality for TV only
         disc = [urllib.parse.urlparse(u) for u in self.fake.calls if "/discover/" in u]
         genre_calls = {(u.path.split("/")[-1], dict(urllib.parse.parse_qsl(u.query)).get("with_genres")) for u in disc}
