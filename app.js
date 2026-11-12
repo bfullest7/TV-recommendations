@@ -83,7 +83,7 @@
   const sinkDisliked = (items) => [...items.filter((t) => !genreSunk(t)), ...items.filter(genreSunk)];
   /* Rotation: titles you keep passing over on the home rows slowly make room for others.
      A poster counts as seen once per day when it's mostly on screen for about a second.
-     From the 3rd day seen (config.json rotation), a title you haven't opened, liked, saved or
+     From the 3rd day seen (config.json rotation), a title you haven't liked, saved or
      marked watched moves down 5 places for each day after the 2nd. It only changes when the
      rows are drawn (the count for today isn't used until tomorrow), and resets after 14 days
      unseen. Your library and the Netflix Top 10 aren't affected. */
@@ -94,7 +94,6 @@
   function rotationPenalty(id) {
     const r = seen[id];
     if (!r || !r.n || watchlist[id] || thumbs[id] || watched[id]) return 0;
-    if (r.o && daysSince(r.o) < rot().reset_days) return 0; // opened recently
     if (daysSince(r.d) >= rot().reset_days) return 0; // not seen for 2 weeks: back to normal
     const before = r.d === today() ? r.n - 1 : r.n; // days seen before today
     return Math.max(0, before - (rot().start_day - 2)) * rot().places_per_day;
@@ -110,10 +109,9 @@
     seen[id] = { ...r, n: r.n + 1, d: today() };
     save(STORE.seen, seen);
   }
-  function markOpened(id) {
-    seen[id] = { n: 0, d: today(), o: today() };
-    save(STORE.seen, seen);
-  }
+  /* Opening a title doesn't keep it in place (people often open something just to check it
+     out); it counts as seeing it that day, like any other. Like or save to keep a title. */
+  function markOpened(id) { markSeen(id); }
   // Watch the home rows' posters: one second mostly on screen, with nothing open on top, counts as seen today
   let seenObserver = null;
   const seenTimers = new Map();
@@ -685,7 +683,7 @@
   }
   function openDetails(id) {
     const t = titleOf(id);
-    if (t && feed.titles[id]) markOpened(id); // you showed interest: it keeps its place
+    if (t && feed.titles[id]) markOpened(id); // counts as seen today (opening alone doesn't keep its place)
     if (!t) return;
     const thumb = thumbs[id]?.v || 0;
     const scores = [
@@ -1548,7 +1546,7 @@
       ["Because you liked…", `
         <p>Once you've liked or saved a title, a row right below Your library shows similar shows and movies (from TMDB), best matches for you first. It's about one title at a time: your likes first ("Because you liked…"), newest first, then titles on your watchlist ("More like…"). It moves on to the next one the first time you open the app each day. If none has enough similar titles yet, the row is "Based on your favorites" and mixes them together. Titles you've liked, watched or marked Not for me are left out, and watched titles only count when you've liked them.</p>`],
       ["Keeping rows fresh", `
-        <p>Titles you keep scrolling past make room for others. From the 3rd day a title is on your screen without you opening it, it moves 5 places down its row each day, so the first few titles in each row change every couple of days. After 2 weeks out of sight, it's back in its usual spot. Titles you open, like, save or mark watched keep their place. Your library and the Netflix Top 10 aren't affected.</p>`],
+        <p>Titles you keep scrolling past make room for others. From the 3rd day a title is on your screen, it moves 5 places down its row each day, so the first few titles in each row change every couple of days. After 2 weeks out of sight, it's back in its usual spot. Titles you like or save keep their place (just opening one doesn't, since you might only be checking it out). Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: Your taste", `
         <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres, common ones less (Drama about a quarter as much as a rare genre), so one liked drama doesn't fill Top Picks with dramas. A 👎 (Not for me) on a title doesn't lower its genres, since it's usually about that title, not the whole genre; use <b>Genres</b> for that. A genre you set in <b>Genres</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you marked Not for me a drop.</p>
         <p>Not counted until you rate something or pick a genre.</p>

@@ -147,7 +147,7 @@
     "mdblist_daily_limit": 900
   },
   "rotation": {
-    "_note": "Titles passed over on the home rows make room for others. Counted in days (once per day seen). From the start_day-th day seen without opening, liking, saving or marking watched, a title moves down places_per_day places per day; it resets after reset_days days unseen.",
+    "_note": "Titles passed over on the home rows make room for others. Counted in days (once per day seen). From the start_day-th day seen without liking or saving, a title moves down places_per_day places per day; it resets after reset_days days unseen.",
     "start_day": 3,
     "places_per_day": 5,
     "reset_days": 14
