@@ -191,6 +191,10 @@ class PipelineTest(unittest.TestCase):
         self.assertIn(("tv", "99"), genre_calls)
         self.assertIn(("tv", "10764"), genre_calls)
         self.assertNotIn(("movie", "10764"), genre_calls)
+        # best-known recent releases: most-rated among titles from the last 3 years
+        recent = {(u.path.split("/")[-1], k) for u in disc for k in dict(urllib.parse.parse_qsl(u.query))
+                  if dict(urllib.parse.parse_qsl(u.query)).get("sort_by") == "vote_count.desc" and k in ("primary_release_date.gte", "first_air_date.gte")}
+        self.assertEqual(recent, {("movie", "primary_release_date.gte"), ("tv", "first_air_date.gte")})
         # length: movie running time, and seasons aired so far (not specials, not the announced 2027 one)
         self.assertEqual(T["t1"]["latest_air"], "2026-10-20")
         self.assertEqual((T["m1"]["runtime"], T["m1"]["season_count"]), (135, None))
