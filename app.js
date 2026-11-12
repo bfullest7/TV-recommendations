@@ -82,36 +82,34 @@
   const genreSunk = (t) => (t.genres || []).some((g) => genrePrefs[g] === -1) && !(t.genres || []).some((g) => genrePrefs[g] === 1);
   const sinkDisliked = (items) => [...items.filter((t) => !genreSunk(t)), ...items.filter(genreSunk)];
   /* Rotation: titles you keep passing over on the home rows slowly make room for others.
-     A poster counts as seen once per day when it's mostly on screen for about a second.
-     From the 3rd day seen (config.json rotation), a title you haven't liked, saved or
-     marked watched moves down 5 places for each day after the 2nd. It only changes when the
-     rows are drawn (the count for today isn't used until tomorrow), and resets after 14 days
-     unseen. Your library and the Netflix Top 10 aren't affected. */
-  let seen = {}; // id -> { n: days seen, d: last day seen (YYYY-MM-DD), o: day last opened }
+     Counted separately for each row: a poster counts as seen in its row once per day when
+     it's mostly on screen for about a second, and only moves in the rows you've seen it in.
+     From the 3rd day seen (config.json rotation), every title (liked and saved ones too: they
+     live in Your library) moves down 5 places for each day after the 2nd. It only changes
+     when the rows are drawn (the count for today isn't used until tomorrow), and resets after
+     14 days unseen in that row. Your library and the Netflix Top 10 aren't affected. */
+  let seen = {}; // "row|id" -> { n: days seen in that row, d: last day seen (YYYY-MM-DD) }
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
   const rot = () => ({ start_day: 3, places_per_day: 5, reset_days: 14, ...(feed?.rotation || {}) });
   const daysSince = (day) => (new Date(today()) - new Date(day)) / 86400000;
-  function rotationPenalty(id) {
-    const r = seen[id];
-    if (!r || !r.n || watchlist[id] || thumbs[id] || watched[id]) return 0;
+  function rotationPenalty(row, id) {
+    const r = seen[`${row}|${id}`];
+    if (!r || !r.n) return 0;
     if (daysSince(r.d) >= rot().reset_days) return 0; // not seen for 2 weeks: back to normal
     const before = r.d === today() ? r.n - 1 : r.n; // days seen before today
     return Math.max(0, before - (rot().start_day - 2)) * rot().places_per_day;
   }
-  function rotate(items) { // move each passed-over title down by its penalty, keeping everything else in order
+  function rotate(items, row) { // move each passed-over title down by its penalty, keeping everything else in order
     // a title moved down goes behind the one already in that spot
-    return items.map((t, i) => { const p = rotationPenalty(t.id); return { t, k: i + p + (p ? 0.5 : 0) }; }).sort((a, b) => a.k - b.k).map((x) => x.t);
+    return items.map((t, i) => { const p = rotationPenalty(row, t.id); return { t, k: i + p + (p ? 0.5 : 0) }; }).sort((a, b) => a.k - b.k).map((x) => x.t);
   }
-  function markSeen(id) {
-    const r = seen[id] || { n: 0 };
+  function markSeen(row, id) {
+    const key = `${row}|${id}`, r = seen[key] || { n: 0 };
     if (r.d === today()) return;
     if (r.d && daysSince(r.d) >= rot().reset_days) r.n = 0; // starting fresh after 2 weeks away
-    seen[id] = { ...r, n: r.n + 1, d: today() };
+    seen[key] = { n: r.n + 1, d: today() };
     save(STORE.seen, seen);
   }
-  /* Opening a title doesn't keep it in place (people often open something just to check it
-     out); it counts as seeing it that day, like any other. Like or save to keep a title. */
-  function markOpened(id) { markSeen(id); }
   // Watch the home rows' posters: one second mostly on screen, with nothing open on top, counts as seen today
   let seenObserver = null;
   const seenTimers = new Map();
@@ -121,11 +119,11 @@
     seenTimers.forEach(clearTimeout); seenTimers.clear();
     seenObserver = new IntersectionObserver((entries) => {
       for (const e of entries) {
-        const id = e.target.dataset.id;
+        const id = e.target.dataset.id, row = e.target.closest("section.row")?.dataset.row;
         if (e.isIntersecting) {
           if (!seenTimers.has(e.target)) seenTimers.set(e.target, setTimeout(() => {
             seenTimers.delete(e.target);
-            if (!document.hidden && !document.querySelector("dialog[open]")) markSeen(id);
+            if (!document.hidden && !document.querySelector("dialog[open]") && row) markSeen(row, id);
           }, 1000));
         } else { clearTimeout(seenTimers.get(e.target)); seenTimers.delete(e.target); }
       }
@@ -134,7 +132,8 @@
   }
   function tidySeen() { // forget titles not seen for over 2 weeks
     let changed = false;
-    for (const [id, r] of Object.entries(seen)) if (!r.d || daysSince(r.d) >= rot().reset_days) { delete seen[id]; changed = true; }
+    // (also drops counts from before they were kept per row: those had no "row|" in the key)
+    for (const [key, r] of Object.entries(seen)) if (!key.includes("|") || !r.d || daysSince(r.d) >= rot().reset_days) { delete seen[key]; changed = true; }
     if (changed) save(STORE.seen, seen);
   }
   const kindWord = () => (kind === "tv" ? "TV shows" : kind === "movie" ? "movies" : "titles");
@@ -287,7 +286,7 @@
       .filter((t) => visible(t) && (t.imdb_votes || 0) >= min)
       .map((t) => ({ t, s: pickScore(t, taste) }))
       .sort((a, b) => b.s - a.s);
-    return sinkDisliked(rotate(ranked.map((x) => x.t)));
+    return sinkDisliked(rotate(ranked.map((x) => x.t), "picks"));
   }
 
   /* "Because you liked…" row, right below Your library. Similar titles (TMDB's recommendations
@@ -317,7 +316,7 @@
     if (!seeds.length) return null;
     const ok = seeds.filter((id) => similarTo(id).length >= BECAUSE_MIN);
     const taste = tasteModel();
-    const ranked = (items) => sinkDisliked(rotate(items.map((t) => ({ t, s: pickScore(t, taste) })).sort((a, b) => b.s - a.s).map((x) => x.t)));
+    const ranked = (items) => sinkDisliked(rotate(items.map((t) => ({ t, s: pickScore(t, taste) })).sort((a, b) => b.s - a.s).map((x) => x.t), "because"));
     if (!ok.length) {
       const pool = [...new Map(seeds.flatMap((id) => similarTo(id)).map((t) => [t.id, t])).values()];
       return pool.length >= POOL_MIN ? { title: "Based on your favorites", items: ranked(pool) } : null;
@@ -384,7 +383,7 @@
         items: from(feed.rows.new),
       },
     ];
-    for (const d of defs) if (["trending", "audience", "critics", "new"].includes(d.key)) d.items = sinkDisliked(rotate(d.items)); // Top Picks does this itself
+    for (const d of defs) if (["trending", "audience", "critics", "new"].includes(d.key)) d.items = sinkDisliked(rotate(d.items, d.key)); // Top Picks does this itself
     // Only Netflix publishes official viewing numbers, so its Top 10 shows only when the Netflix filter is selected
     const hasNetflix = myServices.includes("netflix") && filter === "netflix";
     if (hasNetflix && feed.rows.netflix.length) {
@@ -683,7 +682,7 @@
   }
   function openDetails(id) {
     const t = titleOf(id);
-    if (t && feed.titles[id]) markOpened(id); // counts as seen today (opening alone doesn't keep its place)
+    // (opening a title doesn't keep it in place: people often open one just to check it out)
     if (!t) return;
     const thumb = thumbs[id]?.v || 0;
     const scores = [
@@ -1546,7 +1545,7 @@
       ["Because you liked…", `
         <p>Once you've liked or saved a title, a row right below Your library shows similar shows and movies (from TMDB), best matches for you first. It's about one title at a time: your likes first ("Because you liked…"), newest first, then titles on your watchlist ("More like…"). It moves on to the next one the first time you open the app each day. If none has enough similar titles yet, the row is "Based on your favorites" and mixes them together. Titles you've liked, watched or marked Not for me are left out, and watched titles only count when you've liked them.</p>`],
       ["Keeping rows fresh", `
-        <p>Titles you keep scrolling past make room for others. From the 3rd day a title is on your screen, it moves 5 places down its row each day, so the first few titles in each row change every couple of days. After 2 weeks out of sight, it's back in its usual spot. Titles you like or save keep their place (just opening one doesn't, since you might only be checking it out). Your library and the Netflix Top 10 aren't affected.</p>`],
+        <p>Titles you keep scrolling past make room for others. Each row keeps its own count: from the 3rd day you see a title in a row, it moves 5 places down that row each day, so the first few titles change every couple of days. It only moves in rows where you've seen it, so each row keeps its own ranking until you look at it. After 2 weeks out of sight in that row, it's back in its usual spot. Every title moves along, including ones you've liked or saved (they're always in Your library). Your library and the Netflix Top 10 aren't affected.</p>`],
       ["Signal: Your taste", `
         <p>Built from your 👍/👎 on titles and your 👍/👎 on genres in <b>Genres</b>. Starts at 50 (neutral). Each 👍 on a title raises its genres, common ones less (Drama about a quarter as much as a rare genre), so one liked drama doesn't fill Top Picks with dramas. A 👎 (Not for me) on a title doesn't lower its genres, since it's usually about that title, not the whole genre; use <b>Genres</b> for that. A genre you set in <b>Genres</b> counts like two title thumbs. Titles TMDB lists as similar to ones you liked get a boost, and similar to ones you marked Not for me a drop.</p>
         <p>Not counted until you rate something or pick a genre.</p>
