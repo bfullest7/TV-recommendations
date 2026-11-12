@@ -77,6 +77,8 @@ Every row only shows titles on your services (and the TV & movies filter), and l
 
 After ranking, Top Picks, Because you liked, Trending, Top rated, Critics' favorites and New all go through **keeping rows fresh** (section 7) and then **disliked genres sink** (section 5).
 
+**Variety across rows.** Last, rows are checked top to bottom (Top Picks first): a title already in the first 10 of a row above is moved just behind this row's first 10, so no title appears in the first 10 of more than one row. Nothing is removed; it's still further along and in "See all". Your library and the Netflix Top 10 keep their own order. (Before this, about half of each row's first 10 repeated a row above.) 10 rather than all 20, so the lower rows, whose pools are smaller (Top rated and Critics' favorites need 20,000+ IMDb votes), don't have to dig too deep; 15 is the next step if repeats are still noticed.
+
 ## 4. Top Picks: the personal match score
 
 Each signal is 0 to 100, combined with these weights (`weights`):
@@ -148,6 +150,7 @@ Newest first. Record each change to a rule or number here, with what was tried a
 
 - **Nov 9, 2026. Common genres count less for likes.** One liked drama took Top Picks from 11 to 17–18 dramas out of 20. Now each genre of a liked title counts (1 − its share of titles)³, so Drama about 25%, and liking Breaking Bad gives 13 dramas. Tried: 40% for Drama (14–15) and 15% (drama likes barely mattered).
 - **Nov 9, 2026. Not for me no longer lowers genres.** One disliked drama pushed every drama down. It's usually about the title; the genre 👎 in Profile is for whole genres. Tried: half and a quarter strength, and counting genres only after a pattern of dislikes (harder to predict).
+- **Nov 12, 2026. Variety across rows:** the first 10 of each row are titles not in the first 10 of a row above. Feedback: the same titles showed up across every row in a different order (about half of each row's first 10 repeated). Rotation couldn't fix that, since it only acts over days. Kept per-row rotation.
 - **Nov 12, 2026. Rotation is counted per row, and every title rotates.** Seeing a title in one row no longer moves it in the others, so each row keeps its own ranking until you look at it (existing counts started over). Liked and saved titles rotate too, since they always have a home in Your library. Top Picks rotates like the other rows; a gentler pace for Top Picks is noted in section 7 as the fallback.
 - **Nov 12, 2026. Opening a title no longer keeps it in place** (it used to for 2 weeks). People often open a title just to check it out; Like or saving to the watchlist are the ways to keep one. Opening now counts as one more day seen, with no extra push down.
 - **Nov 11, 2026. Rotation moves 5 places a day** (was 4), so the whole first screen of a row (3 posters) is new on day 3; with 4, yesterday's #1 stayed in the third spot.
