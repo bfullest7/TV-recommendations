@@ -28,6 +28,7 @@ U = {
     "m2": dict(title="Tiny Indie", prov=[15], imdb=("tt002", 9.6, 120), rt=100, mc=None, release="2025-01-10", genres=["Drama"]),
     "m3": dict(title="Fresh Release", prov=[1796], imdb=("tt003", 7.1, 40000), rt=70, mc=65, release="2026-10-30", genres=["Comedy"]),
     "m4": dict(title="Channel Only", prov=[582], imdb=("tt004", 8.0, 50000), rt=90, mc=80, release="2023-05-05", genres=["Action"]),
+    "m7": dict(title="Starz Via Amazon", prov=[1794], imdb=("tt007", 7.2, 30000), rt=80, mc=70, release="2024-10-25", genres=["Thriller"]),
     "m6": dict(title="Free Classic", prov=[], ads=[73], imdb=("tt006", 7.6, 80000), rt=91, mc=80, release="1995-05-05", genres=["Western"]),
     "m5": dict(title="Theater Hit", prov=[], imdb=("tt005", 7.9, 200000), rt=88, mc=75, release="2026-10-01", genres=["Action"]),
     "t1": dict(title="Big Show", prov=[8, 1899], imdb=("tt101", 8.9, 500000), rt=None, mc=None, mdb_rt=91, mdb_mc=80, release="2020-01-01",
@@ -108,6 +109,7 @@ class FakeHttp:
                 {"provider_id": 15, "provider_name": "Hulu"},
                 {"provider_id": 1899, "provider_name": "HBO Max"},
                 {"provider_id": 582, "provider_name": "Paramount+ Amazon Channel"},
+                {"provider_id": 1794, "provider_name": "Starz Amazon Channel"},
             ]}
         if p.startswith("/trending/"):
             kind = p.split("/")[2]
@@ -189,6 +191,9 @@ class PipelineTest(unittest.TestCase):
         self.assertNotIn("Sports", T["t2"]["genres"])
         # free-with-ads services (Tubi): found through their ads/free listings
         self.assertEqual(T["m6"]["services"], ["tubi"])
+        # Starz through Amazon counts as Starz (same library); other Amazon Channels don't
+        self.assertEqual(T["m7"]["services"], ["starz"])
+        self.assertIn(1794, feed["provider_ids"]["starz"])
         # extra most-rated lists: documentaries for movies and TV, reality for TV only
         disc = [urllib.parse.urlparse(u) for u in self.fake.calls if "/discover/" in u]
         genre_calls = {(u.path.split("/")[-1], dict(urllib.parse.parse_qsl(u.query)).get("with_genres")) for u in disc}

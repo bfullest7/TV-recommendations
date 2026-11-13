@@ -103,7 +103,9 @@
       "name": "Starz",
       "color": "#000000",
       "provider_ids": [43],
-      "match": ["Starz"]
+      "match": ["Starz"],
+      "_include_channels_note": "Starz through Amazon, Apple TV or Roku is the same Starz library (some titles are only listed there).",
+      "include_channels": true
     },
     {
       "key": "tubi",
@@ -152,7 +154,7 @@
     "_recent_lists_note": "Best-known recent releases per service (released in the last `years` years, or between `years` and `after_years` years ago, most-rated first; separate lists so older titles don't push newer ones out). Recent movies were falling between the other lists: no longer new, not in this week's top 40, and not yet as rated as older classics.",
     "recent_lists": [
       { "kinds": ["movie"], "years": 3, "pages": 3, "pages_by_service": { "netflix": 5, "prime": 5 } },
-      { "kinds": ["movie"], "years": 5, "after_years": 3, "pages": 2 },
+      { "kinds": ["movie"], "years": 5, "after_years": 3, "pages": 2, "pages_by_service": { "netflix": 5, "prime": 5 } },
       { "kinds": ["tv"], "years": 3, "pages": 2 },
       { "kinds": ["tv"], "years": 5, "after_years": 3, "pages": 1 }
     ],

@@ -227,9 +227,10 @@ class Tmdb:
                 continue
             for p in providers:
                 name = p.get("provider_name", "")
-                if "Channel" in name:  # e.g. "Paramount+ Amazon Channel" is a different subscription
-                    continue
+                channel = "channel" in name.lower()  # e.g. "Paramount+ Amazon Channel" is a different subscription
                 for s in services:
+                    if channel and not s.get("include_channels"):  # except where it's the same library (Starz)
+                        continue
                     for m in s.get("match", []):
                         if name == m or name.startswith(m + " "):
                             found[s["key"]].add(p["provider_id"])
