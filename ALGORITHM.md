@@ -169,7 +169,7 @@ Rows don't reshuffle while you browse, except:
 
 Newest first. Record each change to a rule or number here, with what was tried and why.
 
-- **Nov 14, 2026. Recent documentaries tracked:** per service, the 40 most popular documentaries (movies and TV) released in the last 12 months. TYSON (Netflix docuseries, Oct 13) was never in the data: not in the top 40 new Netflix shows, too new for the most-rated documentaries and recent-shows lists, not trending, and past its Netflix Top 10 weeks.
+- **Nov 14, 2026. Recent documentaries tracked:** per service, the 40 most popular documentaries (movies and TV) released in the last 12 months. TYSON (Netflix docuseries, Oct 13) was never in the data: not in the top 40 new Netflix shows, too new for the most-rated documentaries and recent-shows lists, not trending, and past its Netflix Top 10 weeks. The 383 titles this list added were marked as already on their services, so they don't flood "New on your services" (a title Tivvy first sees that was released in the last year otherwise counts as just arrived).
 
 - **Nov 9, 2026. Common genres count less for likes.** One liked drama took Top Picks from 11 to 17–18 dramas out of 20. Now each genre of a liked title counts (1 − its share of titles)³, so Drama about 25%, and liking Breaking Bad gives 13 dramas. Tried: 40% for Drama (14–15) and 15% (drama likes barely mattered).
 - **Nov 9, 2026. Not for me no longer lowers genres.** One disliked drama pushed every drama down. It's usually about the title; the genre 👎 in Profile is for whole genres. Tried: half and a quarter strength, and counting genres only after a pattern of dislikes (harder to predict).
