@@ -538,6 +538,19 @@
   /* keepPlace: after a rating, genre change or data refresh, every row keeps
    * its scroll position except Top Picks, which re-ranks and starts over at
    * its first title. Without keepPlace (filter changes), all rows start over. */
+  /* Changing a filter redraws the rows but keeps your place on the page: the row at the top of
+     the screen stays there (each row starts again at its first title, since its titles changed).
+     If that row isn't shown for the new filter, the page stays at the same height instead. */
+  function renderInPlace() {
+    const headerBottom = $(".top").getBoundingClientRect().bottom;
+    const anchor = [...document.querySelectorAll("#rows .row[data-row]")].find((r) => r.getBoundingClientRect().bottom > headerBottom);
+    const key = anchor?.dataset.row, before = anchor?.getBoundingClientRect().top, y = window.scrollY;
+    render();
+    const again = key && document.querySelector(`#rows .row[data-row="${CSS.escape(key)}"]`);
+    if (again) window.scrollBy(0, again.getBoundingClientRect().top - before);
+    else window.scrollTo({ top: y });
+  }
+
   function renderRows(keepPlace = false) {
     const saved = {};
     const pageY = window.scrollY;
@@ -1845,14 +1858,12 @@
       if (!b) return;
       filter = b.dataset.filter;
       save(STORE.filter, filter);
-      render();
-      window.scrollTo({ top: 0 });
+      renderInPlace();
     });
     $("#kind-select").addEventListener("change", (e) => {
       kind = e.target.value;
       save(STORE.kind, kind);
-      render();
-      window.scrollTo({ top: 0 });
+      renderInPlace();
     });
     $("#rows").addEventListener("click", (e) => {
       const setBtn = e.target.closest("[data-open-settings]");
