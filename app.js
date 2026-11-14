@@ -1540,6 +1540,23 @@
   }
 
   // ---------------------------------------------------------------- settings
+  // TEMPORARY: the launch log (see startLaunchLog) at the bottom of Profile
+  function renderLaunchLog() {
+    let logs = [];
+    try { logs = JSON.parse(localStorage.getItem("wtw.launchLog") || "[]"); } catch {}
+    let sec = $("#launch-log");
+    if (!sec) {
+      sec = document.createElement("section");
+      sec.id = "launch-log";
+      $("#settings .sheet-body").appendChild(sec);
+    }
+    const when = (iso) => new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit" });
+    sec.innerHTML = `<h3>Launch log (temporary)</h3>
+      <p style="color:var(--muted);font-size:14px">After a launch where the logo jumps, screenshot this (newest first).</p>
+      ${logs.length ? logs.map((l) => `<p style="margin:12px 0 4px;font-size:13px"><b>${esc(when(l.at))}</b></p>
+        <pre style="white-space:pre-wrap;font-size:10px;line-height:1.35;margin:0;color:var(--muted)">${esc(l.rows.join("\n"))}</pre>`).join("")
+      : `<p style="font-size:14px">Nothing yet: open Tivvy from the home screen (after fully closing it).</p>`}`;
+  }
   function openSettings(fromWelcome = false) {
     $("#s-intro").hidden = !fromWelcome; // first visit: one line saying services and genres are one step
     $("#service-picker").innerHTML = feed.services.map((s) => `
@@ -1550,6 +1567,7 @@
     renderWeights();
     showLastBackup();
     renderUpdated();
+    renderLaunchLog();
     const s = $("#settings");
     if (!s.open) {
       showSheet(s);
@@ -2059,7 +2077,50 @@
    * happens on a scroll or when you leave and come back. Trigger that layout
    * pass ourselves a few times in the first second: a 1pt scroll and back,
    * plus a forced re-layout. Only when at the top, so a real scroll is kept. */
+  /* TEMPORARY launch log (to find why the launch logo sometimes jumps down): for the first
+     1.8 seconds of a home-screen launch, record the screen measurements each frame (only when
+     something changes), plus when each layout fix runs and when the logo and app appear.
+     The last 3 launches are kept on the phone and shown at the bottom of Profile. */
+  const LAUNCH_LOG_KEY = "wtw.launchLog";
+  let launchLog = null;
+  function launchMark(what) {
+    if (launchLog) launchLog.rows.push(`${Math.round(performance.now() - launchLog.t0)}ms ★ ${what}`);
+  }
+  function startLaunchLog() {
+    if (launchLog || !document.documentElement.classList.contains("settling")) return;
+    launchLog = { t0: performance.now(), at: new Date().toISOString(), rows: [] };
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top);visibility:hidden;pointer-events:none";
+    document.body.appendChild(probe);
+    let last = "";
+    const snap = () => {
+      const t = Math.round(performance.now() - launchLog.t0);
+      const vv = window.visualViewport;
+      const logo = document.querySelector("#splash svg")?.getBoundingClientRect();
+      const hdr = document.querySelector("header.top")?.getBoundingClientRect();
+      const sp = document.getElementById("splash");
+      const st = sp ? sp.className || "white" : "gone"; // white: logo not shown yet
+      const row = [`ih${window.innerHeight}`, `ch${document.documentElement.clientHeight}`, `sh${screen.height}`,
+        vv ? `vv${Math.round(vv.height)}/${Math.round(vv.offsetTop)}/${Math.round(vv.pageTop)}` : "vv-",
+        `sy${Math.round(window.scrollY)}`, `sa${probe.offsetHeight}`,
+        `logo${logo ? Math.round(logo.top) : "-"}`, `hdr${hdr ? `${Math.round(hdr.top)}/${Math.round(hdr.height)}` : "-"}`,
+        st].join(" ");
+      if (row !== last) { launchLog.rows.push(`${t}ms ${row}`); last = row; }
+      if (t < 1800) requestAnimationFrame(snap);
+      else {
+        probe.remove();
+        try {
+          const all = JSON.parse(localStorage.getItem(LAUNCH_LOG_KEY) || "[]");
+          all.unshift({ at: launchLog.at, rows: launchLog.rows.slice(0, 80) });
+          localStorage.setItem(LAUNCH_LOG_KEY, JSON.stringify(all.slice(0, 3)));
+        } catch {}
+      }
+    };
+    requestAnimationFrame(snap);
+  }
+
   function settleLayout() {
+    launchMark("settle");
     if (window.scrollY > 1) return;
     window.scrollTo(0, 1);
     requestAnimationFrame(() => {
@@ -2069,7 +2130,8 @@
     });
   }
   function settleSoon() {
-    [50, 150, 300, 500, 700].forEach((ms) => setTimeout(settleLayout, ms));
+    [50, 150, 300].forEach((ms) => setTimeout(settleLayout, ms));
+    startLaunchLog();
     // Show the logo only once the layout has really settled, so it never moves: from 0.4
     // seconds, wait until the page fills the whole screen and the logo's spot hasn't changed
     // for 8 frames in a row (iOS is sometimes slower than 0.4 seconds to drop the doubled
@@ -2091,6 +2153,7 @@
       const full = Math.abs(window.innerHeight - screen.height) <= 1 || Math.abs(window.innerHeight - screen.width) <= 1;
       if (t >= 400 && still >= 8 && (full || t >= 900)) {
         splash.classList.add("ready");
+        launchMark("logo shown");
         setTimeout(revealApp, 750);
       } else if (t >= 1600) revealApp(); // never settled: go straight to the app
       else requestAnimationFrame(check);
@@ -2101,6 +2164,7 @@
   function revealApp() {
     const root = document.documentElement;
     if (!root.classList.contains("settling")) return;
+    launchMark("app shown");
     const splash = document.getElementById("splash");
     if (splash) {
       splash.classList.add("leaving");
