@@ -164,7 +164,7 @@ So titles you keep scrolling past make room for others. Applies to Top Picks, Be
 
 Rows don't reshuffle while you browse, except:
 
-- **Your library (row and page)** updates when the title's screen closes: a title that no longer belongs under the selected pill or tab fades out, with a banner and Undo ("Removed from your list", "Like removed", "Marked as not watched", and the two below).
+- **Your library (row and page)** updates when the title's screen closes: a title that no longer belongs under the selected pill or tab fades out, with a banner and Undo ("Removed from your list", "Like removed", "Marked as not watched", and the two below). A title added to the pill on screen goes first, and the row starts back at the beginning so it shows; changes to another pill, and removals, leave the row where it was.
 - **Not for me and Mark watched:** the title fades out of its rows when its screen closes, then a 5-second "Marked not for me" or "Marked as watched" banner with Undo appears. Not for me always shows its banner, even when the title only stays in Your library (it has no poster mark); Mark watched doesn't when the title only stays in Your library, where it shows the ✓.
 - Everything else waits for a natural moment: reopening or coming back to the app, changing a filter, or closing Profile.
 
@@ -172,6 +172,7 @@ Rows don't reshuffle while you browse, except:
 
 Newest first. Record each change to a rule or number here, with what was tried and why.
 
+- **Nov 14, 2026. Adding to the Your library pill on screen starts the row at the beginning.** Katie added The Body to her watchlist and it didn't show: the row had been swiped one poster over, kept its place, and the new first title sat just off the left edge until See all redrew it.
 - **Nov 14, 2026. Classics: before 1990 and top 60** (was before 1980 and top 40). Before the change Tivvy had 69 movies from before 1980 and only 41 from the 1980s, so the 1980s were as thin as older decades; 60 per service makes room for them without pushing out older classics.
 - **Nov 14, 2026. Deeper movie lists and classics.** Most well-known movies: top 200 per service (was 100), top 300 on Netflix and Prime Video; plus the 40 most-rated movies from before 1980 per service. Bridesmaids (2011, reportedly back on Netflix Nov 1) was past the top 100; classics like Doctor Zhivago have far fewer online ratings than modern hits. Also: changing the lists no longer floods "New on your services" (newcomers from a list change are stamped as already there).
 - **Nov 14, 2026. Recent documentaries tracked:** per service, the 40 most popular documentaries (movies and TV) released in the last 12 months. TYSON (Netflix docuseries, Oct 13) was never in the data: not in the top 40 new Netflix shows, too new for the most-rated documentaries and recent-shows lists, not trending, and past its Netflix Top 10 weeks. The 383 titles this list added were marked as already on their services, so they don't flood "New on your services" (a title Tivvy first sees that was released in the last year otherwise counts as just arrived).

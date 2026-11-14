@@ -1032,8 +1032,13 @@
     const anchor = (lastCardRow?.isConnected && lastCardRow.dataset.row !== "watchlist" && lastCardRow)
       || [...rows.querySelectorAll('.row:not([data-row="watchlist"])')].find((r) => r.getBoundingClientRect().bottom > 0);
     const before = anchor && anchor.getBoundingClientRect().top;
-    const keepX = !resetX && old && old.querySelector(".scroller")?.scrollLeft;
     const def = myServices.length && rowDefs().find((d) => d.key === "watchlist");
+    // A title just added to the pill on screen goes to the front: start the row there so it
+    // shows (otherwise it lands just off the left edge when the row was swiped). Changes to
+    // another pill, and removals, keep the row where it was.
+    const shownIds = old ? [...old.querySelectorAll(".scroller > .card")].map((c) => c.dataset.id) : [];
+    if (changed && def?.items[0] && !shownIds.includes(def.items[0].id)) resetX = true;
+    const keepX = !resetX && old && old.querySelector(".scroller")?.scrollLeft;
     if (def) {
       const tmp = document.createElement("div");
       tmp.innerHTML = rowHtml(def).trim();
