@@ -32,6 +32,8 @@ The daily lookup limits reset at midnight UTC (7 PM Eastern in winter). A big ba
 - **The app itself:** a new version shows the "Update available" banner. Without tapping Refresh, it updates on its own within about 10 minutes, or the next time the app starts fresh.
 - **Your choices** (likes, Not for me, watched, watchlist, genres, services) are saved on the phone instantly and never leave it, except in a backup file.
 
+**When the tracked lists or services change,** the titles found because of the change are recorded as already on their services, so they don't count as just arrived in "New on your services" (a title Tivvy first sees that was released in the last year otherwise counts as new).
+
 **Services:** Netflix, Prime Video, Disney+, Hulu, HBO Max, Apple TV, Peacock, Paramount+, Starz (including Starz through Amazon, Apple TV or Roku, the same library; other "Channel" versions, like Paramount+ through Amazon, are skipped as different subscriptions) and Tubi (free with ads; TMDB lists it as ads/free rather than a subscription, so it's read from those listings).
 
 **Which titles are tracked.** For each service, movies and TV separately, from TMDB:
@@ -41,12 +43,13 @@ The daily lookup limits reset at midnight UTC (7 PM Eastern in winter). A big ba
 | Highest rated (300+ TMDB votes) | top 40 (`discover_pages_per_list` = 2 pages of 20) |
 | Most popular right now | top 40 |
 | New in the last 30 days | top 40 |
-| Most well known (most-rated, e.g. Squid Game) | top 100 (`well_known_pages` = 5); top 200 for Netflix and Hulu TV (`well_known_pages_by_service`) |
+| Most well known (most-rated, e.g. Squid Game) | TV: top 100 (`well_known_pages` = 5), top 200 on Netflix and Hulu. Movies: top 200 (`well_known_pages_by_kind`), top 300 on Netflix and Prime Video (`well_known_pages_by_service`) |
 | Best-known recent releases (last 3 years, most-rated) | top 60 movies (top 100 on Netflix and Prime Video, the biggest catalogs), top 40 TV (`recent_lists`) |
 | Best-known releases from 3–5 years ago (most-rated) | top 40 movies (top 100 on Netflix and Prime Video), top 20 TV (`recent_lists`, a separate band so they don't push newer titles out) |
 | Most-rated documentaries | top 40, movies and TV (`genre_lists`) |
 | Most-rated reality shows | top 40, TV only (`genre_lists`) |
 | Most popular documentaries from the last 12 months | top 40, movies and TV (`genre_lists`) |
+| Classics: most-rated movies from before 1980 | top 40 (`genre_lists`) |
 
 Plus everything trending (Trakt top 100, TMDB's top 5 pages) and the Netflix Top 10. Only titles on at least one service stay in the data (about 2,700 in Nov 2026).
 
@@ -169,6 +172,7 @@ Rows don't reshuffle while you browse, except:
 
 Newest first. Record each change to a rule or number here, with what was tried and why.
 
+- **Nov 14, 2026. Deeper movie lists and classics.** Most well-known movies: top 200 per service (was 100), top 300 on Netflix and Prime Video; plus the 40 most-rated movies from before 1980 per service. Bridesmaids (2011, reportedly back on Netflix Nov 1) was past the top 100; classics like Doctor Zhivago have far fewer online ratings than modern hits. Also: changing the lists no longer floods "New on your services" (newcomers from a list change are stamped as already there).
 - **Nov 14, 2026. Recent documentaries tracked:** per service, the 40 most popular documentaries (movies and TV) released in the last 12 months. TYSON (Netflix docuseries, Oct 13) was never in the data: not in the top 40 new Netflix shows, too new for the most-rated documentaries and recent-shows lists, not trending, and past its Netflix Top 10 weeks. The 383 titles this list added were marked as already on their services, so they don't flood "New on your services" (a title Tivvy first sees that was released in the last year otherwise counts as just arrived).
 
 - **Nov 9, 2026. Common genres count less for likes.** One liked drama took Top Picks from 11 to 17–18 dramas out of 20. Now each genre of a liked title counts (1 − its share of titles)³, so Drama about 25%, and liking Breaking Bad gives 13 dramas. Tried: 40% for Drama (14–15) and 15% (drama likes barely mattered).

@@ -28,6 +28,7 @@ import csv
 import datetime as dt
 import gzip
 import io
+import hashlib
 import json
 import math
 import re
@@ -626,6 +627,28 @@ def build_rows(titles: dict, netflix: list[dict], cfg) -> dict:
 # Main
 
 
+LIST_KEYS = ("discover_pages_per_list", "well_known_pages", "well_known_pages_by_service",
+             "well_known_pages_by_kind", "recent_lists", "genre_lists")
+
+
+def lists_signature(cfg: dict) -> str:
+    """Fingerprint of which titles get tracked (services and list settings)."""
+    rf = cfg.get("refresh", {})
+    parts = {"services": [[s["key"], s.get("provider_ids"), bool(s.get("free"))] for s in cfg.get("services", [])],
+             **{k: rf.get(k) for k in LIST_KEYS}}
+    return hashlib.sha256(json.dumps(parts, sort_keys=True).encode()).hexdigest()[:16]
+
+
+def arrival_stamp(seen_cache: dict, sig: str, stamp: str) -> str:
+    """Date to record for titles (or services) seen for the first time this run.
+    When the tracked lists or services just changed, the newcomers were found
+    because of the change, not because they arrived, so they're stamped with the
+    baseline date and don't flood "New on your services"."""
+    changed = seen_cache.get("seen") and seen_cache.get("lists_sig") != sig
+    seen_cache["lists_sig"] = sig
+    return seen_cache.get("baseline") or stamp if changed else stamp
+
+
 def full_refresh_due(last: str | None, now: str, utc_hour: int) -> bool:
     """A full refresh runs once a day: on the first run at or after utc_hour (UTC). A missed
     or late morning run is caught up by the next run, and a manual full refresh earlier in
@@ -710,7 +733,8 @@ def run(mode: str = "auto") -> dict:
                     {"sort_by": "popularity.desc"},
                     {"sort_by": "popularity.desc", ("primary_release_date.gte" if kind == "movie" else "air_date.gte"): start},
                 ]
-                deep = (rf.get("well_known_pages_by_service") or {}).get(s["key"], {}).get(kind)
+                deep = ((rf.get("well_known_pages_by_service") or {}).get(s["key"], {}).get(kind)
+                        or (rf.get("well_known_pages_by_kind") or {}).get(kind))
                 lists.append({"sort_by": "vote_count.desc", "_pages": deep or rf.get("well_known_pages", p)})
                 # best-known recent releases: no longer "new", but not yet as rated as older classics
                 for r in rf.get("recent_lists") or []:
@@ -723,14 +747,18 @@ def run(mode: str = "auto") -> dict:
                             params[f"{field}.lte"] = (today() - dt.timedelta(days=365 * r["after_years"])).isoformat()
                         lists.append(params)
                 # genres that get fewer ratings (documentaries, reality) get their own most-rated list
-                # (optionally recent only, e.g. the most popular documentaries of the last year)
+                # (optionally recent only, e.g. the most popular documentaries of the last year,
+                # or old only, e.g. classics from before 1980, which get far fewer ratings)
                 for g in rf.get("genre_lists") or []:
                     if kind in g.get("kinds", ("movie", "tv")):
-                        params = {"sort_by": g.get("sort_by", "vote_count.desc"), "with_genres": g["genres"],
-                                  "_pages": g.get("pages", p)}
+                        params = {"sort_by": g.get("sort_by", "vote_count.desc"), "_pages": g.get("pages", p)}
+                        if g.get("genres"):
+                            params["with_genres"] = g["genres"]
+                        field = "primary_release_date" if kind == "movie" else "first_air_date"
                         if g.get("days"):
-                            field = "primary_release_date" if kind == "movie" else "first_air_date"
                             params[f"{field}.gte"] = (today() - dt.timedelta(days=g["days"])).isoformat()
+                        if g.get("before"):
+                            params[f"{field}.lte"] = g["before"]
                         lists.append(params)
                 for params in lists:
                     params = dict(params)
@@ -797,6 +825,7 @@ def run(mode: str = "auto") -> dict:
         seen = seen_cache["seen"]
         if not seen_cache.get("baseline"):
             seen_cache["baseline"] = stamp
+        stamp = arrival_stamp(seen_cache, lists_signature(cfg), stamp)
         for k, d in details.items():
             rec = seen.get(k)
             if rec is None:

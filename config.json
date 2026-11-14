@@ -148,9 +148,10 @@
     "full_refresh_utc_hour": 10,
     "discover_pages_per_list": 2,
     "well_known_pages": 5,
-    "_well_known_pages_by_service_note": "Big catalogs go deeper: top 200 most-rated TV shows on Netflix and Hulu (20 per page).",
-    "well_known_pages_by_service": { "netflix": { "tv": 10 }, "hulu": { "tv": 10 } },
-    "_genre_lists_note": "Extra most-rated lists per service for genres that get fewer ratings than dramas, so famous ones were missed (TMDB genre ids: 99 Documentary, 10764 Reality, TV only). Optional `sort_by` and `days` (released in the last N days) make a recent list, e.g. the most popular documentaries of the last year, which are too new for the most-rated list.",
+    "_well_known_pages_by_service_note": "Big catalogs go deeper: top 200 most-rated TV shows on Netflix and Hulu, top 300 movies on Netflix and Prime Video (20 per page). well_known_pages_by_kind sets the default per type (movies: top 200).",
+    "well_known_pages_by_service": { "netflix": { "tv": 10, "movie": 15 }, "hulu": { "tv": 10 }, "prime": { "movie": 15 } },
+    "well_known_pages_by_kind": { "movie": 10 },
+    "_genre_lists_note": "Extra most-rated lists per service for genres that get fewer ratings than dramas, so famous ones were missed (TMDB genre ids: 99 Documentary, 10764 Reality, TV only). Optional `sort_by`, `days` (released in the last N days) and `before` (released on or before a date; `genres` optional) make recent or classic lists, e.g. the most popular documentaries of the last year, which are too new for the most-rated list.",
     "_recent_lists_note": "Best-known recent releases per service (released in the last `years` years, or between `years` and `after_years` years ago, most-rated first; separate lists so older titles don't push newer ones out). Recent movies were falling between the other lists: no longer new, not in this week's top 40, and not yet as rated as older classics.",
     "recent_lists": [
       { "kinds": ["movie"], "years": 3, "pages": 3, "pages_by_service": { "netflix": 5, "prime": 5 } },
@@ -161,7 +162,8 @@
     "genre_lists": [
       { "name": "documentaries", "genres": "99", "kinds": ["movie", "tv"], "pages": 2 },
       { "name": "reality", "genres": "10764", "kinds": ["tv"], "pages": 2 },
-      { "name": "recent documentaries", "genres": "99", "kinds": ["movie", "tv"], "sort_by": "popularity.desc", "days": 365, "pages": 2 }
+      { "name": "recent documentaries", "genres": "99", "kinds": ["movie", "tv"], "sort_by": "popularity.desc", "days": 365, "pages": 2 },
+      { "name": "classics", "kinds": ["movie"], "before": "1979-12-31", "pages": 2 }
     ],
     "trakt_trending_limit": 100,
     "tmdb_trending_pages": 5,

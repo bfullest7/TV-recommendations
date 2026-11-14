@@ -336,5 +336,30 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(bf.fresh_score("2026-09-01", 30, dt.date(2026, 11, 6)), 0.0)
 
 
+
+class ArrivalStamp(unittest.TestCase):
+    cfg = {"services": [{"key": "netflix", "provider_ids": [8]}], "refresh": {"genre_lists": []}}
+
+    def test_unchanged_lists_use_today(self):
+        sig = bf.lists_signature(self.cfg)
+        cache = {"baseline": "2026-11-06", "seen": {"m1": {}}, "lists_sig": sig}
+        self.assertEqual(bf.arrival_stamp(cache, sig, "2026-11-14"), "2026-11-14")
+
+    def test_changed_lists_use_baseline(self):
+        cache = {"baseline": "2026-11-06", "seen": {"m1": {}}, "lists_sig": "old"}
+        sig = bf.lists_signature(self.cfg)
+        self.assertEqual(bf.arrival_stamp(cache, sig, "2026-11-14"), "2026-11-06")
+        self.assertEqual(cache["lists_sig"], sig)
+        self.assertEqual(bf.arrival_stamp(cache, sig, "2026-11-15"), "2026-11-15")
+
+    def test_first_ever_run_uses_today(self):
+        cache = {"baseline": "2026-11-14", "seen": {}}
+        self.assertEqual(bf.arrival_stamp(cache, "x", "2026-11-14"), "2026-11-14")
+
+    def test_signature_changes_with_lists(self):
+        other = {"services": self.cfg["services"], "refresh": {"genre_lists": [{"genres": "99"}]}}
+        self.assertNotEqual(bf.lists_signature(self.cfg), bf.lists_signature(other))
+
+
 if __name__ == "__main__":
     unittest.main()
