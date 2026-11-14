@@ -2069,11 +2069,33 @@
     });
   }
   function settleSoon() {
-    [50, 150, 300].forEach((ms) => setTimeout(settleLayout, ms));
-    // show the logo only after the layout has settled (so it doesn't move),
-    // then reveal the app
-    setTimeout(() => { const s = document.getElementById("splash"); if (s) s.classList.add("ready"); }, 400);
-    setTimeout(revealApp, 1150);
+    [50, 150, 300, 500, 700].forEach((ms) => setTimeout(settleLayout, ms));
+    // Show the logo only once the layout has really settled, so it never moves: from 0.4
+    // seconds, wait until the page fills the whole screen and the logo's spot hasn't changed
+    // for 8 frames in a row (iOS is sometimes slower than 0.4 seconds to drop the doubled
+    // status-bar space). If the page never reports the full screen height (an iOS that
+    // measures differently), a spot that holds still is enough after 0.9 seconds. If it
+    // still hasn't settled by 1.6 seconds, skip the logo and just reveal the app. The app
+    // fades in 0.75 seconds after the logo appears, as before.
+    const splash = document.getElementById("splash"), svg = splash?.querySelector("svg");
+    if (!svg) { setTimeout(revealApp, 1150); return; }
+    const start = performance.now();
+    let last = null, still = 0;
+    const check = () => {
+      if (!document.documentElement.classList.contains("settling")) return;
+      const t = performance.now() - start;
+      const r = svg.getBoundingClientRect();
+      const spot = `${Math.round(r.top)},${Math.round(r.left)},${window.innerHeight}`;
+      still = spot === last ? still + 1 : 0;
+      last = spot;
+      const full = Math.abs(window.innerHeight - screen.height) <= 1 || Math.abs(window.innerHeight - screen.width) <= 1;
+      if (t >= 400 && still >= 8 && (full || t >= 900)) {
+        splash.classList.add("ready");
+        setTimeout(revealApp, 750);
+      } else if (t >= 1600) revealApp(); // never settled: go straight to the app
+      else requestAnimationFrame(check);
+    };
+    requestAnimationFrame(check);
   }
   // fade the logo out and the app in (home-screen launch only)
   function revealApp() {
