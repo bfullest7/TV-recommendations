@@ -30,7 +30,13 @@
   <link rel="stylesheet" href="styles.css">
   <script>
     // Home-screen app on iPhone: hide the page until its launch layout has settled (see app.js), then fade in
-    if (navigator.standalone) document.documentElement.classList.add("settling");
+    if (navigator.standalone) {
+      document.documentElement.classList.add("settling");
+      // The launch screen is as tall as the phone's screen, not the page: on some launches iOS
+      // starts the page short by the status-bar height and only fixes it about a second later,
+      // which made the centered logo jump down. Sized to the screen, the logo stays put.
+      if (innerWidth < innerHeight) document.documentElement.style.setProperty("--splash-h", screen.height + "px");
+    }
   </script>
   <style>
     /* launch screen (home-screen app): white with the app logo, matching the white
@@ -40,7 +46,7 @@
     html.settling body > :not(#splash) { opacity: 0; }
     #splash { display: none; }
     html.settling #splash, #splash.leaving {
-      display: grid; place-items: center; position: fixed; inset: 0; z-index: 100;
+      display: grid; place-items: center; position: fixed; top: 0; left: 0; right: 0; height: var(--splash-h, 100%); z-index: 100;
       background: #fff; pointer-events: none; transition: opacity .15s ease-out;
     }
     #splash.leaving { opacity: 0; }
