@@ -49,7 +49,7 @@ The daily lookup limits reset at midnight UTC (7 PM Eastern in winter). A big ba
 | Most-rated documentaries | top 40, movies and TV (`genre_lists`) |
 | Most-rated reality shows | top 40, TV only (`genre_lists`) |
 | Most popular documentaries from the last 12 months | top 40, movies and TV (`genre_lists`) |
-| Classics: most-rated movies from before 1980 | top 40 (`genre_lists`) |
+| Classics: most-rated movies from before 1990 | top 60 (`genre_lists`) |
 
 Plus everything trending (Trakt top 100, TMDB's top 5 pages) and the Netflix Top 10. Only titles on at least one service stay in the data (about 2,700 in Nov 2026).
 
@@ -172,6 +172,7 @@ Rows don't reshuffle while you browse, except:
 
 Newest first. Record each change to a rule or number here, with what was tried and why.
 
+- **Nov 14, 2026. Classics: before 1990 and top 60** (was before 1980 and top 40). Before the change Tivvy had 69 movies from before 1980 and only 41 from the 1980s, so the 1980s were as thin as older decades; 60 per service makes room for them without pushing out older classics.
 - **Nov 14, 2026. Deeper movie lists and classics.** Most well-known movies: top 200 per service (was 100), top 300 on Netflix and Prime Video; plus the 40 most-rated movies from before 1980 per service. Bridesmaids (2011, reportedly back on Netflix Nov 1) was past the top 100; classics like Doctor Zhivago have far fewer online ratings than modern hits. Also: changing the lists no longer floods "New on your services" (newcomers from a list change are stamped as already there).
 - **Nov 14, 2026. Recent documentaries tracked:** per service, the 40 most popular documentaries (movies and TV) released in the last 12 months. TYSON (Netflix docuseries, Oct 13) was never in the data: not in the top 40 new Netflix shows, too new for the most-rated documentaries and recent-shows lists, not trending, and past its Netflix Top 10 weeks. The 383 titles this list added were marked as already on their services, so they don't flood "New on your services" (a title Tivvy first sees that was released in the last year otherwise counts as just arrived).
 

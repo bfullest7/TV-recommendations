@@ -163,7 +163,7 @@
       { "name": "documentaries", "genres": "99", "kinds": ["movie", "tv"], "pages": 2 },
       { "name": "reality", "genres": "10764", "kinds": ["tv"], "pages": 2 },
       { "name": "recent documentaries", "genres": "99", "kinds": ["movie", "tv"], "sort_by": "popularity.desc", "days": 365, "pages": 2 },
-      { "name": "classics", "kinds": ["movie"], "before": "1979-12-31", "pages": 2 }
+      { "name": "classics", "kinds": ["movie"], "before": "1989-12-31", "pages": 3 }
     ],
     "trakt_trending_limit": 100,
     "tmdb_trending_pages": 5,
