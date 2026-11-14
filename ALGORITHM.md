@@ -75,7 +75,7 @@ Every row only shows titles on your services (and the TV & movies filter), and l
 | Row | Order |
 |---|---|
 | **Top picks for you** | Personal match score (section 4), among titles with 5,000+ IMDb votes (`top_picks_min_imdb_votes`). |
-| **Your library** | Your watchlist, likes or watched titles (pills), most recent first. Not ranked; keeps watched and Not for me titles. |
+| **Your library** | Your watchlist, likes or watched titles (pills), most recent first. Not ranked; keeps watched and Not for me titles. Ignores the home service and TV & movies filters (always everything you saved); its page has its own filters. |
 | **Because you liked… / More like…** | Titles similar to one title (section 6), ordered by the personal match score. |
 | **[Genre] picks for you** (two rows: after Trending and after Critics' favorites) | Titles in one of your liked genres, ordered by the personal match score, among titles with 5,000+ IMDb votes. Subtitle "Highly rated [genre], tuned to your likes". See section 6b. |
 | **Trending now** | 75% Trending + 25% New & recent (`trending_recency`), among titles with 5,000+ IMDb votes (`trending_min_imdb_votes`). |
@@ -172,6 +172,7 @@ Rows don't reshuffle while you browse, except:
 
 Newest first. Record each change to a rule or number here, with what was tried and why.
 
+- **Nov 14, 2026. Your library ignores the home filters.** Katie's series The Body was on her watchlist but missing from the home row, because the home screen was set to Movies (the Your library page, with its own filter on TV & movies, showed it first). Saved titles silently disappearing was confusing; the filters are for browsing recommendations.
 - **Nov 14, 2026. Adding to the Your library pill on screen starts the row at the beginning.** Katie added The Body to her watchlist and it didn't show: the row had been swiped one poster over, kept its place, and the new first title sat just off the left edge until See all redrew it.
 - **Nov 14, 2026. Classics: before 1990 and top 60** (was before 1980 and top 40). Before the change Tivvy had 69 movies from before 1980 and only 41 from the 1980s, so the 1980s were as thin as older decades; 60 per service makes room for them without pushing out older classics.
 - **Nov 14, 2026. Deeper movie lists and classics.** Most well-known movies: top 200 per service (was 100), top 300 on Netflix and Prime Video; plus the 40 most-rated movies from before 1980 per service. Bridesmaids (2011, reportedly back on Netflix Nov 1) was past the top 100; classics like Doctor Zhivago have far fewer online ratings than modern hits. Also: changing the lists no longer floods "New on your services" (newcomers from a list change are stamped as already there).

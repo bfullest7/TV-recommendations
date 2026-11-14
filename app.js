@@ -656,8 +656,10 @@
     return mlTitles(tab).filter(libShows)
       .sort((a, b) => (stamp[b.id].at || "").localeCompare(stamp[a.id].at || ""));
   }
-  // Titles that left your services show with "All" selected (they aren't on any one service)
-  const libShows = (t) => (onMyServices(t) || (filter === "all" && isAway(t))) && rightKind(t);
+  // Your library always shows everything you saved on your services (and titles that left
+  // them), whatever the home service and TV & movies filters say: the filters are for browsing
+  // recommendations. The Your library page has its own filters for narrowing it down.
+  const libShows = (t) => !offServices(t) || isAway(t);
   // Nothing saved, liked or watched yet: the row is just the pills, each opening its
   // (empty) tab on the Your library page, which says how to fill it.
   const libAllEmpty = () => !Object.keys(watchlist).length && !mlTitles("liked").length && !mlTitles("watched").length;
@@ -691,7 +693,7 @@
     if (libAllEmpty()) return "";
     if (!def.items.length) {
       const ghost = (inner = "") => `<div class="ghost-tile"><div class="ghost-poster">${inner}</div></div>`;
-      const hint = libTab === "list" && Object.keys(watchlist).length ? "Nothing here for these filters" : LIB_HINT[libTab];
+      const hint = libTab === "list" && Object.keys(watchlist).length ? "Nothing here on your services" : LIB_HINT[libTab];
       return `<div class="scroller lib-scroller">${ghost(`<span>${hint}</span>`)}${ghost()}${ghost()}${ghost()}</div>`;
     }
     const key = { list: "watchlist", liked: "myliked", watched: "mywatched" }[libTab];
@@ -1655,7 +1657,7 @@
       ["Signal: Audience, Critics, Trending", `
         <p><b>Audience</b> is the vote-adjusted IMDb rating (5.0 or lower scores 0, 9.0 or higher scores 100). <b>Critics</b> is the Rotten Tomatoes / Metacritic average. <b>Trending</b> is the TMDB/Trakt blend from the Trending now row (without that row's recency share, since New &amp; recent is its own signal).</p>`],
       ["Watchlist & watched", `
-        <p><b>＋ Add to list</b> on any title adds it to your watchlist, shown in the "Your library" row right below Top Picks, newest first. <b>Mark watched</b> hides a title from every row except "Your library" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. A watched series comes back if a new season premieres after you marked it. <b>👎 Not for me</b> hides a title from the same rows. Titles you like stay in Top Picks. Nothing moves while you're browsing: the rows update the next time you open the app, change a filter or close Settings. All are saved on this phone and included in backups. To undo any of them, open the title (search finds watched titles too) and tap the button again.</p>`],
+        <p><b>＋ Add to list</b> on any title adds it to your watchlist, shown in the "Your library" row right below Top Picks, newest first. That row always shows everything you've saved, whatever the service and TV & movies filters are set to; its "See all" page has its own filters. <b>Mark watched</b> hides a title from every row except "Your library" and the Netflix Top 10, where it shows a "Watched" badge. It doesn't take the title off your watchlist. A watched series comes back if a new season premieres after you marked it. <b>👎 Not for me</b> hides a title from the same rows. Titles you like stay in Top Picks. Nothing moves while you're browsing: the rows update the next time you open the app, change a filter or close Settings. All are saved on this phone and included in backups. To undo any of them, open the title (search finds watched titles too) and tap the button again.</p>`],
     ];
     $("#how").innerHTML = items.map(([title, body]) => `<details><summary>${esc(title)}</summary><div class="how-body">${body}</div></details>`).join("");
   }
