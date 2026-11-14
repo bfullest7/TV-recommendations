@@ -46,6 +46,7 @@ The daily lookup limits reset at midnight UTC (7 PM Eastern in winter). A big ba
 | Best-known releases from 3–5 years ago (most-rated) | top 40 movies (top 100 on Netflix and Prime Video), top 20 TV (`recent_lists`, a separate band so they don't push newer titles out) |
 | Most-rated documentaries | top 40, movies and TV (`genre_lists`) |
 | Most-rated reality shows | top 40, TV only (`genre_lists`) |
+| Most popular documentaries from the last 12 months | top 40, movies and TV (`genre_lists`) |
 
 Plus everything trending (Trakt top 100, TMDB's top 5 pages) and the Netflix Top 10. Only titles on at least one service stay in the data (about 2,700 in Nov 2026).
 
@@ -167,6 +168,8 @@ Rows don't reshuffle while you browse, except:
 ## Changes and why
 
 Newest first. Record each change to a rule or number here, with what was tried and why.
+
+- **Nov 14, 2026. Recent documentaries tracked:** per service, the 40 most popular documentaries (movies and TV) released in the last 12 months. TYSON (Netflix docuseries, Oct 13) was never in the data: not in the top 40 new Netflix shows, too new for the most-rated documentaries and recent-shows lists, not trending, and past its Netflix Top 10 weeks.
 
 - **Nov 9, 2026. Common genres count less for likes.** One liked drama took Top Picks from 11 to 17–18 dramas out of 20. Now each genre of a liked title counts (1 − its share of titles)³, so Drama about 25%, and liking Breaking Bad gives 13 dramas. Tried: 40% for Drama (14–15) and 15% (drama likes barely mattered).
 - **Nov 9, 2026. Not for me no longer lowers genres.** One disliked drama pushed every drama down. It's usually about the title; the genre 👎 in Profile is for whole genres. Tried: half and a quarter strength, and counting genres only after a pattern of dislikes (harder to predict).

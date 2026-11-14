@@ -723,9 +723,15 @@ def run(mode: str = "auto") -> dict:
                             params[f"{field}.lte"] = (today() - dt.timedelta(days=365 * r["after_years"])).isoformat()
                         lists.append(params)
                 # genres that get fewer ratings (documentaries, reality) get their own most-rated list
+                # (optionally recent only, e.g. the most popular documentaries of the last year)
                 for g in rf.get("genre_lists") or []:
                     if kind in g.get("kinds", ("movie", "tv")):
-                        lists.append({"sort_by": "vote_count.desc", "with_genres": g["genres"], "_pages": g.get("pages", p)})
+                        params = {"sort_by": g.get("sort_by", "vote_count.desc"), "with_genres": g["genres"],
+                                  "_pages": g.get("pages", p)}
+                        if g.get("days"):
+                            field = "primary_release_date" if kind == "movie" else "first_air_date"
+                            params[f"{field}.gte"] = (today() - dt.timedelta(days=g["days"])).isoformat()
+                        lists.append(params)
                 for params in lists:
                     params = dict(params)
                     pages = params.pop("_pages", p)
